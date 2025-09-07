@@ -27,7 +27,7 @@
             ]"
           >
             <i :class="item.icon" class="sidebar-icon"></i>
-            <span class="sidebar-text fz-12">{{ item.name }}</span>
+            <span class="sidebar-text">{{ item.name }}</span>
           </router-link>
         </div>
       </nav>

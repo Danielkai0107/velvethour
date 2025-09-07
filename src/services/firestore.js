@@ -116,6 +116,126 @@ export const dressService = {
     const docRef = doc(db, "dresses", id);
     await deleteDoc(docRef);
   },
+
+  // 獲取禮服的租用檔期
+  async getRentalSchedule(dressId) {
+    try {
+      // 查詢包含此禮服的所有合約
+      const q = query(
+        collection(db, "contracts"),
+        orderBy("使用開始時間", "asc")
+      );
+      const snapshot = await getDocs(q);
+      
+      const rentalSchedule = [];
+      snapshot.docs.forEach((doc) => {
+        const contract = { id: doc.id, ...doc.data() };
+        
+        // 檢查合約中是否包含此禮服
+        if (contract.禮服清單 && contract.禮服清單.some(item => item.禮服ID === dressId)) {
+          rentalSchedule.push({
+            合約單號: contract.合約單號,
+            客戶姓名: contract.客戶姓名,
+            使用開始時間: contract.使用開始時間,
+            使用結束時間: contract.使用結束時間,
+            處理狀態: contract.處理狀態,
+            合約ID: contract.id
+          });
+        }
+      });
+      
+      return rentalSchedule;
+    } catch (error) {
+      console.warn("Firebase 未配置或連接失敗，返回示例資料:", error);
+      
+      // 返回示例租用檔期資料
+      if (dressId === "demo-dress-1") {
+        return [
+          {
+            合約單號: "20241201-001",
+            客戶姓名: "張小姐",
+            使用開始時間: new Date('2024-12-15T14:00:00'),
+            使用結束時間: new Date('2024-12-16T18:00:00'),
+            處理狀態: "進行中",
+            合約ID: "demo-contract-1"
+          }
+        ];
+      } else if (dressId === "demo-dress-2") {
+        return [
+          {
+            合約單號: "20241201-001",
+            客戶姓名: "張小姐",
+            使用開始時間: new Date('2024-12-15T14:00:00'),
+            使用結束時間: new Date('2024-12-16T18:00:00'),
+            處理狀態: "進行中",
+            合約ID: "demo-contract-1"
+          },
+          {
+            合約單號: "20241201-002",
+            客戶姓名: "李太太",
+            使用開始時間: new Date('2024-12-20T16:00:00'),
+            使用結束時間: new Date('2024-12-21T20:00:00'),
+            處理狀態: "已確認",
+            合約ID: "demo-contract-2"
+          }
+        ];
+      } else if (dressId === "demo-dress-3") {
+        return [
+          {
+            合約單號: "20241130-003",
+            客戶姓名: "王小姐",
+            使用開始時間: new Date('2024-11-30T12:00:00'),
+            使用結束時間: new Date('2024-11-30T22:00:00'),
+            處理狀態: "已完成",
+            合約ID: "demo-contract-3"
+          }
+        ];
+      }
+      
+      return [];
+    }
+  },
+
+  // 檢查禮服在指定時間是否可用
+  async checkDressAvailability(dressId, startTime, endTime, excludeContractId = null) {
+    try {
+      const rentalSchedule = await this.getRentalSchedule(dressId);
+      
+      // 過濾掉當前正在編輯的合約（如果有的話）
+      const filteredSchedule = excludeContractId 
+        ? rentalSchedule.filter(item => item.合約ID !== excludeContractId)
+        : rentalSchedule;
+      
+      // 檢查時間衝突
+      const startDate = new Date(startTime);
+      const endDate = new Date(endTime);
+      
+      for (const schedule of filteredSchedule) {
+        const scheduleStart = schedule.使用開始時間 instanceof Date 
+          ? schedule.使用開始時間 
+          : schedule.使用開始時間.toDate ? schedule.使用開始時間.toDate() : new Date(schedule.使用開始時間);
+        const scheduleEnd = schedule.使用結束時間 instanceof Date 
+          ? schedule.使用結束時間 
+          : schedule.使用結束時間.toDate ? schedule.使用結束時間.toDate() : new Date(schedule.使用結束時間);
+        
+        // 檢查時間重疊
+        if (!(endDate <= scheduleStart || startDate >= scheduleEnd)) {
+          // 只有進行中、已確認的合約才算衝突
+          if (schedule.處理狀態 === "進行中" || schedule.處理狀態 === "已確認") {
+            return {
+              available: false,
+              conflictContract: schedule
+            };
+          }
+        }
+      }
+      
+      return { available: true };
+    } catch (error) {
+      console.error("檢查禮服可用性失敗:", error);
+      return { available: true }; // 發生錯誤時預設為可用
+    }
+  },
 };
 
 // 合約相關操作

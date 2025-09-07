@@ -136,6 +136,7 @@
                     type="datetime-local"
                     class="form-control"
                     required
+                    @change="onTimeOrDressChange"
                   />
                 </div>
 
@@ -149,6 +150,7 @@
                     type="datetime-local"
                     class="form-control"
                     required
+                    @change="onTimeOrDressChange"
                   />
                 </div>
               </div>
@@ -159,6 +161,57 @@
               <h5 class="fw-semibold mb-3">
                 <i class="bi bi-gem me-2"></i>禮服清單
               </h5>
+              
+              <!-- 檔期衝突狀態 -->
+              <div v-if="checkingConflicts" class="alert alert-info mb-3">
+                <div class="d-flex align-items-center">
+                  <div class="spinner-border spinner-border-sm me-2" role="status">
+                    <span class="visually-hidden">檢查中...</span>
+                  </div>
+                  <span>正在檢查禮服檔期衝突...</span>
+                </div>
+              </div>
+              
+              <!-- 檔期衝突警告 -->
+              <div v-else-if="conflictWarnings.length > 0" class="alert alert-warning mb-3">
+                <h6 class="alert-heading">
+                  <i class="bi bi-exclamation-triangle me-2"></i>檔期衝突警告
+                </h6>
+                <div v-for="warning in conflictWarnings" :key="warning.禮服ID" class="mb-2">
+                  <strong>{{ warning.禮服編號 }}</strong>: 
+                  {{ warning.message }}
+                  <br>
+                  <small class="text-muted">
+                    衝突合約: {{ warning.conflictContract.合約單號 }} 
+                    ({{ warning.conflictContract.客戶姓名 }}, 
+                    {{ formatDateTimeShort(warning.conflictContract.使用開始時間) }} - 
+                    {{ formatDateTimeShort(warning.conflictContract.使用結束時間) }})
+                  </small>
+                </div>
+              </div>
+              
+              <!-- 檔期檢查成功 -->
+              <div v-else-if="hasValidTimeAndDresses && !checkingConflicts" class="alert alert-success mb-3">
+                <div class="d-flex align-items-center">
+                  <i class="bi bi-check-circle me-2"></i>
+                  <span>所選禮服在指定時間段內可用</span>
+                </div>
+              </div>
+              
+              <!-- 輸入提示 -->
+              <div v-else-if="!hasValidTimeAndDresses && !checkingConflicts" class="alert alert-light mb-3">
+                <div class="d-flex align-items-center">
+                  <i class="bi bi-info-circle me-2 text-muted"></i>
+                  <span class="text-muted">
+                    <template v-if="!formData.使用開始時間 || !formData.使用結束時間">
+                      請先設定使用時間，
+                    </template>
+                    <template v-if="!formData.禮服清單.some(item => item.禮服ID)">
+                      然後選擇禮服，系統將自動檢查檔期衝突
+                    </template>
+                  </span>
+                </div>
+              </div>
               
               <!-- 禮服項目 -->
               <div class="border rounded p-3 mb-3" style="max-height: 300px; overflow-y: auto;">
@@ -171,7 +224,7 @@
                     <select 
                       v-model="item.禮服ID" 
                       class="form-select form-select-sm"
-                      @change="updateDressPrice(index)"
+                      @change="updateDressPrice(index); onTimeOrDressChange()"
                     >
                       <option value="">選擇禮服</option>
                       <option 
@@ -333,11 +386,21 @@ export default {
     },
   },
   emits: ["close", "save"],
+  computed: {
+    hasValidTimeAndDresses() {
+      const hasTime = this.formData.使用開始時間 && this.formData.使用結束時間;
+      const hasDresses = this.formData.禮服清單.some(item => item.禮服ID);
+      return hasTime && hasDresses;
+    }
+  },
   data() {
     return {
       loading: false,
       availableDresses: [],
       availableStaff: [],
+      conflictWarnings: [],
+      checkingConflicts: false,
+      conflictCheckTimeout: null,
       formData: {
         客戶姓名: "",
         電話: "",
@@ -364,6 +427,11 @@ export default {
   async mounted() {
     await this.loadDresses();
     await this.loadStaff();
+  },
+  beforeUnmount() {
+    if (this.conflictCheckTimeout) {
+      clearTimeout(this.conflictCheckTimeout);
+    }
   },
   watch: {
     contract: {
@@ -447,6 +515,8 @@ export default {
       if (this.formData.禮服清單.length > 1) {
         this.formData.禮服清單.splice(index, 1);
         this.updateTotalAmount();
+        // 移除禮服後重新檢查衝突
+        this.onTimeOrDressChange();
       }
     },
     
@@ -475,6 +545,59 @@ export default {
       this.formData.合約總金額 = this.calculateTotal();
     },
     
+    // 檢查所有禮服的檔期衝突
+    async checkAllDressConflicts() {
+      // 清空之前的警告
+      this.conflictWarnings = [];
+      
+      // 檢查是否有足夠的資訊進行衝突檢查
+      if (!this.formData.使用開始時間 || !this.formData.使用結束時間) {
+        return;
+      }
+      
+      const validDressItems = this.formData.禮服清單.filter(item => item.禮服ID);
+      if (validDressItems.length === 0) {
+        return;
+      }
+      
+      try {
+        this.checkingConflicts = true;
+        const excludeContractId = this.contract?.id || null;
+        
+        for (const item of validDressItems) {
+          const availability = await dressService.checkDressAvailability(
+            item.禮服ID,
+            this.formData.使用開始時間,
+            this.formData.使用結束時間,
+            excludeContractId
+          );
+          
+          if (!availability.available) {
+            const dress = this.availableDresses.find(d => d.id === item.禮服ID);
+            this.conflictWarnings.push({
+              禮服ID: item.禮服ID,
+              禮服編號: dress?.編號 || item.禮服ID,
+              message: "此時間段已被其他合約預約",
+              conflictContract: availability.conflictContract
+            });
+          }
+        }
+      } catch (error) {
+        console.error("檢查檔期衝突失敗:", error);
+      } finally {
+        this.checkingConflicts = false;
+      }
+    },
+    
+    // 當時間或禮服選擇改變時觸發檔期檢查
+    async onTimeOrDressChange() {
+      // 延遲檢查，避免頻繁調用
+      clearTimeout(this.conflictCheckTimeout);
+      this.conflictCheckTimeout = setTimeout(() => {
+        this.checkAllDressConflicts();
+      }, 500);
+    },
+    
     async handleSubmit() {
       try {
         this.loading = true;
@@ -497,6 +620,13 @@ export default {
         const validDressItems = this.formData.禮服清單.filter(item => item.禮服ID && item.數量 > 0);
         if (validDressItems.length === 0) {
           this.showToast('請至少選擇一件禮服', 'warning');
+          return;
+        }
+        
+        // 檢查檔期衝突
+        await this.checkAllDressConflicts();
+        if (this.conflictWarnings.length > 0) {
+          this.showToast('存在檔期衝突，請調整時間或更換禮服', 'error');
           return;
         }
         
@@ -569,6 +699,26 @@ export default {
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit'
+      });
+    },
+    
+    formatDateTimeShort(timestamp) {
+      if (!timestamp) return "";
+      
+      let date;
+      if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+        date = timestamp.toDate();
+      } else if (timestamp instanceof Date) {
+        date = timestamp;
+      } else {
+        date = new Date(timestamp);
+      }
+      
+      return date.toLocaleString('zh-TW', {
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
       });
     },
     

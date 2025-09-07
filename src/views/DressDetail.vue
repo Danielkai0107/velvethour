@@ -164,7 +164,81 @@
               </div>
             </div>
 
-            <!-- 7. 新增＆編輯時間 -->
+            <!-- 7. 租用檔期 -->
+            <div class="mb-4">
+              <h5 class="card-title mb-3">
+                <i class="bi bi-calendar-range me-2"></i>租用檔期
+              </h5>
+              
+              <!-- 載入狀態 -->
+              <div v-if="loadingSchedule" class="text-center py-3">
+                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                  <span class="visually-hidden">載入中...</span>
+                </div>
+                <span class="ms-2 text-muted">載入租用檔期中...</span>
+              </div>
+              
+              <!-- 租用檔期表格 -->
+              <div v-else-if="rentalSchedule.length > 0" class="table-responsive">
+                <table class="table table-striped table-hover">
+                  <thead class="table-light">
+                    <tr>
+                      <th scope="col">合約單號</th>
+                      <th scope="col">客戶姓名</th>
+                      <th scope="col">使用開始時間</th>
+                      <th scope="col">使用結束時間</th>
+                      <th scope="col">處理狀態</th>
+                      <th scope="col">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="schedule in rentalSchedule" :key="schedule.合約ID">
+                      <td>
+                        <strong class="text-primary">{{ schedule.合約單號 }}</strong>
+                      </td>
+                      <td>{{ schedule.客戶姓名 }}</td>
+                      <td>
+                        <small class="text-muted d-block">{{ formatDateTime(schedule.使用開始時間) }}</small>
+                      </td>
+                      <td>
+                        <small class="text-muted d-block">{{ formatDateTime(schedule.使用結束時間) }}</small>
+                      </td>
+                      <td>
+                        <span 
+                          class="badge"
+                          :class="{
+                            'bg-success': schedule.處理狀態 === '已完成',
+                            'bg-primary': schedule.處理狀態 === '進行中',
+                            'bg-info': schedule.處理狀態 === '已確認',
+                            'bg-warning': schedule.處理狀態 === '待確認',
+                            'bg-secondary': schedule.處理狀態 === '已取消'
+                          }"
+                        >
+                          {{ schedule.處理狀態 }}
+                        </span>
+                      </td>
+                      <td>
+                        <router-link
+                          :to="`/contracts/${schedule.合約ID}`"
+                          class="btn btn-outline-primary btn-sm"
+                        >
+                          <i class="bi bi-eye me-1"></i>查看合約
+                        </router-link>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              
+              <!-- 無租用檔期 -->
+              <div v-else class="text-center py-4">
+                <i class="bi bi-calendar-x display-4 text-muted"></i>
+                <h6 class="mt-2 text-muted">目前沒有租用檔期</h6>
+                <p class="text-muted small">此禮服尚未被任何合約使用</p>
+              </div>
+            </div>
+
+            <!-- 8. 新增＆編輯時間 -->
             <div class="mb-4">
               <h5 class="card-title mb-3">
                 <i class="bi bi-clock-history me-2"></i>時間記錄
@@ -252,10 +326,13 @@ export default {
       loading: true,
       currentImage: null,
       showEditModal: false,
+      rentalSchedule: [],
+      loadingSchedule: false,
     };
   },
   async mounted() {
     await this.loadDress();
+    await this.loadRentalSchedule();
   },
   methods: {
     async loadDress() {
@@ -308,6 +385,18 @@ export default {
         this.showToast("更新禮服失敗，請稍後再試", "error");
       }
     },
+    async loadRentalSchedule() {
+      try {
+        this.loadingSchedule = true;
+        this.rentalSchedule = await dressService.getRentalSchedule(this.id);
+      } catch (error) {
+        console.error("載入租用檔期失敗:", error);
+        this.showToast("載入租用檔期失敗，請稍後再試", "error");
+        this.rentalSchedule = [];
+      } finally {
+        this.loadingSchedule = false;
+      }
+    },
     formatDate(date) {
       if (!date) return "未設定";
       
@@ -330,6 +419,30 @@ export default {
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit'
+      });
+    },
+    formatDateTime(date) {
+      if (!date) return "未設定";
+      
+      let dateObj;
+      if (date.toDate && typeof date.toDate === 'function') {
+        // Firebase Timestamp
+        dateObj = date.toDate();
+      } else if (date instanceof Date) {
+        // JavaScript Date
+        dateObj = date;
+      } else {
+        // String or other format
+        dateObj = new Date(date);
+      }
+      
+      return dateObj.toLocaleString('zh-TW', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        weekday: 'short'
       });
     },
     showToast(message, type = "info") {
