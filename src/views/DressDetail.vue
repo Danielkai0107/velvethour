@@ -179,55 +179,59 @@
               </div>
               
               <!-- 租用檔期表格 -->
-              <div v-else-if="rentalSchedule.length > 0" class="table-responsive">
-                <table class="table table-striped table-hover">
-                  <thead class="table-light">
-                    <tr>
-                      <th scope="col">合約單號</th>
-                      <th scope="col">客戶姓名</th>
-                      <th scope="col">使用開始時間</th>
-                      <th scope="col">使用結束時間</th>
-                      <th scope="col">處理狀態</th>
-                      <th scope="col">操作</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="schedule in rentalSchedule" :key="schedule.合約ID">
-                      <td>
-                        <strong class="text-primary">{{ schedule.合約單號 }}</strong>
-                      </td>
-                      <td>{{ schedule.客戶姓名 }}</td>
-                      <td>
-                        <small class="text-muted d-block">{{ formatDateTime(schedule.使用開始時間) }}</small>
-                      </td>
-                      <td>
-                        <small class="text-muted d-block">{{ formatDateTime(schedule.使用結束時間) }}</small>
-                      </td>
-                      <td>
-                        <span 
-                          class="badge"
-                          :class="{
-                            'bg-success': schedule.處理狀態 === '已完成',
-                            'bg-primary': schedule.處理狀態 === '進行中',
-                            'bg-info': schedule.處理狀態 === '已確認',
-                            'bg-warning': schedule.處理狀態 === '待確認',
-                            'bg-secondary': schedule.處理狀態 === '已取消'
-                          }"
-                        >
-                          {{ schedule.處理狀態 }}
-                        </span>
-                      </td>
-                      <td>
-                        <router-link
-                          :to="`/contracts/${schedule.合約ID}`"
-                          class="btn btn-outline-primary btn-sm"
-                        >
-                          <i class="bi bi-eye me-1"></i>查看合約
-                        </router-link>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+              <div v-else-if="rentalSchedule.length > 0" class="border rounded p-3">
+                <div class="table-responsive">
+                  <table class="table table-sm mb-0" style="border-collapse: separate; border-spacing: 0;">
+                    <thead>
+                      <tr>
+                        <th class="border-0 fw-normal text-muted small text-center py-3">合約單號</th>
+                        <th class="border-0 fw-normal text-muted small text-center py-3">客戶姓名</th>
+                        <th class="border-0 fw-normal text-muted small text-center py-3">使用開始時間</th>
+                        <th class="border-0 fw-normal text-muted small text-center py-3">使用結束時間</th>
+                        <th class="border-0 fw-normal text-muted small text-center py-3">處理狀態</th>
+                        <th class="border-0 fw-normal text-muted small text-center py-3">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="schedule in rentalSchedule" :key="schedule.合約ID">
+                        <td class="border-0 small text-center py-4">
+                          <strong class="text-primary">{{ schedule.合約單號 }}</strong>
+                        </td>
+                        <td class="border-0 small text-center py-4">{{ schedule.客戶姓名 }}</td>
+                        <td class="border-0 small text-center py-4">
+                          <span class="text-muted d-block">{{ formatDateTime(schedule.使用開始時間) }}</span>
+                        </td>
+                        <td class="border-0 small text-center py-4">
+                          <span class="text-muted d-block">{{ formatDateTime(schedule.使用結束時間) }}</span>
+                        </td>
+                        <td class="border-0 small text-center py-4">
+                          <span 
+                            class="badge"
+                            style="font-size: 12px; padding: 6px 12px;"
+                            :class="{
+                              'bg-success': schedule.處理狀態 === '已完成',
+                              'bg-primary': schedule.處理狀態 === '進行中',
+                              'bg-info': schedule.處理狀態 === '已確認',
+                              'bg-warning': schedule.處理狀態 === '待確認',
+                              'bg-secondary': schedule.處理狀態 === '已取消'
+                            }"
+                          >
+                            {{ schedule.處理狀態 }}
+                          </span>
+                        </td>
+                        <td class="border-0 small text-center py-4">
+                          <router-link
+                            :to="`/contracts/${schedule.合約ID}`"
+                            class="text-primary text-decoration-underline"
+                            style="font-size: 12px;"
+                          >
+                            查看
+                          </router-link>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
               
               <!-- 無租用檔期 -->
