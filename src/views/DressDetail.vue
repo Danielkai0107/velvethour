@@ -1,170 +1,221 @@
 <template>
-  <div class="max-w-4xl mx-auto">
+  <div class="container-fluid">
+    <!-- 返回按鈕 -->
+    <div class="mb-4">
+      <button
+        @click="$router.back()"
+        class="btn btn-outline-secondary"
+      >
+        <i class="bi bi-arrow-left me-2"></i>返回列表
+      </button>
+    </div>
+
     <!-- 載入狀態 -->
-    <div v-if="loading" class="text-center py-8">
-      <div
-        class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
-      ></div>
-      <p class="mt-2 text-gray-600">載入中...</p>
+    <div v-if="loading" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">載入中...</span>
+      </div>
+      <p class="mt-2 text-muted">載入中...</p>
     </div>
 
     <!-- 禮服詳情 -->
-    <div
-      v-else-if="dress"
-      class="bg-white rounded-lg shadow-sm overflow-hidden"
-    >
-      <!-- 返回按鈕 -->
-      <div class="px-6 py-4 border-b border-gray-200">
-        <button
-          @click="$router.back()"
-          class="flex items-center text-gray-600 hover:text-gray-900 transition-colors duration-150"
-        >
-          <ArrowLeftIcon class="h-5 w-5 mr-2" />
-          返回列表
-        </button>
-      </div>
+    <div v-else-if="dress" class="row">
+      <div class="col-12">
+        <div class="card shadow-sm border-0">
+          <div class="card-body p-4">
+            
+            <!-- 1. 圖片 -->
+            <div class="mb-4">
+              <h5 class="card-title mb-3">
+                <i class="bi bi-images me-2"></i>禮服圖片
+              </h5>
+              
+              <!-- 主圖片 -->
+              <div class="mb-3">
+                <div class="bg-light rounded overflow-hidden d-flex align-items-center justify-content-center" style="max-width: 500px; min-height: 400px;">
+                  <img
+                    v-if="currentImage"
+                    :src="currentImage"
+                    :alt="dress.編號"
+                    class="img-fluid rounded"
+                    style="max-width: 100%; max-height: 500px; width: auto; height: auto; object-fit: contain;"
+                  />
+                  <div
+                    v-else
+                    class="d-flex align-items-center justify-content-center bg-light w-100 h-100"
+                    style="min-height: 400px;"
+                  >
+                    <i class="bi bi-image text-muted" style="font-size: 4rem;"></i>
+                  </div>
+                </div>
+              </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6">
-        <!-- 圖片區域 -->
-        <div>
-          <div
-            class="aspect-w-3 aspect-h-4 bg-gray-100 rounded-lg overflow-hidden mb-4"
-          >
-            <img
-              v-if="currentImage"
-              :src="currentImage"
-              :alt="dress.編號"
-              class="w-full h-96 object-cover"
-            />
-            <div
-              v-else
-              class="w-full h-96 bg-gray-200 flex items-center justify-center"
-            >
-              <SparklesIcon class="h-16 w-16 text-gray-400" />
+              <!-- 圖片縮圖 -->
+              <div v-if="dress.圖片 && dress.圖片.length > 1" class="d-flex gap-2 flex-wrap">
+                <button
+                  v-for="(image, index) in dress.圖片"
+                  :key="index"
+                  @click="currentImage = image"
+                  class="btn p-1 border rounded overflow-hidden"
+                  :class="currentImage === image ? 'border-primary border-2' : 'border-secondary'"
+                  style="width: 70px; height: 70px;"
+                >
+                  <img
+                    :src="image"
+                    :alt="`圖片 ${index + 1}`"
+                    class="w-100 h-100 rounded"
+                    style="object-fit: contain;"
+                  />
+                </button>
+              </div>
             </div>
-          </div>
 
-          <!-- 圖片縮圖 -->
-          <div
-            v-if="dress.圖片 && dress.圖片.length > 1"
-            class="flex space-x-2"
-          >
-            <button
-              v-for="(image, index) in dress.圖片"
-              :key="index"
-              @click="currentImage = image"
-              class="w-16 h-16 rounded-lg overflow-hidden border-2 transition-colors duration-150"
-              :class="[
-                currentImage === image
-                  ? 'border-blue-500'
-                  : 'border-gray-200 hover:border-gray-300',
-              ]"
-            >
-              <img
-                :src="image"
-                :alt="`圖片 ${index + 1}`"
-                class="w-full h-full object-cover"
-              />
-            </button>
-          </div>
-        </div>
-
-        <!-- 詳情區域 -->
-        <div>
-          <div class="mb-6">
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">
-              {{ dress.編號 }}
-            </h1>
-            <p class="text-2xl font-bold text-blue-600">
-              NT$ {{ dress.價格.toLocaleString() }}
-            </p>
-            <p v-if="dress.加價金額 > 0" class="text-sm text-gray-600">
-              加價金額: NT$ {{ dress.加價金額.toLocaleString() }}
-            </p>
-          </div>
-
-          <!-- 規格資訊 -->
-          <div class="grid grid-cols-2 gap-4 mb-6">
-            <div>
-              <h3 class="text-sm font-medium text-gray-500">顏色</h3>
-              <p class="text-lg text-gray-900">{{ dress.顏色 }}</p>
+            <!-- 2. 禮服編號 -->
+            <div class="mb-4">
+              <h5 class="card-title mb-2">
+                <i class="bi bi-hash me-2"></i>禮服編號
+              </h5>
+              <h2 class="text-primary fw-bold">{{ dress.編號 }}</h2>
             </div>
-            <div>
-              <h3 class="text-sm font-medium text-gray-500">裙型</h3>
-              <p class="text-lg text-gray-900">{{ dress.裙型 }}</p>
-            </div>
-            <div>
-              <h3 class="text-sm font-medium text-gray-500">袖型</h3>
-              <p class="text-lg text-gray-900">{{ dress.袖型 }}</p>
-            </div>
-            <div>
-              <h3 class="text-sm font-medium text-gray-500">領型</h3>
-              <p class="text-lg text-gray-900">{{ dress.領型 }}</p>
-            </div>
-          </div>
 
-          <!-- 庫存狀態 -->
-          <div class="mb-6">
-            <h3 class="text-sm font-medium text-gray-500 mb-2">庫存狀態</h3>
-            <div class="flex items-center">
-              <div
-                class="w-3 h-3 rounded-full mr-2"
-                :class="[dress.庫存數量 > 0 ? 'bg-green-400' : 'bg-red-400']"
-              ></div>
-              <span class="text-lg text-gray-900">
-                {{
-                  dress.庫存數量 > 0 ? `有庫存 (${dress.庫存數量} 件)` : "缺貨"
-                }}
-              </span>
+            <!-- 3. 規格 -->
+            <div class="mb-4">
+              <h5 class="card-title mb-3">
+                <i class="bi bi-list-check me-2"></i>規格資訊
+              </h5>
+              <div class="row g-3">
+                <div class="col-md-3 col-sm-6">
+                  <div class="border rounded p-3 h-100">
+                    <small class="text-muted d-block">顏色</small>
+                    <strong class="text-dark">{{ dress.顏色 }}</strong>
+                  </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                  <div class="border rounded p-3 h-100">
+                    <small class="text-muted d-block">裙型</small>
+                    <strong class="text-dark">{{ dress.裙型 }}</strong>
+                  </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                  <div class="border rounded p-3 h-100">
+                    <small class="text-muted d-block">袖型</small>
+                    <strong class="text-dark">{{ dress.袖型 }}</strong>
+                  </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                  <div class="border rounded p-3 h-100">
+                    <small class="text-muted d-block">領型</small>
+                    <strong class="text-dark">{{ dress.領型 }}</strong>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <!-- 備註 -->
-          <div v-if="dress.備注" class="mb-6">
-            <h3 class="text-sm font-medium text-gray-500 mb-2">備註</h3>
-            <p class="text-gray-900 whitespace-pre-wrap">{{ dress.備注 }}</p>
-          </div>
+            <!-- 4. 金額 -->
+            <div class="mb-4">
+              <h5 class="card-title mb-3">
+                <i class="bi bi-currency-dollar me-2"></i>金額資訊
+              </h5>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <div class="border rounded p-3">
+                    <small class="text-muted d-block">租借金額</small>
+                    <h4 class="text-primary fw-bold mb-0">NT$ {{ (dress.租借金額 || dress.價格 || 0).toLocaleString() }}</h4>
+                  </div>
+                </div>
+                <div class="col-md-6" v-if="dress.加價金額 && dress.加價金額 > 0">
+                  <div class="border rounded p-3">
+                    <small class="text-muted d-block">加價金額</small>
+                    <h5 class="text-warning fw-bold mb-0">+ NT$ {{ dress.加價金額.toLocaleString() }}</h5>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-          <!-- 操作按鈕 -->
-          <div class="flex space-x-3">
-            <button
-              @click="editDress"
-              class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-150"
-            >
-              編輯禮服
-            </button>
-            <button
-              @click="deleteDress"
-              class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors duration-150"
-            >
-              刪除
-            </button>
-          </div>
+            <!-- 5. 庫存 -->
+            <div class="mb-4">
+              <h5 class="card-title mb-3">
+                <i class="bi bi-box-seam me-2"></i>庫存狀態
+              </h5>
+              <div class="border rounded p-3">
+                <div class="d-flex align-items-center">
+                  <div
+                    class="rounded-circle me-3"
+                    style="width: 12px; height: 12px;"
+                    :class="dress.庫存數量 > 0 ? 'bg-success' : 'bg-danger'"
+                  ></div>
+                  <div>
+                    <strong class="text-dark">
+                      {{ dress.庫存數量 > 0 ? `有庫存` : "缺貨" }}
+                    </strong>
+                    <span class="text-muted ms-2">({{ dress.庫存數量 || 0 }} 件)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-          <!-- 建立時間 -->
-          <div class="mt-6 pt-6 border-t border-gray-200">
-            <p class="text-sm text-gray-500">
-              建立時間: {{ formatDate(dress.創建時間) }}
-            </p>
-            <p v-if="dress.更新時間" class="text-sm text-gray-500">
-              更新時間: {{ formatDate(dress.更新時間) }}
-            </p>
+            <!-- 6. 備註 -->
+            <div class="mb-4" v-if="dress.備註 || dress.備注">
+              <h5 class="card-title mb-3">
+                <i class="bi bi-card-text me-2"></i>備註
+              </h5>
+              <div class="border rounded p-3">
+                <p class="mb-0 text-dark" style="white-space: pre-wrap;">{{ dress.備註 || dress.備注 }}</p>
+              </div>
+            </div>
+
+            <!-- 7. 新增＆編輯時間 -->
+            <div class="mb-4">
+              <h5 class="card-title mb-3">
+                <i class="bi bi-clock-history me-2"></i>時間記錄
+              </h5>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <div class="border rounded p-3">
+                    <small class="text-muted d-block">新增時間</small>
+                    <strong class="text-dark">{{ formatDate(dress.新增時間戳 || dress.創建時間) }}</strong>
+                  </div>
+                </div>
+                <div class="col-md-6" v-if="dress.更新時間">
+                  <div class="border rounded p-3">
+                    <small class="text-muted d-block">最後編輯時間</small>
+                    <strong class="text-dark">{{ formatDate(dress.更新時間) }}</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 操作按鈕 -->
+            <div class="d-flex gap-3 justify-content-end mt-4 pt-3 border-top">
+              <button
+                @click="editDress"
+                class="btn btn-primary"
+              >
+                <i class="bi bi-pencil-square me-2"></i>編輯禮服
+              </button>
+              <button
+                @click="deleteDress"
+                class="btn btn-outline-danger"
+              >
+                <i class="bi bi-trash me-2"></i>刪除禮服
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
     <!-- 錯誤狀態 -->
-    <div v-else class="text-center py-12">
-      <SparklesIcon class="mx-auto h-12 w-12 text-gray-400" />
-      <h3 class="mt-2 text-sm font-medium text-gray-900">找不到禮服</h3>
-      <p class="mt-1 text-sm text-gray-500">該禮服可能已被刪除或不存在</p>
-      <div class="mt-6">
+    <div v-else class="text-center py-5">
+      <i class="bi bi-gem display-1 text-muted"></i>
+      <h3 class="mt-3 text-muted">找不到禮服</h3>
+      <p class="mt-1 text-muted">該禮服可能已被刪除或不存在</p>
+      <div class="mt-4">
         <router-link
           to="/dresses"
-          class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-150"
+          class="btn btn-primary"
         >
-          返回禮服清單
+          <i class="bi bi-arrow-left me-2"></i>返回禮服清單
         </router-link>
       </div>
     </div>
@@ -181,15 +232,12 @@
 </template>
 
 <script>
-import { ArrowLeftIcon, SparklesIcon } from "@heroicons/vue/24/outline";
 import { dressService } from "../services/firestore.js";
 import DressModal from "../components/DressModal.vue";
 
 export default {
   name: "DressDetail",
   components: {
-    ArrowLeftIcon,
-    SparklesIcon,
     DressModal,
   },
   props: {
@@ -221,6 +269,7 @@ export default {
         }
       } catch (error) {
         console.error("載入禮服詳情失敗:", error);
+        this.showToast("載入禮服詳情失敗，請稍後再試", "error");
         this.dress = null;
       } finally {
         this.loading = false;
@@ -230,36 +279,78 @@ export default {
       this.showEditModal = true;
     },
     async deleteDress() {
-      if (!confirm(`確定要刪除禮服 "${this.dress.編號}" 嗎？`)) {
+      // 使用 Bootstrap Modal 確認對話框
+      if (!confirm(`確定要刪除禮服 "${this.dress.編號}" 嗎？\n\n此操作無法復原！`)) {
         return;
       }
 
       try {
         await dressService.delete(this.dress.id);
-        alert("禮服已刪除");
-        this.$router.push("/dresses");
+        this.showToast("禮服已刪除", "success");
+        
+        // 延遲跳轉，讓用戶看到成功訊息
+        setTimeout(() => {
+          this.$router.push("/dresses");
+        }, 1500);
       } catch (error) {
         console.error("刪除禮服失敗:", error);
-        alert("刪除禮服失敗，請稍後再試");
+        this.showToast("刪除禮服失敗，請稍後再試", "error");
       }
     },
     async saveDress(dressData) {
       try {
         await dressService.update(this.dress.id, dressData);
-        alert("禮服已更新");
+        this.showToast("禮服已更新", "success");
         await this.loadDress();
         this.showEditModal = false;
       } catch (error) {
         console.error("更新禮服失敗:", error);
-        alert("更新禮服失敗，請稍後再試");
+        this.showToast("更新禮服失敗，請稍後再試", "error");
       }
     },
     formatDate(date) {
-      if (!date) return "";
-      if (date.toDate) {
-        return date.toDate().toLocaleString("zh-TW");
+      if (!date) return "未設定";
+      
+      let dateObj;
+      if (date.toDate && typeof date.toDate === 'function') {
+        // Firebase Timestamp
+        dateObj = date.toDate();
+      } else if (date instanceof Date) {
+        // JavaScript Date
+        dateObj = date;
+      } else {
+        // String or other format
+        dateObj = new Date(date);
       }
-      return new Date(date).toLocaleString("zh-TW");
+      
+      return dateObj.toLocaleString('zh-TW', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+    },
+    showToast(message, type = "info") {
+      // 簡單的 toast 通知實現
+      const toastContainer = document.createElement('div');
+      toastContainer.className = `alert alert-${type === 'error' ? 'danger' : type} position-fixed top-0 end-0 m-3`;
+      toastContainer.style.zIndex = '9999';
+      toastContainer.innerHTML = `
+        <div class="d-flex align-items-center">
+          <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+          ${message}
+        </div>
+      `;
+      
+      document.body.appendChild(toastContainer);
+      
+      setTimeout(() => {
+        if (document.body.contains(toastContainer)) {
+          document.body.removeChild(toastContainer);
+        }
+      }, 3000);
     },
   },
 };

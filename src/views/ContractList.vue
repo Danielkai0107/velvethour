@@ -1,201 +1,106 @@
 <template>
-  <div class="max-w-7xl mx-auto">
+  <div class="container-fluid">
     <!-- 頁面標題和新增按鈕 -->
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-bold text-gray-900">合約清單</h1>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1 class="h3 mb-0 fw-bold">合約清單</h1>
       <button
         @click="showAddModal = true"
-        class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-150"
+        class="btn btn-primary"
       >
-        新增合約
+        <i class="bi bi-plus-lg me-2"></i>新增合約
       </button>
     </div>
 
-    <!-- 篩選器 -->
-    <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1"
-            >狀態篩選</label
-          >
-          <select
-            v-model="statusFilter"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">全部狀態</option>
-            <option value="待確認">待確認</option>
-            <option value="已確認">已確認</option>
-            <option value="進行中">進行中</option>
-            <option value="已完成">已完成</option>
-            <option value="已取消">已取消</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1"
-            >客戶姓名</label
-          >
-          <input
-            v-model="customerFilter"
-            type="text"
-            placeholder="搜尋客戶姓名"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1"
-            >合約單號</label
-          >
-          <input
-            v-model="contractNumberFilter"
-            type="text"
-            placeholder="搜尋合約單號"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-        <div class="flex items-end">
-          <button
-            @click="clearFilters"
-            class="w-full bg-gray-100 text-gray-700 px-3 py-2 rounded-md hover:bg-gray-200 transition-colors duration-150"
-          >
-            清除篩選
-          </button>
-        </div>
-      </div>
-    </div>
-
     <!-- 載入狀態 -->
-    <div v-if="loading" class="text-center py-8">
-      <div
-        class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
-      ></div>
-      <p class="mt-2 text-gray-600">載入中...</p>
+    <div v-if="loading" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">載入中...</span>
+      </div>
+      <p class="mt-2 text-muted">載入中...</p>
     </div>
 
     <!-- 合約表格 -->
-    <div v-else class="bg-white rounded-lg shadow-sm overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+    <div v-else class="card shadow-sm border-0">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="border-0 fw-semibold text-muted py-3">合約單號</th>
+                <th class="border-0 fw-semibold text-muted py-3">客戶姓名</th>
+                <th class="border-0 fw-semibold text-muted py-3">承辦人</th>
+                <th class="border-0 fw-semibold text-muted py-3">使用開始時間</th>
+                <th class="border-0 fw-semibold text-muted py-3">使用結束時間</th>
+                <th class="border-0 fw-semibold text-muted py-3">狀態</th>
+                <th class="border-0 fw-semibold text-muted py-3">總金額</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="contract in filteredContracts"
+                :key="contract.id"
+                class="border-bottom"
+                style="cursor: pointer;"
+                @click="goToContractDetail(contract.id)"
               >
-                合約單號
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                客戶資訊
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                使用期間
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                狀態
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                總金額
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                操作
-              </th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            <tr
-              v-for="contract in filteredContracts"
-              :key="contract.id"
-              class="hover:bg-gray-50"
-            >
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-gray-900">
-                  {{ contract.合約單號 }}
-                </div>
-                <div class="text-sm text-gray-500">
-                  {{ formatDate(contract.合約建立日期時間) }}
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-gray-900">
-                  {{ contract.客戶姓名 }}
-                </div>
-                <div class="text-sm text-gray-500">{{ contract.電話 }}</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-900">
-                  {{ formatDate(contract.使用開始時間) }} ~
-                </div>
-                <div class="text-sm text-gray-500">
-                  {{ formatDate(contract.使用結束時間) }}
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span
-                  class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
-                  :class="getStatusClass(contract.處理狀態)"
-                >
-                  {{ contract.處理狀態 }}
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                NT$ {{ contract.合約總金額.toLocaleString() }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <div class="flex space-x-2">
-                  <router-link
-                    :to="`/contracts/${contract.id}`"
-                    class="text-blue-600 hover:text-blue-900"
-                  >
-                    查看
-                  </router-link>
-                  <button
-                    @click="editContract(contract)"
-                    class="text-gray-600 hover:text-gray-900"
-                  >
-                    編輯
-                  </button>
-                  <button
-                    @click="deleteContract(contract)"
-                    class="text-red-600 hover:text-red-900"
-                  >
-                    刪除
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                <td class="py-4 border-0">
+                  <div class="fw-semibold text-dark">{{ contract.合約單號 }}</div>
+                  <small class="text-muted">建立: {{ formatDate(contract.合約建立日期時間) }}</small>
+                </td>
+                <td class="py-4 border-0">
+                  <div class="fw-semibold text-dark">{{ contract.客戶姓名 }}</div>
+                  <small class="text-muted">{{ contract.電話 }}</small>
+                </td>
+                <td class="py-4 border-0">
+                  <div class="fw-semibold text-dark">{{ contract.承辦人 || '未指定' }}</div>
+                </td>
+                <td class="py-4 border-0">
+                  <span class="text-dark">{{ formatDateTime(contract.使用開始時間) }}</span>
+                </td>
+                <td class="py-4 border-0">
+                  <span class="text-dark">{{ formatDateTime(contract.使用結束時間) }}</span>
+                </td>
+                <td class="py-4 border-0">
+                  <span :class="['badge', getStatusBadgeClass(contract.處理狀態)]">
+                    {{ contract.處理狀態 }}
+                  </span>
+                </td>
+                <td class="py-4 border-0">
+                  <div class="fw-semibold text-dark">NT$ {{ contract.合約總金額?.toLocaleString() || 0 }}</div>
+                  <small class="text-muted">{{ contract.禮服清單?.length || 0 }} 件禮服</small>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <!-- 空狀態 -->
-      <div v-if="filteredContracts.length === 0" class="text-center py-12">
-        <DocumentTextIcon class="mx-auto h-12 w-12 text-gray-400" />
-        <h3 class="mt-2 text-sm font-medium text-gray-900">沒有合約</h3>
-        <p class="mt-1 text-sm text-gray-500">開始建立您的第一份合約</p>
-        <div class="mt-6">
+      <div v-if="!loading && filteredContracts.length === 0" class="text-center py-5">
+        <i class="bi bi-file-text display-1 text-muted"></i>
+        <h3 class="mt-3 text-muted">
+          {{ contracts.length === 0 ? '沒有合約' : '沒有符合條件的合約' }}
+        </h3>
+        <p class="mt-1 text-muted">
+          {{ contracts.length === 0 ? '開始建立您的第一份合約' : '請調整篩選條件' }}
+        </p>
+        <div class="mt-4">
           <button
+            v-if="contracts.length === 0"
             @click="showAddModal = true"
-            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-150"
+            class="btn btn-primary"
           >
-            新增合約
+            <i class="bi bi-plus-lg me-2"></i>新增合約
           </button>
         </div>
       </div>
     </div>
 
-    <!-- 新增/編輯模態框 -->
+    <!-- 新增模態框 -->
     <ContractModal
-      v-if="showAddModal || showEditModal"
-      :show="showAddModal || showEditModal"
-      :contract="editingContract"
+      v-if="showAddModal"
+      :show="showAddModal"
+      :contract="null"
       @close="closeModal"
       @save="saveContract"
     />
@@ -203,14 +108,12 @@
 </template>
 
 <script>
-import { DocumentTextIcon } from "@heroicons/vue/24/outline";
 import { contractService } from "../services/firestore.js";
 import ContractModal from "../components/ContractModal.vue";
 
 export default {
   name: "ContractList",
   components: {
-    DocumentTextIcon,
     ContractModal,
   },
   data() {
@@ -218,29 +121,12 @@ export default {
       contracts: [],
       loading: true,
       showAddModal: false,
-      showEditModal: false,
-      editingContract: null,
-      statusFilter: "",
-      customerFilter: "",
-      contractNumberFilter: "",
     };
   },
   computed: {
     filteredContracts() {
-      return this.contracts.filter((contract) => {
-        const matchesStatus =
-          !this.statusFilter || contract.處理狀態 === this.statusFilter;
-        const matchesCustomer =
-          !this.customerFilter ||
-          contract.客戶姓名
-            .toLowerCase()
-            .includes(this.customerFilter.toLowerCase());
-        const matchesContractNumber =
-          !this.contractNumberFilter ||
-          contract.合約單號.includes(this.contractNumberFilter);
-
-        return matchesStatus && matchesCustomer && matchesContractNumber;
-      });
+      // 目前顯示所有合約，可以後續添加篩選邏輯
+      return this.contracts;
     },
   },
   async mounted() {
@@ -253,74 +139,97 @@ export default {
         this.contracts = await contractService.getAll();
       } catch (error) {
         console.error("載入合約清單失敗:", error);
-        alert("載入合約清單失敗，請稍後再試");
+        this.showToast("載入合約清單失敗，請稍後再試", "error");
       } finally {
         this.loading = false;
       }
     },
-    editContract(contract) {
-      this.editingContract = { ...contract };
-      this.showEditModal = true;
-    },
-    async deleteContract(contract) {
-      if (!confirm(`確定要刪除合約 "${contract.合約單號}" 嗎？`)) {
-        return;
-      }
-
-      try {
-        await contractService.delete(contract.id);
-        await this.loadContracts();
-        alert("合約已刪除");
-      } catch (error) {
-        console.error("刪除合約失敗:", error);
-        alert("刪除合約失敗，請稍後再試");
-      }
+    goToContractDetail(contractId) {
+      this.$router.push(`/contracts/${contractId}`);
     },
     async saveContract(contractData) {
       try {
-        if (this.editingContract && this.editingContract.id) {
-          // 編輯模式
-          await contractService.update(this.editingContract.id, contractData);
-          alert("合約已更新");
-        } else {
-          // 新增模式
-          await contractService.create(contractData);
-          alert("合約已新增");
-        }
-
+        // 只處理新增模式
+        await contractService.create(contractData);
+        this.showToast("合約已新增", "success");
         await this.loadContracts();
         this.closeModal();
       } catch (error) {
         console.error("儲存合約失敗:", error);
-        alert("儲存合約失敗，請稍後再試");
+        this.showToast("儲存合約失敗，請稍後再試", "error");
       }
     },
     closeModal() {
       this.showAddModal = false;
-      this.showEditModal = false;
-      this.editingContract = null;
-    },
-    clearFilters() {
-      this.statusFilter = "";
-      this.customerFilter = "";
-      this.contractNumberFilter = "";
-    },
-    getStatusClass(status) {
-      const statusClasses = {
-        待確認: "bg-yellow-100 text-yellow-800",
-        已確認: "bg-blue-100 text-blue-800",
-        進行中: "bg-green-100 text-green-800",
-        已完成: "bg-gray-100 text-gray-800",
-        已取消: "bg-red-100 text-red-800",
-      };
-      return statusClasses[status] || "bg-gray-100 text-gray-800";
     },
     formatDate(date) {
-      if (!date) return "";
-      if (date.toDate) {
-        return date.toDate().toLocaleDateString("zh-TW");
+      if (!date) return "未設定";
+      
+      let dateObj;
+      if (date.toDate && typeof date.toDate === 'function') {
+        dateObj = date.toDate();
+      } else if (date instanceof Date) {
+        dateObj = date;
+      } else {
+        dateObj = new Date(date);
       }
-      return new Date(date).toLocaleDateString("zh-TW");
+      
+      return dateObj.toLocaleDateString('zh-TW', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+    },
+    formatDateTime(date) {
+      if (!date) return "未設定";
+      
+      let dateObj;
+      if (date.toDate && typeof date.toDate === 'function') {
+        dateObj = date.toDate();
+      } else if (date instanceof Date) {
+        dateObj = date;
+      } else {
+        dateObj = new Date(date);
+      }
+      
+      return dateObj.toLocaleDateString('zh-TW', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }) + ' ' + dateObj.toLocaleTimeString('zh-TW', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    },
+    getStatusBadgeClass(status) {
+      const statusClasses = {
+        待確認: "bg-warning text-dark",
+        已確認: "bg-info text-white",
+        進行中: "bg-success text-white",
+        已完成: "bg-secondary text-white",
+        已取消: "bg-danger text-white",
+      };
+      return statusClasses[status] || "bg-secondary text-white";
+    },
+    showToast(message, type = "info") {
+      // 簡單的 toast 通知實現
+      const toastContainer = document.createElement('div');
+      toastContainer.className = `alert alert-${type === 'error' ? 'danger' : type} position-fixed top-0 end-0 m-3`;
+      toastContainer.style.zIndex = '9999';
+      toastContainer.innerHTML = `
+        <div class="d-flex align-items-center">
+          <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+          ${message}
+        </div>
+      `;
+      
+      document.body.appendChild(toastContainer);
+      
+      setTimeout(() => {
+        if (document.body.contains(toastContainer)) {
+          document.body.removeChild(toastContainer);
+        }
+      }, 3000);
     },
   },
 };
