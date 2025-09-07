@@ -18,7 +18,7 @@
             v-for="item in navigation"
             :key="item.name"
             :to="item.href"
-            class="nav-link d-flex align-items-center py-2 px-3 mb-1 rounded text-decoration-none sidebar-link"
+            class="nav-link d-flex align-items-center py-2 px-3 mb-1 rounded text-decoration-none sidebar-link position-relative"
             :class="[
               $route.path === item.href ||
               ($route.path.startsWith(item.href) && item.href !== '/')
@@ -26,8 +26,24 @@
                 : 'text-dark hover-bg-light',
             ]"
           >
-            <i :class="item.icon" class="sidebar-icon"></i>
-            <span class="sidebar-text">{{ item.name }}</span>
+            <div class="d-flex align-items-center position-relative">
+              <i :class="item.icon" class="sidebar-icon"></i>
+              <!-- 小螢幕紅點 - 浮在圖示右上角 -->
+              <span 
+                v-if="item.href === '/contracts' && cartItemCount > 0"
+                class="d-lg-none position-absolute rounded-circle bg-danger"
+                style="width: 8px; height: 8px; top: -2px; right: -2px; border: 1px solid white;"
+              ></span>
+              <span class="sidebar-text">{{ item.name }}</span>
+            </div>
+            <!-- 大螢幕購物車指示器 -->
+            <span 
+              v-if="item.href === '/contracts' && cartItemCount > 0"
+              class="badge bg-danger d-none d-lg-flex align-items-center justify-content-center"
+              style="font-size: 10px; min-width: 20px; height: 20px;"
+            >
+              {{ cartItemCount > 99 ? '99+' : cartItemCount }}
+            </span>
           </router-link>
         </div>
       </nav>
@@ -66,6 +82,8 @@
 </template>
 
 <script>
+import { cartService } from '../services/cart.js';
+
 export default {
   name: "Layout",
   data() {
@@ -76,7 +94,24 @@ export default {
         { name: "承辦人清單", href: "/staff", icon: "bi bi-people" },
         { name: "設定", href: "/settings", icon: "bi bi-gear" },
       ],
+      cartItemCount: 0,
+      cartUnsubscribe: null,
     };
+  },
+  mounted() {
+    // 初始化購物車項目數量
+    this.updateCartItemCount();
+    
+    // 監聽購物車變化
+    this.cartUnsubscribe = cartService.subscribe(() => {
+      this.updateCartItemCount();
+    });
+  },
+  beforeUnmount() {
+    // 取消監聽
+    if (this.cartUnsubscribe) {
+      this.cartUnsubscribe();
+    }
   },
   computed: {
     pageTitle() {
@@ -109,6 +144,9 @@ export default {
         month: 'long', 
         day: 'numeric' 
       });
+    },
+    updateCartItemCount() {
+      this.cartItemCount = cartService.getItemCount();
     },
   },
 };

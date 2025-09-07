@@ -3,12 +3,34 @@
     <!-- 頁面標題和新增按鈕 -->
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h1 class="h3 mb-0 fw-bold">合約清單</h1>
-      <button
-        @click="showAddModal = true"
-        class="btn btn-primary"
-      >
-        <i class="bi bi-plus-lg me-2"></i>新增合約
-      </button>
+      <div class="d-flex gap-2">
+        <!-- 清空所選按鈕 -->
+        <button
+          v-if="cartItemCount > 0"
+          @click="clearCart"
+          class="btn btn-outline-danger"
+          :title="`清空購物車中的 ${cartItemCount} 件禮服`"
+        >
+          <i class="bi bi-cart-x me-2"></i>清空所選 ({{ cartItemCount }})
+        </button>
+        
+        <!-- 新增合約按鈕 -->
+        <button
+          @click="showAddModal = true"
+          class="btn btn-outline-primary d-flex align-items-center"
+          :title="cartItemCount > 0 ? `新增合約 (購物車有 ${cartItemCount} 件禮服)` : '新增合約'"
+        >
+          <i class="bi bi-plus-lg me-2"></i>
+          <span>新增合約</span>
+          <!-- 購物車數量提示 -->
+          <span 
+            v-if="cartItemCount > 0"
+            class="badge bg-danger ms-2"
+          >
+            {{ cartItemCount > 99 ? '99+' : cartItemCount }}
+          </span>
+        </button>
+      </div>
     </div>
 
     <!-- 載入狀態 -->
@@ -109,6 +131,7 @@
 
 <script>
 import { contractService } from "../services/firestore.js";
+import { cartService } from "../services/cart.js";
 import ContractModal from "../components/ContractModal.vue";
 
 export default {
@@ -121,6 +144,8 @@ export default {
       contracts: [],
       loading: true,
       showAddModal: false,
+      cartItemCount: 0,
+      cartUnsubscribe: null,
     };
   },
   computed: {
@@ -131,6 +156,20 @@ export default {
   },
   async mounted() {
     await this.loadContracts();
+    
+    // 初始化購物車項目數量
+    this.updateCartItemCount();
+    
+    // 監聽購物車變化
+    this.cartUnsubscribe = cartService.subscribe(() => {
+      this.updateCartItemCount();
+    });
+  },
+  beforeUnmount() {
+    // 取消監聽
+    if (this.cartUnsubscribe) {
+      this.cartUnsubscribe();
+    }
   },
   methods: {
     async loadContracts() {
@@ -161,6 +200,21 @@ export default {
     },
     closeModal() {
       this.showAddModal = false;
+    },
+    updateCartItemCount() {
+      this.cartItemCount = cartService.getItemCount();
+    },
+    clearCart() {
+      // 顯示確認對話框
+      if (confirm(`確定要清空購物車中的 ${this.cartItemCount} 件禮服嗎？`)) {
+        try {
+          cartService.clearCart();
+          this.showToast('購物車已清空', 'success');
+        } catch (error) {
+          console.error('清空購物車失敗:', error);
+          this.showToast('清空購物車失敗，請稍後再試', 'error');
+        }
+      }
     },
     formatDate(date) {
       if (!date) return "未設定";
@@ -214,7 +268,7 @@ export default {
     showToast(message, type = "info") {
       // 簡單的 toast 通知實現
       const toastContainer = document.createElement('div');
-      toastContainer.className = `alert alert-${type === 'error' ? 'danger' : type} position-fixed top-0 end-0 m-3`;
+      toastContainer.className = `alert alert-${type === 'error' ? 'danger' : type} position-fixed top-0 start-50 translate-middle-x mt-3`;
       toastContainer.style.zIndex = '9999';
       toastContainer.innerHTML = `
         <div class="d-flex align-items-center">

@@ -184,7 +184,7 @@ export default {
     },
     showToast(message, type = "info") {
       const toastContainer = document.createElement('div');
-      toastContainer.className = `alert alert-${type === 'error' ? 'danger' : type} position-fixed top-0 end-0 m-3`;
+      toastContainer.className = `alert alert-${type === 'error' ? 'danger' : type} position-fixed top-0 start-50 translate-middle-x mt-3`;
       toastContainer.style.zIndex = '9999';
       toastContainer.innerHTML = `
         <div class="d-flex align-items-center">

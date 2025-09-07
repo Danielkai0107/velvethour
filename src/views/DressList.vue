@@ -5,7 +5,7 @@
       <h1 class="h3 mb-0 fw-bold">禮服清單</h1>
       <button
         @click="showAddModal = true"
-        class="btn btn-primary"
+        class="btn btn-outline-primary"
       >
         <i class="bi bi-plus-lg me-2"></i>新增禮服
       </button>
@@ -196,12 +196,26 @@
               <!-- 操作按鈕 -->
               <div class="d-grid gap-2">
                 <button 
-                  @click.stop="addToCart(dress)"
-                  class="btn btn-primary btn-sm"
+                  @click.stop="toggleCartItem(dress)"
+                  :class="[
+                    'btn btn-sm',
+                    cartService.isInCart(dress.id) ? 'btn-success' : 'btn-primary'
+                  ]"
                   :disabled="!dress.庫存數量 || dress.庫存數量 <= 0"
                 >
-                  <i class="bi bi-cart-plus me-1"></i>
-                  {{ !dress.庫存數量 || dress.庫存數量 <= 0 ? '缺貨' : '加入合約' }}
+                  <i :class="[
+                    'me-1',
+                    cartService.isInCart(dress.id) ? 'bi bi-cart-check' : 'bi bi-cart-plus'
+                  ]"></i>
+                  <template v-if="!dress.庫存數量 || dress.庫存數量 <= 0">
+                    缺貨
+                  </template>
+                  <template v-else-if="cartService.isInCart(dress.id)">
+                    已加入
+                  </template>
+                  <template v-else>
+                    加入合約
+                  </template>
                 </button>
               </div>
             </div>
@@ -223,7 +237,7 @@
         <button
           v-if="dresses.length === 0"
           @click="showAddModal = true"
-          class="btn btn-primary"
+          class="btn btn-outline-primary"
         >
           <i class="bi bi-plus-lg me-2"></i>新增禮服
         </button>
@@ -250,6 +264,7 @@
 
 <script>
 import { dressService } from "../services/firestore.js";
+import { cartService } from "../services/cart.js";
 import DressModal from "../components/DressModal.vue";
 
 export default {
@@ -262,6 +277,8 @@ export default {
       dresses: [],
       loading: true,
       showAddModal: false,
+      cartService, // 讓模板可以存取購物車服務
+      cartUnsubscribe: null, // 購物車監聽器取消函數
       filters: {
         關鍵字: "",
         顏色: "",
@@ -340,6 +357,17 @@ export default {
   },
   async mounted() {
     await this.loadDresses();
+    
+    // 監聽購物車變化，更新按鈕狀態
+    this.cartUnsubscribe = cartService.subscribe(() => {
+      this.$forceUpdate();
+    });
+  },
+  beforeUnmount() {
+    // 取消監聽
+    if (this.cartUnsubscribe) {
+      this.cartUnsubscribe();
+    }
   },
   methods: {
     async loadDresses() {
@@ -369,8 +397,52 @@ export default {
       this.$router.push(`/dresses/${dressId}`);
     },
     addToCart(dress) {
-      // TODO: 實現購物車功能
-      this.showToast(`已將 "${dress.編號}" 加入合約`, "success");
+      try {
+        const success = cartService.addDress(dress);
+        if (success) {
+          this.showToast(
+            `已將 "${dress.編號}" 加入合約`, 
+            "success"
+          );
+          // 強制重新渲染以更新按鈕狀態
+          this.$forceUpdate();
+        } else {
+          // 禮服已存在於購物車中
+          this.showToast(
+            `"${dress.編號}" 已在合約清單中`, 
+            "info"
+          );
+        }
+      } catch (error) {
+        console.error('加入購物車失敗:', error);
+        this.showToast('加入合約失敗，請稍後再試', 'error');
+      }
+    },
+    toggleCartItem(dress) {
+      try {
+        if (cartService.isInCart(dress.id)) {
+          // 如果已在購物車中，移除它
+          cartService.removeDress(dress.id);
+          this.showToast(
+            `已將 "${dress.編號}" 從合約清單移除`, 
+            "info"
+          );
+        } else {
+          // 如果不在購物車中，添加它
+          const success = cartService.addDress(dress);
+          if (success) {
+            this.showToast(
+              `已將 "${dress.編號}" 加入合約`, 
+              "success"
+            );
+          }
+        }
+        // 強制重新渲染以更新按鈕狀態
+        this.$forceUpdate();
+      } catch (error) {
+        console.error('切換購物車項目失敗:', error);
+        this.showToast('操作失敗，請稍後再試', 'error');
+      }
     },
     toggleFavorite(dress) {
       // TODO: 實現收藏功能
@@ -406,7 +478,7 @@ export default {
     showToast(message, type = "info") {
       // 簡單的 toast 通知實現
       const toastContainer = document.createElement('div');
-      toastContainer.className = `alert alert-${type === 'error' ? 'danger' : type} position-fixed top-0 end-0 m-3`;
+      toastContainer.className = `alert alert-${type === 'error' ? 'danger' : type} position-fixed top-0 start-50 translate-middle-x mt-3`;
       toastContainer.style.zIndex = '9999';
       toastContainer.innerHTML = message;
       
