@@ -1,5 +1,5 @@
 <template>
-  <div class="d-flex min-vh-100 bg-light">
+  <div class="d-flex bg-light" style="width: 100dvw; height: 100dvh; overflow: hidden;">
     <!-- 側邊欄 -->
     <div class="bg-white shadow-sm border-end sidebar">
       <!-- Logo 區域 -->
@@ -27,30 +27,38 @@
             ]"
           >
             <i :class="item.icon" class="sidebar-icon"></i>
-            <span class="sidebar-text">{{ item.name }}</span>
+            <span class="sidebar-text fz-12">{{ item.name }}</span>
           </router-link>
         </div>
       </nav>
 
-      <!-- 用戶資訊 -->
-      <div class="mt-auto p-3 border-top sidebar-user">
-        <div class="d-flex align-items-center">
-          <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
-            <i class="bi bi-person text-white"></i>
-          </div>
-          <div class="sidebar-user-info">
-            <div class="fw-semibold">管理員</div>
-            <small class="text-muted">系統管理者</small>
-          </div>
-        </div>
-      </div>
     </div>
 
     <!-- 主要內容區域 -->
-    <div class="flex-grow-1 d-flex flex-column">
+    <div class="flex-grow-1 d-flex flex-column" style="min-width: 0; overflow: hidden;">
+      <!-- 頂部導航欄 -->
+      <!-- <header class="bg-white shadow-sm border-bottom" style="flex-shrink: 0;">
+        <div class="d-flex justify-content-between align-items-center px-4 py-3">
+          <div>
+            <h2 class="mb-0 fw-bold text-dark">{{ pageTitle }}</h2>
+            <small class="text-muted">{{ getCurrentDate() }}</small>
+          </div>
+          <div class="d-flex align-items-center">
+            <div class="input-group me-3" style="width: 300px;">
+              <input type="text" class="form-control" placeholder="搜尋訂單、客戶或商品...">
+              <button class="btn btn-outline-secondary" type="button">
+                <i class="bi bi-search"></i>
+              </button>
+            </div>
+            <button class="btn btn-outline-secondary">
+              <i class="bi bi-funnel"></i>
+            </button>
+          </div>
+        </div>
+      </header> -->
 
-      <!-- 內容區域 -->
-      <main class="flex-grow-1 p-4 bg-light">
+      <!-- 內容區域 - 只有這裡可以滾動 -->
+      <main class="flex-grow-1 p-4 bg-light" style="overflow-y: auto; min-height: 0;">
         <router-view />
       </main>
     </div>
@@ -65,6 +73,7 @@ export default {
       navigation: [
         { name: "禮服清單", href: "/", icon: "bi bi-gem" },
         { name: "合約清單", href: "/contracts", icon: "bi bi-file-text" },
+        { name: "承辦人清單", href: "/staff", icon: "bi bi-people" },
         { name: "設定", href: "/settings", icon: "bi bi-gear" },
       ],
     };
@@ -74,6 +83,7 @@ export default {
       const routeMap = {
         "/": "禮服清單",
         "/contracts": "合約清單",
+        "/staff": "承辦人清單",
         "/settings": "設定",
       };
 
@@ -82,6 +92,9 @@ export default {
       }
       if (this.$route.path.startsWith("/contracts/")) {
         return "合約詳情";
+      }
+      if (this.$route.path.startsWith("/staff/")) {
+        return "承辦人詳情";
       }
 
       return routeMap[this.$route.path] || "系統管理";

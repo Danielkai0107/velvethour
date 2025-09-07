@@ -90,13 +90,17 @@
                   <label class="form-label fw-semibold">
                     <i class="bi bi-person-badge me-2"></i>承辦人 *
                   </label>
-                  <input
-                    v-model="formData.承辦人"
-                    type="text"
-                    class="form-control"
-                    required
-                    placeholder="例: 林小姐"
-                  />
+                  <select v-model="formData.承辦人" class="form-select" required>
+                    <option value="">請選擇承辦人</option>
+                    <option 
+                      v-for="staff in availableStaff.filter(s => s.狀態 === '在職')" 
+                      :key="staff.id" 
+                      :value="staff.姓名"
+                    >
+                      {{ staff.姓名 }} ({{ staff.職位 }})
+                    </option>
+                  </select>
+                  <div class="form-text">只顯示在職的承辦人</div>
                 </div>
 
                 <!-- 處理狀態 -->
@@ -314,7 +318,7 @@
 </template>
 
 <script>
-import { dressService } from '../services/firestore.js';
+import { dressService, staffService } from '../services/firestore.js';
 
 export default {
   name: "ContractModal",
@@ -333,6 +337,7 @@ export default {
     return {
       loading: false,
       availableDresses: [],
+      availableStaff: [],
       formData: {
         客戶姓名: "",
         電話: "",
@@ -358,6 +363,7 @@ export default {
   },
   async mounted() {
     await this.loadDresses();
+    await this.loadStaff();
   },
   watch: {
     contract: {
@@ -392,6 +398,15 @@ export default {
         this.availableDresses = await dressService.getAll();
       } catch (error) {
         console.error('載入禮服清單失敗:', error);
+      }
+    },
+    
+    async loadStaff() {
+      try {
+        this.availableStaff = await staffService.getAll();
+      } catch (error) {
+        console.error('載入承辦人清單失敗:', error);
+        this.showToast('載入承辦人清單失敗', 'warning');
       }
     },
     

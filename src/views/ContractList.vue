@@ -20,54 +20,54 @@
     </div>
 
     <!-- 合約表格 -->
-    <div v-else class="card shadow-sm border-0">
-      <div class="card-body p-0">
-        <div class="table-responsive">
-          <table class="table table-hover mb-0">
-            <thead class="table-light">
-              <tr>
-                <th class="border-0 fw-semibold text-muted py-3">合約單號</th>
-                <th class="border-0 fw-semibold text-muted py-3">客戶姓名</th>
-                <th class="border-0 fw-semibold text-muted py-3">承辦人</th>
-                <th class="border-0 fw-semibold text-muted py-3">使用開始時間</th>
-                <th class="border-0 fw-semibold text-muted py-3">使用結束時間</th>
-                <th class="border-0 fw-semibold text-muted py-3">狀態</th>
-                <th class="border-0 fw-semibold text-muted py-3">總金額</th>
+    <div v-else class="bg-white rounded-4 shadow-sm border-0 overflow-hidden">
+      <div class="p-0">
+        <div class="table-responsive" style="overflow-x: auto;">
+          <table class="table mb-0" style="border-collapse: separate; border-spacing: 0; min-width: 1000px;">
+            <thead>
+              <tr class="border-0" style="background-color: #f8f9fa;">
+                <th class="border-0 fw-normal text-muted py-4 px-4" style="font-size: 14px; min-width: 150px; white-space: nowrap;">合約單號</th>
+                <th class="border-0 fw-normal text-muted py-4 px-4" style="font-size: 14px; min-width: 160px; white-space: nowrap;">客戶姓名</th>
+                <th class="border-0 fw-normal text-muted py-4 px-4" style="font-size: 14px; min-width: 120px; white-space: nowrap;">承辦人</th>
+                <th class="border-0 fw-normal text-muted py-4 px-4" style="font-size: 14px; min-width: 160px; white-space: nowrap;">使用開始時間</th>
+                <th class="border-0 fw-normal text-muted py-4 px-4" style="font-size: 14px; min-width: 160px; white-space: nowrap;">使用結束時間</th>
+                <th class="border-0 fw-normal text-muted py-4 px-4" style="font-size: 14px; min-width: 100px; white-space: nowrap;">狀態</th>
+                <th class="border-0 fw-normal text-muted py-4 px-4" style="font-size: 14px; min-width: 150px; white-space: nowrap;">總金額</th>
               </tr>
             </thead>
             <tbody>
               <tr
                 v-for="contract in filteredContracts"
                 :key="contract.id"
-                class="border-bottom"
-                style="cursor: pointer;"
+                class="border-0 table-row-hover"
+                style="cursor: pointer; border-bottom: 1px solid #f0f0f0 !important;"
                 @click="goToContractDetail(contract.id)"
               >
-                <td class="py-4 border-0">
-                  <div class="fw-semibold text-dark">{{ contract.合約單號 }}</div>
-                  <small class="text-muted">建立: {{ formatDate(contract.合約建立日期時間) }}</small>
+                <td class="py-4 px-4 border-0" style="border-bottom: 1px solid #f0f0f0; white-space: nowrap;">
+                  <div class="fw-semibold text-dark" style="font-size: 15px;">{{ contract.合約單號 }}</div>
+                  <small class="text-muted" style="font-size: 12px;">建立: {{ formatDate(contract.合約建立日期時間) }}</small>
                 </td>
-                <td class="py-4 border-0">
-                  <div class="fw-semibold text-dark">{{ contract.客戶姓名 }}</div>
-                  <small class="text-muted">{{ contract.電話 }}</small>
+                <td class="py-4 px-4 border-0" style="border-bottom: 1px solid #f0f0f0; white-space: nowrap;">
+                  <div class="fw-semibold text-dark" style="font-size: 15px;">{{ contract.客戶姓名 }}</div>
+                  <small class="text-muted" style="font-size: 12px;">{{ contract.電話 }}</small>
                 </td>
-                <td class="py-4 border-0">
-                  <div class="fw-semibold text-dark">{{ contract.承辦人 || '未指定' }}</div>
+                <td class="py-4 px-4 border-0" style="border-bottom: 1px solid #f0f0f0; white-space: nowrap;">
+                  <div class="fw-semibold text-dark" style="font-size: 15px;">{{ contract.承辦人 || '未指定' }}</div>
                 </td>
-                <td class="py-4 border-0">
-                  <span class="text-dark">{{ formatDateTime(contract.使用開始時間) }}</span>
+                <td class="py-4 px-4 border-0" style="border-bottom: 1px solid #f0f0f0; white-space: nowrap;">
+                  <span class="text-dark" style="font-size: 15px;">{{ formatDateTime(contract.使用開始時間) }}</span>
                 </td>
-                <td class="py-4 border-0">
-                  <span class="text-dark">{{ formatDateTime(contract.使用結束時間) }}</span>
+                <td class="py-4 px-4 border-0" style="border-bottom: 1px solid #f0f0f0; white-space: nowrap;">
+                  <span class="text-dark" style="font-size: 15px;">{{ formatDateTime(contract.使用結束時間) }}</span>
                 </td>
-                <td class="py-4 border-0">
-                  <span :class="['badge', getStatusBadgeClass(contract.處理狀態)]">
+                <td class="py-4 px-4 border-0" style="border-bottom: 1px solid #f0f0f0; white-space: nowrap;">
+                  <span :class="['badge', getStatusBadgeClass(contract.處理狀態)]" style="font-size: 12px; padding: 6px 12px;">
                     {{ contract.處理狀態 }}
                   </span>
                 </td>
-                <td class="py-4 border-0">
-                  <div class="fw-semibold text-dark">NT$ {{ contract.合約總金額?.toLocaleString() || 0 }}</div>
-                  <small class="text-muted">{{ contract.禮服清單?.length || 0 }} 件禮服</small>
+                <td class="py-4 px-4 border-0" style="border-bottom: 1px solid #f0f0f0; white-space: nowrap;">
+                  <div class="fw-semibold text-dark" style="font-size: 15px;">NT$ {{ contract.合約總金額?.toLocaleString() || 0 }}</div>
+                  <small class="text-muted" style="font-size: 12px;">{{ contract.禮服清單?.length || 0 }} 件禮服</small>
                 </td>
               </tr>
             </tbody>

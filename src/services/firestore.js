@@ -283,3 +283,110 @@ export const contractService = {
     await deleteDoc(docRef);
   },
 };
+
+// 承辦人相關操作
+export const staffService = {
+  // 獲取所有承辦人
+  async getAll() {
+    try {
+      const q = query(
+        collection(db, "staff"),
+        orderBy("創建時間", "desc")
+      );
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    } catch (error) {
+      console.warn("Firebase 未配置或連接失敗，返回示例資料:", error);
+      // 返回示例承辦人資料
+      return [
+        {
+          id: "demo-staff-1",
+          姓名: "林小姐",
+          員工編號: "EMP001",
+          職位: "禮服顧問",
+          部門: "銷售部",
+          狀態: "在職",
+          電話: "0912-111-111",
+          email: "lin@velvethour.com",
+          加入日期: new Date('2024-01-15'),
+          備註: "資深禮服顧問，擅長婚紗搭配和客戶服務。",
+          創建時間: new Date('2024-01-15T09:00:00'),
+          更新時間: new Date('2024-01-15T09:00:00'),
+        },
+        {
+          id: "demo-staff-2",
+          姓名: "王先生",
+          員工編號: "EMP002",
+          職位: "造型師",
+          部門: "造型部",
+          狀態: "在職",
+          電話: "0923-222-222",
+          email: "wang@velvethour.com",
+          加入日期: new Date('2024-02-01'),
+          備註: "專業造型師，負責新娘造型設計和妝髮服務。",
+          創建時間: new Date('2024-02-01T10:30:00'),
+          更新時間: new Date('2024-02-01T10:30:00'),
+        },
+        {
+          id: "demo-staff-3",
+          姓名: "陳小姐",
+          員工編號: "EMP003",
+          職位: "客服專員",
+          部門: "客服部",
+          狀態: "在職",
+          電話: "0934-333-333",
+          email: "chen@velvethour.com",
+          加入日期: new Date('2024-03-01'),
+          備註: "負責客戶諮詢和售後服務，服務態度親切。",
+          創建時間: new Date('2024-03-01T14:20:00'),
+          更新時間: new Date('2024-03-01T14:20:00'),
+        },
+      ];
+    }
+  },
+
+  // 根據 ID 獲取單個承辦人
+  async getById(id) {
+    try {
+      const docRef = doc(db, "staff", id);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        return { id: docSnap.id, ...docSnap.data() };
+      }
+      throw new Error("承辦人不存在");
+    } catch (error) {
+      // 如果是示例資料，從示例中查找
+      const allStaff = await this.getAll();
+      const staff = allStaff.find(s => s.id === id);
+      if (staff) {
+        return staff;
+      }
+      throw new Error("承辦人不存在");
+    }
+  },
+
+  // 新增承辦人
+  async create(staffData) {
+    const docRef = await addDoc(collection(db, "staff"), {
+      ...staffData,
+      創建時間: serverTimestamp(),
+      更新時間: serverTimestamp(),
+    });
+    return docRef.id;
+  },
+
+  // 更新承辦人
+  async update(id, staffData) {
+    const docRef = doc(db, "staff", id);
+    await updateDoc(docRef, {
+      ...staffData,
+      更新時間: serverTimestamp(),
+    });
+  },
+
+  // 刪除承辦人
+  async delete(id) {
+    const docRef = doc(db, "staff", id);
+    await deleteDoc(docRef);
+  },
+};

@@ -3,6 +3,8 @@ import DressList from "../views/DressList.vue";
 import DressDetail from "../views/DressDetail.vue";
 import ContractList from "../views/ContractList.vue";
 import ContractDetail from "../views/ContractDetail.vue";
+import StaffList from "../views/StaffList.vue";
+import StaffDetail from "../views/StaffDetail.vue";
 
 const routes = [
   {
@@ -25,6 +27,17 @@ const routes = [
     path: "/contracts/:id",
     name: "ContractDetail",
     component: ContractDetail,
+    props: true,
+  },
+  {
+    path: "/staff",
+    name: "StaffList",
+    component: StaffList,
+  },
+  {
+    path: "/staff/:id",
+    name: "StaffDetail",
+    component: StaffDetail,
     props: true,
   },
 ];

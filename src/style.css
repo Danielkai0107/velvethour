@@ -54,7 +54,7 @@ body {
 
 /* 側邊欄響應式設計 */
 .sidebar {
-  width: 280px;
+  width: 200px;
   transition: width 0.3s ease-in-out;
 }
 
@@ -70,8 +70,20 @@ body {
   text-align: center;
 }
 
-/* 平板以下尺寸（768px以下）- 只顯示 logo */
-@media (max-width: 767.98px) {
+.sidebar-text {
+  font-size: 14px;
+}
+
+.sidebar-user-info {
+  font-size: 14px;
+}
+
+.sidebar-user-info small {
+  font-size: 11px;
+}
+
+/* 中型螢幕以下尺寸（1200px以下）- 只顯示 logo */
+@media (max-width: 1199.98px) {
   .sidebar {
     width: 80px !important;
   }
@@ -117,7 +129,11 @@ body {
 /* 卡片樣式增強 */
 .card {
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-  border-radius: 12px;
+  border-radius: 16px;
+}
+
+.card.rounded-4 {
+  border-radius: 16px !important;
 }
 
 .card:hover {
@@ -126,12 +142,12 @@ body {
 }
 
 .card-header {
-  border-radius: 12px 12px 0 0 !important;
+  border-radius: 16px 16px 0 0 !important;
   padding: 1.25rem;
 }
 
 .card-footer {
-  border-radius: 0 0 12px 12px !important;
+  border-radius: 0 0 16px 16px !important;
   padding: 1.25rem;
 }
 
@@ -171,6 +187,88 @@ body {
 .nav-link {
   border-radius: 8px;
   transition: all 0.2s ease-in-out;
+}
+
+/* 表格樣式增強 */
+.table-row-hover:hover {
+  background-color: #f8f9fa !important;
+  transform: translateY(-1px);
+  transition: all 0.2s ease-in-out;
+}
+
+.rounded-4 {
+  border-radius: 16px !important;
+}
+
+/* 表格邊框樣式 */
+.table tbody tr {
+  border-bottom: 1px solid #f0f0f0 !important;
+}
+
+.table tbody tr:last-child {
+  border-bottom: none !important;
+}
+
+/* Modal 底部按鈕固定 */
+.modal-dialog-scrollable .modal-content {
+  display: flex !important;
+  flex-direction: column !important;
+  max-height: 90vh !important;
+}
+
+.modal-dialog-scrollable .modal-header {
+  flex-shrink: 0;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.modal-dialog-scrollable .modal-body {
+  flex: 1 1 auto !important;
+  overflow-y: auto !important;
+  min-height: 0;
+}
+
+.modal-dialog-scrollable .modal-footer {
+  flex-shrink: 0;
+  border-top: 1px solid #dee2e6;
+  background-color: #fff;
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+}
+
+/* Modal 響應式調整 - 1200px 以下滿版（保留 20px margin 和圓角） */
+@media (max-width: 1199.98px) {
+  .modal-dialog {
+    max-width: calc(100vw - 40px) !important;
+    width: calc(100vw - 40px) !important;
+    height: calc(100vh - 40px) !important;
+    margin: 20px !important;
+  }
+  
+  .modal-content {
+    height: 100% !important;
+    border-radius: 16px !important;
+    border: 1px solid #dee2e6 !important;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+  }
+  
+  .modal-dialog-scrollable .modal-content {
+    max-height: 100% !important;
+  }
+  
+  .modal-dialog-scrollable .modal-body {
+    padding: 1.5rem !important;
+  }
+  
+  .modal-header {
+    border-radius: 16px 16px 0 0 !important;
+    padding: 1.5rem !important;
+  }
+  
+  .modal-footer {
+    border-radius: 0 0 16px 16px !important;
+    padding: 1.5rem !important;
+  }
 }
 
 /* 響應式調整 */

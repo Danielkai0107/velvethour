@@ -12,113 +12,118 @@
     </div>
 
     <!-- 分類搜尋篩選器 -->
-    <div class="card shadow-sm border-0 mb-4">
-      <div class="card-body">
-        <div class="row g-3 align-items-end">
-          <!-- 關鍵字搜尋 -->
-          <div class="col-md-3 col-sm-6">
-            <label class="form-label fw-semibold">
-              <i class="bi bi-search me-2"></i>關鍵字搜尋
-            </label>
-            <input
-              v-model="filters.關鍵字"
-              type="text"
-              class="form-control"
-              placeholder="搜尋禮服編號、顏色、裙型..."
-              @input="applyFilters"
-            />
-          </div>
+    <div class="bg-white rounded-4 shadow-sm border-0 mb-4 p-4">
+      <!-- 關鍵字搜尋 -->
+      <div class="mb-4">
+        <input
+          v-model="filters.關鍵字"
+          type="text"
+          class="form-control"
+          placeholder="搜尋禮服編號、顏色、裙型..."
+          style="font-size: 14px;"
+          @input="applyFilters"
+        />
+      </div>
 
-          <!-- 顏色篩選 -->
-          <div class="col-md-2 col-sm-6">
-            <label class="form-label fw-semibold">
-              <i class="bi bi-palette me-2"></i>顏色
-            </label>
-            <select v-model="filters.顏色" class="form-select" @change="applyFilters">
-              <option value="">全部</option>
-              <option value="白色">白色</option>
-              <option value="黑色">黑色</option>
-              <option value="綠色">綠色</option>
-              <option value="粉色">粉色</option>
-              <option value="紅色">紅色</option>
-              <option value="深藍色">深藍色</option>
-              <option value="藍灰色">藍灰色</option>
-              <option value="紫色">紫色</option>
-              <option value="金色/香檳色">金色/香檳色</option>
-              <option value="銀色">銀色</option>
-            </select>
-          </div>
-
-          <!-- 裙型篩選 -->
-          <div class="col-md-2 col-sm-6">
-            <label class="form-label fw-semibold">
-              <i class="bi bi-scissors me-2"></i>裙型
-            </label>
-            <select v-model="filters.裙型" class="form-select" @change="applyFilters">
-              <option value="">全部</option>
-              <option value="魚尾">魚尾</option>
-              <option value="Aline">Aline</option>
-              <option value="蓬裙">蓬裙</option>
-              <option value="罩衫">罩衫</option>
-              <option value="兩件式-上">兩件式-上</option>
-              <option value="兩件式-下">兩件式-下</option>
-              <option value="配件">配件</option>
-              <option value="九分裙/短裙">九分裙/短裙</option>
-              <option value="頭紗">頭紗</option>
-            </select>
-          </div>
-
-          <!-- 袖型篩選 -->
-          <div class="col-md-2 col-sm-6">
-            <label class="form-label fw-semibold">
-              <i class="bi bi-person-arms-up me-2"></i>袖型
-            </label>
-            <select v-model="filters.袖型" class="form-select" @change="applyFilters">
-              <option value="">全部</option>
-              <option value="短袖">短袖</option>
-              <option value="長袖">長袖</option>
-              <option value="無袖">無袖</option>
-            </select>
-          </div>
-
-          <!-- 領型篩選 -->
-          <div class="col-md-3 col-sm-6">
-            <label class="form-label fw-semibold">
-              <i class="bi bi-circle me-2"></i>領型
-            </label>
-            <select v-model="filters.領型" class="form-select" @change="applyFilters">
-              <option value="">全部</option>
-              <option value="v領">v領</option>
-              <option value="平口/微笑領">平口/微笑領</option>
-              <option value="一字領">一字領</option>
-              <option value="高領">高領</option>
-              <option value="圓領">圓領</option>
-              <option value="削肩/船型領">削肩/船型領</option>
-              <option value="桃心領">桃心領</option>
-              <option value="單肩">單肩</option>
-              <option value="卡肩">卡肩</option>
-              <option value="透膚">透膚</option>
-              <option value="方形領">方形領</option>
-              <option value="羅馬領">羅馬領</option>
-            </select>
-          </div>
-        </div>
-        
-        <!-- 篩選結果統計和清除按鈕 -->
-        <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
-          <span class="text-muted">
-            <i class="bi bi-funnel me-2"></i>
-            找到 {{ filteredDresses.length }} 件禮服
-            <span v-if="hasActiveFilters">（已篩選）</span>
-          </span>
+      <!-- 顏色分類 -->
+      <div class="mb-4">
+        <h6 class="fw-semibold mb-3" style="font-size: 14px;">顏色</h6>
+        <div class="d-flex flex-wrap gap-2">
           <button
-            v-if="hasActiveFilters"
-            @click="clearFilters"
-            class="btn btn-outline-secondary btn-sm"
+            v-for="color in colorOptions"
+            :key="color.value"
+            @click="toggleFilter('顏色', color.value)"
+            :class="[
+              'btn btn-sm rounded-pill d-flex align-items-center',
+              filters.顏色 === color.value ? 'btn-primary' : 'btn-outline-secondary'
+            ]"
+            style="font-size: 13px; padding: 8px 16px;"
           >
-            <i class="bi bi-x-circle me-2"></i>清除篩選
+            <span 
+              class="rounded-circle me-2"
+              style="width: 16px; height: 16px; display: inline-block;"
+              :style="{
+                backgroundColor: color.color,
+                border: color.border ? `1px solid ${color.border}` : '1px solid #E5E7EB'
+              }"
+            ></span>
+            {{ color.label }}
           </button>
         </div>
+      </div>
+
+      <!-- 裙型分類 -->
+      <div class="mb-4">
+        <h6 class="fw-semibold mb-3" style="font-size: 14px;">裙型</h6>
+        <div class="d-flex flex-wrap gap-2">
+          <button
+            v-for="type in skirtOptions"
+            :key="type.value"
+            @click="toggleFilter('裙型', type.value)"
+            :class="[
+              'btn btn-sm rounded-pill',
+              filters.裙型 === type.value ? 'btn-primary' : 'btn-outline-secondary'
+            ]"
+            style="font-size: 13px; padding: 8px 16px;"
+          >
+            {{ type.label }}
+          </button>
+        </div>
+      </div>
+
+      <!-- 袖型分類 -->
+      <div class="mb-4">
+        <h6 class="fw-semibold mb-3" style="font-size: 14px;">袖型</h6>
+        <div class="d-flex flex-wrap gap-2">
+          <button
+            v-for="sleeve in sleeveOptions"
+            :key="sleeve.value"
+            @click="toggleFilter('袖型', sleeve.value)"
+            :class="[
+              'btn btn-sm rounded-pill',
+              filters.袖型 === sleeve.value ? 'btn-primary' : 'btn-outline-secondary'
+            ]"
+            style="font-size: 13px; padding: 8px 16px;"
+          >
+            {{ sleeve.label }}
+          </button>
+        </div>
+      </div>
+
+      <!-- 領型分類 -->
+      <div class="mb-4">
+        <h6 class="fw-semibold mb-3" style="font-size: 14px;">領型</h6>
+        <div class="d-flex flex-wrap gap-2">
+          <button
+            v-for="neck in neckOptions"
+            :key="neck.value"
+            @click="toggleFilter('領型', neck.value)"
+            :class="[
+              'btn btn-sm rounded-pill',
+              filters.領型 === neck.value ? 'btn-primary' : 'btn-outline-secondary'
+            ]"
+            style="font-size: 13px; padding: 8px 16px;"
+          >
+            {{ neck.label }}
+          </button>
+        </div>
+      </div>
+
+      <!-- 篩選結果統計和清除按鈕 -->
+      <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+        <span class="text-muted" style="font-size: 13px;">
+          <i class="bi bi-funnel me-2"></i>
+          找到 {{ filteredDresses.length }} 件禮服
+          <span v-if="hasActiveFilters">（已篩選）</span>
+        </span>
+        <button
+          v-if="hasActiveFilters"
+          @click="clearFilters"
+          class="btn btn-outline-secondary btn-sm"
+          style="font-size: 13px;"
+        >
+          <i class="bi bi-x-circle me-2"></i>清除篩選
+        </button>
       </div>
     </div>
 
@@ -138,7 +143,7 @@
         class="col-lg-3 col-md-4 col-sm-6"
       >
         <div 
-          class="card h-100 shadow-sm border-0 position-relative"
+          class="card h-100 shadow-sm border-0 position-relative rounded-4"
           style="cursor: pointer; transition: transform 0.2s ease-in-out;"
           @click="goToDressDetail(dress.id)"
           @mouseenter="$event.currentTarget.style.transform = 'translateY(-4px)'"
@@ -264,6 +269,48 @@ export default {
         袖型: "",
         領型: "",
       },
+      colorOptions: [
+        { value: "白色", label: "白色", color: "#FFFFFF", border: "#E5E7EB" },
+        { value: "黑色", label: "黑色", color: "#000000" },
+        { value: "綠色", label: "綠色", color: "#10B981" },
+        { value: "粉色", label: "粉色", color: "#F472B6" },
+        { value: "紅色", label: "紅色", color: "#EF4444" },
+        { value: "深藍色", label: "深藍色", color: "#1E40AF" },
+        { value: "藍灰色", label: "藍灰色", color: "#64748B" },
+        { value: "紫色", label: "紫色", color: "#8B5CF6" },
+        { value: "金色/香檳色", label: "金色/香檳色", color: "#F59E0B" },
+        { value: "銀色", label: "銀色", color: "#94A3B8" },
+      ],
+      skirtOptions: [
+        { value: "魚尾", label: "魚尾" },
+        { value: "Aline", label: "Aline" },
+        { value: "蓬裙", label: "蓬裙" },
+        { value: "罩衫", label: "罩衫" },
+        { value: "兩件式-上", label: "兩件式-上" },
+        { value: "兩件式-下", label: "兩件式-下" },
+        { value: "配件", label: "配件" },
+        { value: "九分裙/短裙", label: "九分裙/短裙" },
+        { value: "頭紗", label: "頭紗" },
+      ],
+      sleeveOptions: [
+        { value: "短袖", label: "短袖" },
+        { value: "長袖", label: "長袖" },
+        { value: "無袖", label: "無袖" },
+      ],
+      neckOptions: [
+        { value: "v領", label: "v領" },
+        { value: "平口/微笑領", label: "平口/微笑領" },
+        { value: "一字領", label: "一字領" },
+        { value: "高領", label: "高領" },
+        { value: "圓領", label: "圓領" },
+        { value: "削肩/船型領", label: "削肩/船型領" },
+        { value: "桃心領", label: "桃心領" },
+        { value: "單肩", label: "單肩" },
+        { value: "卡肩", label: "卡肩" },
+        { value: "透膚", label: "透膚" },
+        { value: "方形領", label: "方形領" },
+        { value: "羅馬領", label: "羅馬領" },
+      ],
     };
   },
   computed: {
@@ -328,6 +375,16 @@ export default {
     toggleFavorite(dress) {
       // TODO: 實現收藏功能
       this.showToast(`已收藏 "${dress.編號}"`, "info");
+    },
+    toggleFilter(filterType, value) {
+      if (this.filters[filterType] === value) {
+        // 如果已經選中，則取消選擇
+        this.filters[filterType] = "";
+      } else {
+        // 選擇新的值
+        this.filters[filterType] = value;
+      }
+      this.applyFilters();
     },
     applyFilters() {
       // 篩選會通過 computed property 自動更新
