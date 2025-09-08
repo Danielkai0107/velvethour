@@ -425,7 +425,7 @@ export default {
         
         // 檢查是否有可用的 Firebase Storage
         if (!storage) {
-          // 如果沒有 Firebase Storage，使用本地 URL 作為示例
+          // 如果沒有 Firebase Storage，租用本地 URL 作為示例
           const localURL = URL.createObjectURL(file);
           this.formData.圖片.push(localURL);
           this.showToast(`${file.name} 已加載（示例模式）`, 'info');
@@ -453,11 +453,11 @@ export default {
       } catch (error) {
         console.error('圖片上傳失敗:', error);
         
-        // 如果上傳失敗，使用本地 URL 作為備選方案
+        // 如果上傳失敗，租用本地 URL 作為備選方案
         try {
           const localURL = URL.createObjectURL(file);
           this.formData.圖片.push(localURL);
-          this.showToast(`${file.name} 使用本地預覽（上傳失敗）`, 'warning');
+          this.showToast(`${file.name} 租用本地預覽（上傳失敗）`, 'warning');
         } catch (localError) {
           this.showToast(`${file.name} 處理失敗`, 'error');
         }

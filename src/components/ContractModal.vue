@@ -4,7 +4,7 @@
     v-if="show"
     class="modal fade show d-block"
     tabindex="-1"
-    style="background-color: rgba(0,0,0,0.5);"
+    style="background-color: rgba(0, 0, 0, 0.5)"
     @click.self="$emit('close')"
   >
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
@@ -27,7 +27,9 @@
           <form @submit.prevent="handleSubmit">
             <!-- 禮服清單 -->
             <div class="mb-4">
-              <div class="d-flex justify-content-between align-items-center mb-3">
+              <div
+                class="d-flex justify-content-between align-items-center mb-3"
+              >
                 <h5 class="fw-semibold mb-0">
                   <i class="bi bi-gem me-2"></i>禮服清單
                 </h5>
@@ -52,100 +54,154 @@
                   </button>
                   <button
                     type="button"
-                    @click="addDressItem"
+                    @click="showDressSelectionModal = true"
                     class="btn btn-primary btn-sm"
                   >
                     <i class="bi bi-plus me-1"></i>新增禮服
                   </button>
                 </div>
               </div>
-              
+
               <!-- 檔期衝突狀態 -->
               <div v-if="checkingConflicts" class="alert alert-info mb-3">
                 <div class="d-flex align-items-center">
-                  <div class="spinner-border spinner-border-sm me-2" role="status">
+                  <div
+                    class="spinner-border spinner-border-sm me-2"
+                    role="status"
+                  >
                     <span class="visually-hidden">檢查中...</span>
                   </div>
                   <span>正在檢查禮服檔期衝突...</span>
                 </div>
               </div>
-              
+
               <!-- 檔期衝突警告 -->
-              <div v-else-if="conflictWarnings.length > 0" class="alert alert-warning mb-3">
+              <div
+                v-else-if="conflictWarnings.length > 0"
+                class="alert alert-warning mb-3"
+              >
                 <h6 class="alert-heading">
                   <i class="bi bi-exclamation-triangle me-2"></i>檔期衝突警告
                 </h6>
-                <div v-for="warning in conflictWarnings" :key="warning.禮服ID" class="mb-2">
-                  <strong>{{ warning.禮服編號 }}</strong>: 
+                <div
+                  v-for="warning in conflictWarnings"
+                  :key="warning.禮服ID"
+                  class="mb-2"
+                >
+                  <strong>{{ warning.禮服編號 }}</strong
+                  >:
                   {{ warning.message }}
-                  <br>
+                  <br />
                   <small class="text-muted">
-                    衝突合約: {{ warning.conflictContract.合約單號 }} 
-                    ({{ warning.conflictContract.客戶姓名 }}, 
-                    {{ formatDateTimeShort(warning.conflictContract.使用開始時間) }} - 
-                    {{ formatDateTimeShort(warning.conflictContract.使用結束時間) }})
+                    衝突合約: {{ warning.conflictContract.合約單號 }} ({{
+                      warning.conflictContract.客戶姓名
+                    }},
+                    {{
+                      formatDateTimeShort(warning.conflictContract.租用開始時間)
+                    }}
+                    -
+                    {{
+                      formatDateTimeShort(
+                        warning.conflictContract.租用結束時間
+                      )
+                    }})
                   </small>
                 </div>
               </div>
-              
+
               <!-- 檔期檢查成功 -->
-              <div v-else-if="hasValidTimeAndDresses && !checkingConflicts" class="alert alert-success mb-3">
+              <div
+                v-else-if="hasValidTimeAndDresses && !checkingConflicts"
+                class="alert alert-success mb-3"
+              >
                 <div class="d-flex align-items-center">
                   <i class="bi bi-check-circle me-2"></i>
                   <span>所選禮服在指定時間段內可用</span>
                 </div>
               </div>
-              
+
               <!-- 輸入提示 -->
-              <div v-else-if="!hasValidTimeAndDresses && !checkingConflicts" class="alert alert-light mb-3">
+              <div
+                v-else-if="!hasValidTimeAndDresses && !checkingConflicts"
+                class="alert alert-light mb-3"
+              >
                 <div class="d-flex align-items-center">
                   <i class="bi bi-info-circle me-2 text-muted"></i>
                   <span class="text-muted">
-                    <template v-if="!formData.使用開始時間 || !formData.使用結束時間">
-                      請先設定使用時間，
+                    <template
+                      v-if="!formData.租用開始時間 || !formData.租用結束時間"
+                    >
+                      請先設定租用時間，
                     </template>
-                    <template v-if="!formData.禮服清單.some(item => item.禮服ID)">
+                    <template
+                      v-if="!formData.禮服清單.some((item) => item.禮服ID)"
+                    >
                       然後選擇禮服，系統將自動檢查檔期衝突
                     </template>
                   </span>
                 </div>
               </div>
-              
+
               <!-- 禮服圖卡展示 -->
-              <div class="row g-3 mb-3" style="max-height: 500px; overflow-y: auto; padding: 8px;">
-                <div 
+              <div
+                class="row g-3 mb-3"
+                style="max-height: 500px; overflow-y: auto; padding: 8px"
+              >
+                <div
                   v-for="(item, index) in formData.禮服清單"
                   :key="`dress-item-${index}-${item.禮服ID || 'empty'}`"
                   class="col-lg-4 col-md-6"
                 >
                   <!-- 已選擇的禮服卡片 -->
-                  <div v-if="item.禮服ID" class="card h-100 shadow-sm border-0 position-relative">
+                  <div
+                    v-if="item.禮服ID"
+                    class="card h-100 shadow-sm border-0 position-relative"
+                  >
                     <!-- 圖片 -->
-                    <div class="card-img-top position-relative bg-light d-flex align-items-center justify-content-center" style="height: 200px; overflow: hidden;">
+                    <div
+                      class="card-img-top position-relative bg-light d-flex align-items-center justify-content-center"
+                      style="height: 200px; overflow: hidden"
+                    >
                       <img
-                        v-if="getDressById(item.禮服ID)?.圖片 && getDressById(item.禮服ID).圖片.length > 0"
+                        v-if="
+                          getDressById(item.禮服ID)?.圖片 &&
+                          getDressById(item.禮服ID).圖片.length > 0
+                        "
                         :src="getDressById(item.禮服ID).圖片[0]"
                         :alt="getDressById(item.禮服ID).編號"
                         class="img-fluid"
-                        style="max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; cursor: pointer;"
+                        style="
+                          max-width: 100%;
+                          max-height: 100%;
+                          width: auto;
+                          height: auto;
+                          object-fit: contain;
+                          cursor: pointer;
+                        "
                         @click="viewDressDetail(item.禮服ID)"
                       />
                       <div
                         v-else
                         class="w-100 h-100 bg-light d-flex align-items-center justify-content-center"
-                        style="cursor: pointer;"
+                        style="cursor: pointer"
                         @click="viewDressDetail(item.禮服ID)"
                       >
-                        <i class="bi bi-image text-muted" style="font-size: 2rem;"></i>
+                        <i
+                          class="bi bi-image text-muted"
+                          style="font-size: 2rem"
+                        ></i>
                       </div>
-                      
+
                       <!-- 刪除按鈕 -->
                       <button
                         type="button"
                         @click="removeDressItem(index)"
                         class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2"
-                        style="z-index: 10;"
-                        :title="'移除 ' + (getDressById(item.禮服ID)?.編號 || '此禮服')"
+                        style="z-index: 10"
+                        :title="
+                          '移除 ' +
+                          (getDressById(item.禮服ID)?.編號 || '此禮服')
+                        "
                       >
                         <i class="bi bi-x-lg"></i>
                       </button>
@@ -153,14 +209,16 @@
 
                     <!-- 卡片內容 -->
                     <div class="card-body p-3">
-                      <h6 class="card-title fw-bold mb-2">{{ getDressById(item.禮服ID)?.編號 }}</h6>
+                      <h6 class="card-title fw-bold mb-2">
+                        {{ getDressById(item.禮服ID)?.編號 }}
+                      </h6>
                       <p class="card-text text-muted small mb-2">
-                        {{ getDressById(item.禮服ID)?.顏色 }} | 
-                        {{ getDressById(item.禮服ID)?.裙型 }} | 
-                        {{ getDressById(item.禮服ID)?.袖型 }} | 
+                        {{ getDressById(item.禮服ID)?.顏色 }} |
+                        {{ getDressById(item.禮服ID)?.裙型 }} |
+                        {{ getDressById(item.禮服ID)?.袖型 }} |
                         {{ getDressById(item.禮服ID)?.領型 }}
                       </p>
-                      
+
                       <!-- 數量和價格控制 -->
                       <div class="row g-2 mb-2">
                         <div class="col-6">
@@ -184,13 +242,17 @@
                           />
                         </div>
                       </div>
-                      
+
                       <!-- 小計 -->
-                      <div class="d-flex justify-content-between align-items-center">
+                      <div
+                        class="d-flex justify-content-between align-items-center"
+                      >
                         <small class="text-muted">小計</small>
-                        <span class="fw-bold text-primary">NT$ {{ (item.小計 || 0).toLocaleString() }}</span>
+                        <span class="fw-bold text-primary"
+                          >NT$ {{ (item.小計 || 0).toLocaleString() }}</span
+                        >
                       </div>
-                      
+
                       <!-- 查看詳情按鈕 -->
                       <div class="d-grid gap-1 mt-2">
                         <button
@@ -203,36 +265,9 @@
                       </div>
                     </div>
                   </div>
-                  
-                  <!-- 空的禮服選擇卡片 -->
-                  <div v-else class="card h-100 shadow-sm border-2 border-dashed border-primary" style="min-height: 300px;">
-                    <div class="card-body d-flex flex-column justify-content-center align-items-center p-4">
-                      <i class="bi bi-plus-circle text-primary mb-3" style="font-size: 3rem;"></i>
-                      <h6 class="text-primary mb-3">選擇禮服</h6>
-                      <select 
-                        v-model="item.禮服ID" 
-                        class="form-select mb-3"
-                        @change="updateDressPrice(index); onTimeOrDressChange()"
-                      >
-                        <option value="">請選擇禮服</option>
-                        <option 
-                          v-for="dress in availableDresses" 
-                          :key="dress.id" 
-                          :value="dress.id"
-                        >
-                          {{ dress.編號 }} - NT$ {{ (dress.租借金額 || dress.價格 || 0).toLocaleString() }}
-                        </option>
-                      </select>
-                      <button
-                        type="button"
-                        @click="removeDressItem(index)"
-                        class="btn btn-outline-danger btn-sm"
-                        title="移除此項目"
-                      >
-                        <i class="bi bi-trash me-1"></i>移除
-                      </button>
-                    </div>
-                  </div>
+
+                  <!-- 空的禮服選擇卡片 - 隱藏 -->
+                  <!-- 已移除空的禮服選擇卡片，改為使用popup選擇 -->
                 </div>
               </div>
 
@@ -331,11 +366,17 @@
                   <label class="form-label fw-semibold">
                     <i class="bi bi-person-badge me-2"></i>承辦人 *
                   </label>
-                  <select v-model="formData.承辦人" class="form-select" required>
+                  <select
+                    v-model="formData.承辦人"
+                    class="form-select"
+                    required
+                  >
                     <option value="">請選擇承辦人</option>
-                    <option 
-                      v-for="staff in availableStaff.filter(s => s.狀態 === '在職')" 
-                      :key="staff.id" 
+                    <option
+                      v-for="staff in availableStaff.filter(
+                        (s) => s.狀態 === '在職'
+                      )"
+                      :key="staff.id"
                       :value="staff.姓名"
                     >
                       {{ staff.姓名 }} ({{ staff.職位 }})
@@ -349,7 +390,11 @@
                   <label class="form-label fw-semibold">
                     <i class="bi bi-flag me-2"></i>處理狀態 *
                   </label>
-                  <select v-model="formData.處理狀態" class="form-select" required>
+                  <select
+                    v-model="formData.處理狀態"
+                    class="form-select"
+                    required
+                  >
                     <option value="">請選擇狀態</option>
                     <option value="待確認">待確認</option>
                     <option value="已確認">已確認</option>
@@ -361,19 +406,19 @@
               </div>
             </div>
 
-            <!-- 使用時間 -->
+            <!-- 租用時間 -->
             <div class="mb-4">
               <h5 class="fw-semibold mb-3">
-                <i class="bi bi-calendar-range me-2"></i>使用時間
+                <i class="bi bi-calendar-range me-2"></i>租用時間
               </h5>
               <div class="row g-3">
-                <!-- 使用開始時間 -->
+                <!-- 租用開始時間 -->
                 <div class="col-md-6">
                   <label class="form-label fw-semibold">
-                    <i class="bi bi-calendar-event me-2"></i>使用開始時間 *
+                    <i class="bi bi-calendar-event me-2"></i>租用開始時間 *
                   </label>
                   <input
-                    v-model="formData.使用開始時間"
+                    v-model="formData.租用開始時間"
                     type="datetime-local"
                     class="form-control"
                     required
@@ -381,13 +426,13 @@
                   />
                 </div>
 
-                <!-- 使用結束時間 -->
+                <!-- 租用結束時間 -->
                 <div class="col-md-6">
                   <label class="form-label fw-semibold">
-                    <i class="bi bi-calendar-x me-2"></i>使用結束時間 *
+                    <i class="bi bi-calendar-x me-2"></i>租用結束時間 *
                   </label>
                   <input
-                    v-model="formData.使用結束時間"
+                    v-model="formData.租用結束時間"
                     type="datetime-local"
                     class="form-control"
                     required
@@ -396,7 +441,6 @@
                 </div>
               </div>
             </div>
-
 
             <!-- 備註 -->
             <div class="mb-3">
@@ -442,7 +486,10 @@
             :disabled="loading"
             class="btn btn-primary"
           >
-            <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
+            <span
+              v-if="loading"
+              class="spinner-border spinner-border-sm me-2"
+            ></span>
             <i v-else class="bi bi-check-lg me-2"></i>
             {{ loading ? "儲存中..." : "儲存" }}
           </button>
@@ -456,7 +503,7 @@
     v-if="showDressDetailModal && selectedDress"
     class="modal fade show d-block"
     tabindex="-1"
-    style="background-color: rgba(0,0,0,0.5); z-index: 2000;"
+    style="background-color: rgba(0, 0, 0, 0.5); z-index: 2000"
     @click.self="closeDressDetailModal"
   >
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
@@ -483,36 +530,56 @@
                 <h6 class="fw-semibold mb-3">
                   <i class="bi bi-images me-2"></i>禮服圖片
                 </h6>
-                
+
                 <!-- 主圖片 -->
                 <div class="mb-3">
-                  <div class="bg-light rounded d-flex align-items-center justify-content-center" style="min-height: 400px;">
+                  <div
+                    class="bg-light rounded d-flex align-items-center justify-content-center"
+                    style="min-height: 400px"
+                  >
                     <img
                       v-if="currentDressImage"
                       :src="currentDressImage"
                       :alt="selectedDress.編號"
                       class="img-fluid rounded"
-                      style="max-width: 100%; max-height: 500px; width: auto; height: auto; object-fit: contain;"
+                      style="
+                        max-width: 100%;
+                        max-height: 500px;
+                        width: auto;
+                        height: auto;
+                        object-fit: contain;
+                      "
                     />
                     <div
                       v-else
                       class="d-flex align-items-center justify-content-center bg-light w-100 h-100"
-                      style="min-height: 400px;"
+                      style="min-height: 400px"
                     >
-                      <i class="bi bi-image text-muted" style="font-size: 4rem;"></i>
+                      <i
+                        class="bi bi-image text-muted"
+                        style="font-size: 4rem"
+                      ></i>
                     </div>
                   </div>
                 </div>
 
                 <!-- 縮圖列表 -->
-                <div v-if="selectedDress.圖片 && selectedDress.圖片.length > 1" class="d-flex gap-2 flex-wrap">
+                <div
+                  v-if="selectedDress.圖片 && selectedDress.圖片.length > 1"
+                  class="d-flex gap-2 flex-wrap"
+                >
                   <img
                     v-for="(image, index) in selectedDress.圖片"
                     :key="index"
                     :src="image"
                     :alt="`${selectedDress.編號} - 圖片 ${index + 1}`"
                     class="img-thumbnail"
-                    style="width: 80px; height: 80px; object-fit: cover; cursor: pointer;"
+                    style="
+                      width: 80px;
+                      height: 80px;
+                      object-fit: cover;
+                      cursor: pointer;
+                    "
                     :class="{ 'border-primary': currentDressImage === image }"
                     @click="currentDressImage = image"
                   />
@@ -526,31 +593,43 @@
                 <h6 class="fw-semibold mb-3">
                   <i class="bi bi-info-circle me-2"></i>基本資訊
                 </h6>
-                
+
                 <div class="row g-3">
                   <div class="col-6">
                     <label class="form-label text-muted small">禮服編號</label>
-                    <div class="fw-semibold">{{ selectedDress.編號 || '未設定' }}</div>
+                    <div class="fw-semibold">
+                      {{ selectedDress.編號 || "未設定" }}
+                    </div>
                   </div>
                   <div class="col-6">
                     <label class="form-label text-muted small">顏色</label>
-                    <div class="fw-semibold">{{ selectedDress.顏色 || '未設定' }}</div>
+                    <div class="fw-semibold">
+                      {{ selectedDress.顏色 || "未設定" }}
+                    </div>
                   </div>
                   <div class="col-6">
                     <label class="form-label text-muted small">裙型</label>
-                    <div class="fw-semibold">{{ selectedDress.裙型 || '未設定' }}</div>
+                    <div class="fw-semibold">
+                      {{ selectedDress.裙型 || "未設定" }}
+                    </div>
                   </div>
                   <div class="col-6">
                     <label class="form-label text-muted small">袖型</label>
-                    <div class="fw-semibold">{{ selectedDress.袖型 || '未設定' }}</div>
+                    <div class="fw-semibold">
+                      {{ selectedDress.袖型 || "未設定" }}
+                    </div>
                   </div>
                   <div class="col-6">
                     <label class="form-label text-muted small">領型</label>
-                    <div class="fw-semibold">{{ selectedDress.領型 || '未設定' }}</div>
+                    <div class="fw-semibold">
+                      {{ selectedDress.領型 || "未設定" }}
+                    </div>
                   </div>
                   <div class="col-6">
                     <label class="form-label text-muted small">庫存數量</label>
-                    <div class="fw-semibold">{{ selectedDress.庫存數量 || 0 }}</div>
+                    <div class="fw-semibold">
+                      {{ selectedDress.庫存數量 || 0 }}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -559,16 +638,29 @@
                 <h6 class="fw-semibold mb-3">
                   <i class="bi bi-cash me-2"></i>價格資訊
                 </h6>
-                
+
                 <div class="row g-3">
                   <div class="col-6">
                     <label class="form-label text-muted small">租借金額</label>
-                    <div class="fw-semibold text-primary">NT$ {{ (selectedDress.租借金額 || selectedDress.價格 || 0).toLocaleString() }}</div>
+                    <div class="fw-semibold text-primary">
+                      NT$
+                      {{
+                        (
+                          selectedDress.租借金額 ||
+                          selectedDress.價格 ||
+                          0
+                        ).toLocaleString()
+                      }}
+                    </div>
                   </div>
                   <div class="col-6">
                     <label class="form-label text-muted small">加價金額</label>
                     <div class="fw-semibold text-warning">
-                      <span v-if="selectedDress.加價金額 && selectedDress.加價金額 > 0">
+                      <span
+                        v-if="
+                          selectedDress.加價金額 && selectedDress.加價金額 > 0
+                        "
+                      >
                         NT$ {{ selectedDress.加價金額.toLocaleString() }}
                       </span>
                       <span v-else class="text-muted">無</span>
@@ -582,18 +674,25 @@
                 <h6 class="fw-semibold mb-3">
                   <i class="bi bi-calendar-range me-2"></i>租用檔期
                 </h6>
-                
+
                 <!-- 載入狀態 -->
                 <div v-if="loadingSchedule" class="text-center py-3">
-                  <div class="spinner-border spinner-border-sm text-primary" role="status">
+                  <div
+                    class="spinner-border spinner-border-sm text-primary"
+                    role="status"
+                  >
                     <span class="visually-hidden">載入中...</span>
                   </div>
                   <small class="text-muted ms-2">載入檔期資訊...</small>
                 </div>
-                
+
                 <!-- 檔期列表 -->
-                <div v-else-if="dressSchedule && dressSchedule.length > 0" class="bg-light p-3 rounded" style="max-height: 300px; overflow-y: auto;">
-                  <div 
+                <div
+                  v-else-if="dressSchedule && dressSchedule.length > 0"
+                  class="bg-light p-3 rounded"
+                  style="max-height: 300px; overflow-y: auto"
+                >
+                  <div
                     v-for="(schedule, index) in dressSchedule"
                     :key="index"
                     class="d-flex justify-content-between align-items-center py-2 px-2 rounded mb-2 bg-white shadow-sm"
@@ -601,27 +700,41 @@
                     <div class="flex-grow-1">
                       <div class="d-flex align-items-center mb-1">
                         <i class="bi bi-person-fill me-2 text-primary"></i>
-                        <span class="fw-semibold small">{{ schedule.客戶姓名 }}</span>
+                        <span class="fw-semibold small">{{
+                          schedule.客戶姓名
+                        }}</span>
                       </div>
                       <div class="d-flex align-items-center">
                         <i class="bi bi-file-text me-2 text-muted"></i>
-                        <span class="text-muted small">{{ schedule.合約單號 }}</span>
+                        <span class="text-muted small">{{
+                          schedule.合約單號
+                        }}</span>
                       </div>
                     </div>
                     <div class="text-end ms-3">
-                      <div class="d-flex align-items-center justify-content-end mb-1">
+                      <div
+                        class="d-flex align-items-center justify-content-end mb-1"
+                      >
                         <i class="bi bi-calendar-range me-2 text-info"></i>
-                        <span class="small fw-medium">{{ formatDateRange(schedule.使用開始時間, schedule.使用結束時間) }}</span>
+                        <span class="small fw-medium">{{
+                          formatDateRange(
+                            schedule.租用開始時間,
+                            schedule.租用結束時間
+                          )
+                        }}</span>
                       </div>
                       <div class="d-flex justify-content-end">
-                        <span class="badge" :class="getScheduleStatusClass(schedule.處理狀態)">
+                        <span
+                          class="badge"
+                          :class="getScheduleStatusClass(schedule.處理狀態)"
+                        >
                           {{ schedule.處理狀態 }}
                         </span>
                       </div>
                     </div>
                   </div>
                 </div>
-                
+
                 <!-- 無檔期 -->
                 <div v-else class="bg-light p-3 rounded text-center text-muted">
                   <i class="bi bi-calendar-x me-2"></i>
@@ -654,14 +767,29 @@
       </div>
     </div>
   </div>
+
+  <!-- 禮服選擇彈出視窗 -->
+  <DressSelectionModal
+    v-if="showDressSelectionModal"
+    :show="showDressSelectionModal"
+    :selected-dress-ids="getSelectedDressIds()"
+    @close="showDressSelectionModal = false"
+    @select="onDressSelected"
+    @remove="onDressRemoved"
+    @clear-all="onClearAllDresses"
+  />
 </template>
 
 <script>
-import { dressService, staffService } from '../services/firestore.js';
-import { cartService } from '../services/cart.js';
+import { dressService, staffService } from "../services/firestore.js";
+import { cartService } from "../services/cart.js";
+import DressSelectionModal from "./DressSelectionModal.vue";
 
 export default {
   name: "ContractModal",
+  components: {
+    DressSelectionModal,
+  },
   props: {
     show: {
       type: Boolean,
@@ -675,13 +803,13 @@ export default {
   emits: ["close", "save"],
   computed: {
     hasValidTimeAndDresses() {
-      const hasTime = this.formData.使用開始時間 && this.formData.使用結束時間;
-      const hasDresses = this.formData.禮服清單.some(item => item.禮服ID);
+      const hasTime = this.formData.租用開始時間 && this.formData.租用結束時間;
+      const hasDresses = this.formData.禮服清單.some((item) => item.禮服ID);
       return hasTime && hasDresses;
     },
     hasCartItems() {
       return !this.contract && cartService.getItemCount() > 0;
-    }
+    },
   },
   data() {
     return {
@@ -697,16 +825,16 @@ export default {
         email: "",
         三圍: "",
         承辦人: "",
-        使用開始時間: "",
-        使用結束時間: "",
+        租用開始時間: "",
+        租用結束時間: "",
         處理狀態: "",
         禮服清單: [
           {
             禮服ID: "",
             數量: 1,
             單價: 0,
-            小計: 0
-          }
+            小計: 0,
+          },
         ],
         合約總金額: 0,
         備注: "",
@@ -718,12 +846,13 @@ export default {
       currentDressImage: null, // 當前顯示的禮服圖片
       loadingSchedule: false, // 載入檔期狀態
       dressSchedule: [], // 禮服檔期資料
+      showDressSelectionModal: false, // 控制禮服選擇彈出視窗
     };
   },
   async mounted() {
     await this.loadDresses();
     await this.loadStaff();
-    
+
     // 如果是新增模式且購物車有項目，自動載入
     if (!this.contract && cartService.getItemCount() > 0) {
       this.loadCartItems();
@@ -745,12 +874,12 @@ export default {
             email: newContract.email || "",
             三圍: newContract.三圍 || "",
             承辦人: newContract.承辦人 || "",
-            使用開始時間: this.formatDateTimeForInput(newContract.使用開始時間),
-            使用結束時間: this.formatDateTimeForInput(newContract.使用結束時間),
+            租用開始時間: this.formatDateTimeForInput(newContract.租用開始時間),
+            租用結束時間: this.formatDateTimeForInput(newContract.租用結束時間),
             處理狀態: newContract.處理狀態 || "",
-            禮服清單: newContract.禮服清單 ? [...newContract.禮服清單] : [
-              { 禮服ID: "", 數量: 1, 單價: 0, 小計: 0 }
-            ],
+            禮服清單: newContract.禮服清單
+              ? [...newContract.禮服清單]
+              : [{ 禮服ID: "", 數量: 1, 單價: 0, 小計: 0 }],
             合約總金額: newContract.合約總金額 || 0,
             備注: newContract.備注 || "",
             創建時間: newContract.創建時間 || null,
@@ -766,19 +895,19 @@ export default {
       try {
         this.availableDresses = await dressService.getAll();
       } catch (error) {
-        console.error('載入禮服清單失敗:', error);
+        console.error("載入禮服清單失敗:", error);
       }
     },
-    
+
     async loadStaff() {
       try {
         this.availableStaff = await staffService.getAll();
       } catch (error) {
-        console.error('載入承辦人清單失敗:', error);
-        this.showToast('載入承辦人清單失敗', 'warning');
+        console.error("載入承辦人清單失敗:", error);
+        this.showToast("載入承辦人清單失敗", "warning");
       }
     },
-    
+
     resetForm() {
       this.formData = {
         客戶姓名: "",
@@ -786,142 +915,150 @@ export default {
         email: "",
         三圍: "",
         承辦人: "",
-        使用開始時間: "",
-        使用結束時間: "",
+        租用開始時間: "",
+        租用結束時間: "",
         處理狀態: "",
         禮服清單: [
           {
             禮服ID: "",
             數量: 1,
             單價: 0,
-            小計: 0
-          }
+            小計: 0,
+          },
         ],
         合約總金額: 0,
         備注: "",
         創建時間: null,
       };
     },
-    
+
     addDressItem() {
       this.formData.禮服清單.push({
         禮服ID: "",
         數量: 1,
         單價: 0,
-        小計: 0
+        小計: 0,
       });
-      
+
       // 強制重新渲染以確保新項目正確顯示
       this.$nextTick(() => {
         this.$forceUpdate();
       });
     },
-    
+
     removeDressItem(index) {
-      console.log('嘗試移除禮服項目，索引:', index, '總數:', this.formData.禮服清單.length);
-      
+      console.log(
+        "嘗試移除禮服項目，索引:",
+        index,
+        "總數:",
+        this.formData.禮服清單.length
+      );
+
       if (index < 0 || index >= this.formData.禮服清單.length) {
-        console.error('無效的索引:', index);
+        console.error("無效的索引:", index);
         return;
       }
-      
+
       const removedItem = this.formData.禮服清單[index];
-      console.log('移除的項目:', removedItem);
-      
+      console.log("移除的項目:", removedItem);
+
       // 如果是新增模式且項目有禮服ID，也從購物車中移除
       if (!this.contract && removedItem.禮服ID) {
         try {
           cartService.removeDress(removedItem.禮服ID);
-          console.log('已從購物車移除:', removedItem.禮服ID);
+          console.log("已從購物車移除:", removedItem.禮服ID);
         } catch (error) {
-          console.error('從購物車移除禮服失敗:', error);
+          console.error("從購物車移除禮服失敗:", error);
         }
       }
-      
+
       // 移除項目
       this.formData.禮服清單.splice(index, 1);
-      console.log('移除後禮服清單長度:', this.formData.禮服清單.length);
-      
+      console.log("移除後禮服清單長度:", this.formData.禮服清單.length);
+
       // 如果刪除後沒有任何項目，添加一個空的項目
       if (this.formData.禮服清單.length === 0) {
         this.formData.禮服清單.push({
           禮服ID: "",
           數量: 1,
           單價: 0,
-          小計: 0
+          小計: 0,
         });
-        console.log('已添加空項目');
+        console.log("已添加空項目");
       }
-      
+
       this.updateTotalAmount();
       // 移除禮服後重新檢查衝突
       this.onTimeOrDressChange();
-      
+
       // 顯示成功訊息
       if (removedItem.禮服ID) {
-        const dress = this.availableDresses.find(d => d.id === removedItem.禮服ID);
+        const dress = this.availableDresses.find(
+          (d) => d.id === removedItem.禮服ID
+        );
         const dressName = dress ? dress.編號 : removedItem.禮服ID;
-        this.showToast(`已移除禮服 "${dressName}"`, 'success');
+        this.showToast(`已移除禮服 "${dressName}"`, "success");
       } else {
-        this.showToast('已移除空項目', 'info');
+        this.showToast("已移除空項目", "info");
       }
-      
+
       // 強制重新渲染
       this.$nextTick(() => {
         this.$forceUpdate();
       });
     },
-    
+
     updateDressPrice(index) {
       const item = this.formData.禮服清單[index];
-      const dress = this.availableDresses.find(d => d.id === item.禮服ID);
+      const dress = this.availableDresses.find((d) => d.id === item.禮服ID);
       if (dress) {
         item.單價 = dress.租借金額 || dress.價格 || 0;
         this.calculateSubtotal(index);
       }
     },
-    
+
     calculateSubtotal(index) {
       const item = this.formData.禮服清單[index];
       item.小計 = (item.數量 || 0) * (item.單價 || 0);
       this.updateTotalAmount();
     },
-    
+
     updateQuantityAndCalculate(index) {
       const item = this.formData.禮服清單[index];
-      
+
       // 如果是新增模式且項目有禮服ID，同步更新購物車數量
       if (!this.contract && item.禮服ID && item.數量 > 0) {
         try {
           cartService.updateQuantity(item.禮服ID, item.數量);
         } catch (error) {
-          console.error('更新購物車數量失敗:', error);
+          console.error("更新購物車數量失敗:", error);
         }
       }
-      
+
       this.calculateSubtotal(index);
     },
-    
+
     // 根據ID獲取禮服資料
     getDressById(dressId) {
-      return this.availableDresses.find(dress => dress.id === dressId);
+      return this.availableDresses.find((dress) => dress.id === dressId);
     },
-    
+
     // 查看禮服詳情
     async viewDressDetail(dressId) {
       if (dressId) {
         const dress = this.getDressById(dressId);
         if (dress) {
           this.selectedDress = dress;
-          this.currentDressImage = dress.圖片 && dress.圖片.length > 0 ? dress.圖片[0] : null;
+          this.currentDressImage =
+            dress.圖片 && dress.圖片.length > 0 ? dress.圖片[0] : null;
           this.showDressDetailModal = true;
-          
+
           // 載入檔期資訊
           await this.loadDressSchedule(dressId);
         }
       }
     },
-    
+
     // 關閉禮服詳情彈出視窗
     closeDressDetailModal() {
       this.showDressDetailModal = false;
@@ -930,60 +1067,183 @@ export default {
       this.dressSchedule = [];
       this.loadingSchedule = false;
     },
-    
+
+    // 獲取已選擇的禮服ID清單
+    getSelectedDressIds() {
+      return this.formData.禮服清單
+        .filter((item) => item.禮服ID)
+        .map((item) => item.禮服ID);
+    },
+
+    // 處理禮服選擇
+    onDressSelected(selectedDresses) {
+      try {
+        selectedDresses.forEach((dress) => {
+          // 檢查是否已經存在於禮服清單中
+          const existingIndex = this.formData.禮服清單.findIndex(
+            (item) => item.禮服ID === dress.id
+          );
+
+          if (existingIndex === -1) {
+            // 如果不存在，則添加新項目
+            // 先移除空的項目（禮服ID為空的項目）
+            this.formData.禮服清單 = this.formData.禮服清單.filter(
+              (item) => item.禮服ID !== ""
+            );
+
+            // 添加新的禮服項目
+            this.formData.禮服清單.push({
+              禮服ID: dress.id,
+              數量: 1,
+              單價: dress.租借金額 || dress.價格 || 0,
+              小計: dress.租借金額 || dress.價格 || 0,
+            });
+          } else {
+            // 如果已存在，可以選擇增加數量或顯示提示
+            this.showToast(`"${dress.編號}" 已在合約清單中`, "info");
+            return;
+          }
+        });
+
+        // 更新總金額
+        this.updateTotalAmount();
+
+        // 觸發檔期檢查
+        this.onTimeOrDressChange();
+
+        // 顯示成功訊息
+        if (selectedDresses.length > 0) {
+          const addedDresses = selectedDresses.filter((dress) => {
+            const existingIndex = this.formData.禮服清單.findIndex(
+              (item) => item.禮服ID === dress.id
+            );
+            return existingIndex !== -1;
+          });
+
+          if (addedDresses.length > 0) {
+            this.showToast(`已加入 ${addedDresses.length} 件禮服`, "success");
+          }
+        }
+      } catch (error) {
+        console.error("處理禮服選擇失敗:", error);
+        this.showToast("選擇禮服失敗，請稍後再試", "error");
+      }
+    },
+
+    // 處理禮服移除
+    onDressRemoved(dress) {
+      try {
+        // 從禮服清單中移除指定的禮服
+        const index = this.formData.禮服清單.findIndex(
+          (item) => item.禮服ID === dress.id
+        );
+
+        if (index !== -1) {
+          this.formData.禮服清單.splice(index, 1);
+
+          // 如果清單為空，添加一個空項目
+          if (this.formData.禮服清單.length === 0) {
+            this.formData.禮服清單.push({
+              禮服ID: "",
+              數量: 1,
+              單價: 0,
+              小計: 0,
+            });
+          }
+
+          // 更新總金額
+          this.updateTotalAmount();
+
+          // 觸發檔期檢查
+          this.onTimeOrDressChange();
+
+          this.showToast(`已移除 "${dress.編號}"`, "info");
+        }
+      } catch (error) {
+        console.error("移除禮服失敗:", error);
+        this.showToast("移除禮服失敗，請稍後再試", "error");
+      }
+    },
+
+    // 處理清除所有禮服
+    onClearAllDresses() {
+      try {
+        // 清空禮服清單並添加一個空項目
+        this.formData.禮服清單 = [
+          {
+            禮服ID: "",
+            數量: 1,
+            單價: 0,
+            小計: 0,
+          },
+        ];
+
+        // 更新總金額
+        this.updateTotalAmount();
+
+        // 觸發檔期檢查
+        this.onTimeOrDressChange();
+
+        this.showToast("已清除所有禮服", "info");
+      } catch (error) {
+        console.error("清除禮服失敗:", error);
+        this.showToast("清除禮服失敗，請稍後再試", "error");
+      }
+    },
+
     // 載入禮服檔期資訊
     async loadDressSchedule(dressId) {
       try {
         this.loadingSchedule = true;
         this.dressSchedule = await dressService.getRentalSchedule(dressId);
       } catch (error) {
-        console.error('載入禮服檔期失敗:', error);
+        console.error("載入禮服檔期失敗:", error);
         this.dressSchedule = [];
       } finally {
         this.loadingSchedule = false;
       }
     },
-    
+
     // 格式化日期範圍
     formatDateRange(startTime, endTime) {
       if (!startTime || !endTime) return "時間未設定";
-      
+
       let startDate, endDate;
-      
+
       // 處理不同格式的時間
-      if (startTime.toDate && typeof startTime.toDate === 'function') {
+      if (startTime.toDate && typeof startTime.toDate === "function") {
         startDate = startTime.toDate();
       } else if (startTime instanceof Date) {
         startDate = startTime;
       } else {
         startDate = new Date(startTime);
       }
-      
-      if (endTime.toDate && typeof endTime.toDate === 'function') {
+
+      if (endTime.toDate && typeof endTime.toDate === "function") {
         endDate = endTime.toDate();
       } else if (endTime instanceof Date) {
         endDate = endTime;
       } else {
         endDate = new Date(endTime);
       }
-      
+
       const formatOptions = {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
       };
-      
-      const startStr = startDate.toLocaleDateString('zh-TW', formatOptions);
-      const endStr = endDate.toLocaleDateString('zh-TW', formatOptions);
-      
+
+      const startStr = startDate.toLocaleDateString("zh-TW", formatOptions);
+      const endStr = endDate.toLocaleDateString("zh-TW", formatOptions);
+
       // 如果是同一天，只顯示一個日期
       if (startStr === endStr) {
         return startStr;
       }
-      
+
       return `${startStr} - ${endStr}`;
     },
-    
+
     // 獲取檔期狀態的樣式類別
     getScheduleStatusClass(status) {
       const statusClasses = {
@@ -995,51 +1255,55 @@ export default {
       };
       return statusClasses[status] || "bg-secondary text-white";
     },
-    
+
     calculateTotal() {
       return this.formData.禮服清單.reduce((total, item) => {
         return total + (item.小計 || 0);
       }, 0);
     },
-    
+
     updateTotalAmount() {
       this.formData.合約總金額 = this.calculateTotal();
     },
-    
+
     // 檢查所有禮服的檔期衝突
     async checkAllDressConflicts() {
       // 清空之前的警告
       this.conflictWarnings = [];
-      
+
       // 檢查是否有足夠的資訊進行衝突檢查
-      if (!this.formData.使用開始時間 || !this.formData.使用結束時間) {
+      if (!this.formData.租用開始時間 || !this.formData.租用結束時間) {
         return;
       }
-      
-      const validDressItems = this.formData.禮服清單.filter(item => item.禮服ID);
+
+      const validDressItems = this.formData.禮服清單.filter(
+        (item) => item.禮服ID
+      );
       if (validDressItems.length === 0) {
         return;
       }
-      
+
       try {
         this.checkingConflicts = true;
         const excludeContractId = this.contract?.id || null;
-        
+
         for (const item of validDressItems) {
           const availability = await dressService.checkDressAvailability(
             item.禮服ID,
-            this.formData.使用開始時間,
-            this.formData.使用結束時間,
+            this.formData.租用開始時間,
+            this.formData.租用結束時間,
             excludeContractId
           );
-          
+
           if (!availability.available) {
-            const dress = this.availableDresses.find(d => d.id === item.禮服ID);
+            const dress = this.availableDresses.find(
+              (d) => d.id === item.禮服ID
+            );
             this.conflictWarnings.push({
               禮服ID: item.禮服ID,
               禮服編號: dress?.編號 || item.禮服ID,
               message: "此時間段已被其他合約預約",
-              conflictContract: availability.conflictContract
+              conflictContract: availability.conflictContract,
             });
           }
         }
@@ -1049,7 +1313,7 @@ export default {
         this.checkingConflicts = false;
       }
     },
-    
+
     // 當時間或禮服選擇改變時觸發檔期檢查
     async onTimeOrDressChange() {
       // 延遲檢查，避免頻繁調用
@@ -1058,7 +1322,7 @@ export default {
         this.checkAllDressConflicts();
       }, 500);
     },
-    
+
     // 載入購物車項目到禮服清單
     loadCartItems() {
       try {
@@ -1066,17 +1330,17 @@ export default {
         if (cartItems.length > 0) {
           this.formData.禮服清單 = cartItems;
           this.updateTotalAmount();
-          this.showToast(`已載入 ${cartItems.length} 件禮服`, 'success');
-          
+          this.showToast(`已載入 ${cartItems.length} 件禮服`, "success");
+
           // 觸發檔期檢查
           this.onTimeOrDressChange();
         }
       } catch (error) {
-        console.error('載入購物車失敗:', error);
-        this.showToast('載入購物車失敗', 'error');
+        console.error("載入購物車失敗:", error);
+        this.showToast("載入購物車失敗", "error");
       }
     },
-    
+
     // 清空購物車項目
     clearCartItems() {
       try {
@@ -1087,159 +1351,179 @@ export default {
             禮服ID: "",
             數量: 1,
             單價: 0,
-            小計: 0
-          }
+            小計: 0,
+          },
         ];
         this.updateTotalAmount();
-        this.showToast('購物車已清空', 'success');
+        this.showToast("購物車已清空", "success");
       } catch (error) {
-        console.error('清空購物車失敗:', error);
-        this.showToast('清空購物車失敗', 'error');
+        console.error("清空購物車失敗:", error);
+        this.showToast("清空購物車失敗", "error");
       }
     },
-    
+
     async handleSubmit() {
       try {
         this.loading = true;
-        
+
         // 驗證必填欄位
-        if (!this.formData.客戶姓名 || !this.formData.電話 || 
-            !this.formData.承辦人 || !this.formData.使用開始時間 ||
-            !this.formData.使用結束時間 || !this.formData.處理狀態) {
-          this.showToast('請填寫所有必填欄位', 'warning');
+        if (
+          !this.formData.客戶姓名 ||
+          !this.formData.電話 ||
+          !this.formData.承辦人 ||
+          !this.formData.租用開始時間 ||
+          !this.formData.租用結束時間 ||
+          !this.formData.處理狀態
+        ) {
+          this.showToast("請填寫所有必填欄位", "warning");
           return;
         }
-        
+
         // 驗證時間
-        if (new Date(this.formData.使用開始時間) >= new Date(this.formData.使用結束時間)) {
-          this.showToast('使用結束時間必須晚於開始時間', 'warning');
+        if (
+          new Date(this.formData.租用開始時間) >=
+          new Date(this.formData.租用結束時間)
+        ) {
+          this.showToast("租用結束時間必須晚於開始時間", "warning");
           return;
         }
-        
+
         // 驗證禮服清單
-        const validDressItems = this.formData.禮服清單.filter(item => item.禮服ID && item.數量 > 0);
+        const validDressItems = this.formData.禮服清單.filter(
+          (item) => item.禮服ID && item.數量 > 0
+        );
         if (validDressItems.length === 0) {
-          this.showToast('請至少選擇一件禮服', 'warning');
+          this.showToast("請至少選擇一件禮服", "warning");
           return;
         }
-        
+
         // 檢查檔期衝突
         await this.checkAllDressConflicts();
         if (this.conflictWarnings.length > 0) {
-          this.showToast('存在檔期衝突，請調整時間或更換禮服', 'error');
+          this.showToast("存在檔期衝突，請調整時間或更換禮服", "error");
           return;
         }
-        
+
         // 準備提交的資料
         const submitData = { ...this.formData };
-        
+
         // 轉換時間格式為 Firebase Timestamp
-        submitData.使用開始時間 = new Date(this.formData.使用開始時間);
-        submitData.使用結束時間 = new Date(this.formData.使用結束時間);
-        
+        submitData.租用開始時間 = new Date(this.formData.租用開始時間);
+        submitData.租用結束時間 = new Date(this.formData.租用結束時間);
+
         // 過濾有效的禮服項目
         submitData.禮服清單 = validDressItems;
-        
+
         // 如果是新增模式，生成合約單號和時間戳
         if (!this.contract || !this.contract.id) {
           const now = new Date();
-          const dateStr = now.toISOString().split('T')[0].replace(/-/g, '');
-          
+          const dateStr = now.toISOString().split("T")[0].replace(/-/g, "");
+
           // 簡單的流水號生成（實際應該查詢當天的合約數量）
           const serialNumber = Math.floor(Math.random() * 999) + 1;
-          submitData.合約單號 = `${dateStr}-${serialNumber.toString().padStart(3, '0')}`;
+          submitData.合約單號 = `${dateStr}-${serialNumber
+            .toString()
+            .padStart(3, "0")}`;
           submitData.合約建立日期時間 = now;
           submitData.創建時間 = now;
           submitData.更新時間 = now;
         } else {
           submitData.更新時間 = new Date();
         }
-        
+
         this.$emit("save", submitData);
-        
+
         // 如果是新增模式，成功後清空購物車
         if (!this.contract || !this.contract.id) {
           cartService.clearCart();
         }
       } catch (error) {
-        console.error('提交失敗:', error);
-        this.showToast('提交失敗，請稍後再試', 'error');
+        console.error("提交失敗:", error);
+        this.showToast("提交失敗，請稍後再試", "error");
       } finally {
         this.loading = false;
       }
     },
-    
+
     formatDateTimeForInput(date) {
       if (!date) return "";
-      
+
       let dateObj;
-      if (date.toDate && typeof date.toDate === 'function') {
+      if (date.toDate && typeof date.toDate === "function") {
         dateObj = date.toDate();
       } else if (date instanceof Date) {
         dateObj = date;
       } else {
         dateObj = new Date(date);
       }
-      
+
       // 格式化為 YYYY-MM-DDTHH:MM
       return dateObj.toISOString().slice(0, 16);
     },
-    
+
     formatTimestamp(timestamp) {
       if (!timestamp) return "";
-      
+
       let date;
-      if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+      if (timestamp.toDate && typeof timestamp.toDate === "function") {
         date = timestamp.toDate();
       } else if (timestamp instanceof Date) {
         date = timestamp;
       } else {
         date = new Date(timestamp);
       }
-      
-      return date.toLocaleString('zh-TW', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
+
+      return date.toLocaleString("zh-TW", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
       });
     },
-    
+
     formatDateTimeShort(timestamp) {
       if (!timestamp) return "";
-      
+
       let date;
-      if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+      if (timestamp.toDate && typeof timestamp.toDate === "function") {
         date = timestamp.toDate();
       } else if (timestamp instanceof Date) {
         date = timestamp;
       } else {
         date = new Date(timestamp);
       }
-      
-      return date.toLocaleString('zh-TW', {
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
+
+      return date.toLocaleString("zh-TW", {
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
       });
     },
-    
+
     showToast(message, type = "info") {
-      const toastContainer = document.createElement('div');
-      toastContainer.className = `alert alert-${type === 'error' ? 'danger' : type} position-fixed top-0 start-50 translate-middle-x mt-3`;
-      toastContainer.style.zIndex = '9999';
+      const toastContainer = document.createElement("div");
+      toastContainer.className = `alert alert-${
+        type === "error" ? "danger" : type
+      } position-fixed top-0 start-50 translate-middle-x mt-3`;
+      toastContainer.style.zIndex = "9999";
       toastContainer.innerHTML = `
         <div class="d-flex align-items-center">
-          <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+          <i class="bi bi-${
+            type === "success"
+              ? "check-circle"
+              : type === "warning"
+              ? "exclamation-triangle"
+              : "info-circle"
+          } me-2"></i>
           ${message}
         </div>
       `;
-      
+
       document.body.appendChild(toastContainer);
-      
+
       setTimeout(() => {
         if (document.body.contains(toastContainer)) {
           document.body.removeChild(toastContainer);

@@ -40,7 +40,7 @@
             <span 
               v-if="item.href === '/contracts' && cartItemCount > 0"
               class="badge bg-danger d-none d-lg-flex align-items-center justify-content-center"
-              style="font-size: 10px; min-width: 20px; height: 20px;"
+              style="font-size: 10px; width: 20px ; height: 20px; position: absolute;right: 6px;"
             >
               {{ cartItemCount > 99 ? '99+' : cartItemCount }}
             </span>

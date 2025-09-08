@@ -3,10 +3,7 @@
     <!-- 頁面標題和新增按鈕 -->
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h1 class="h3 mb-0 fw-bold">禮服清單</h1>
-      <button
-        @click="showAddModal = true"
-        class="btn btn-outline-primary"
-      >
+      <button @click="showAddModal = true" class="btn btn-outline-primary">
         <i class="bi bi-plus-lg me-2"></i>新增禮服
       </button>
     </div>
@@ -20,14 +17,14 @@
           type="text"
           class="form-control"
           placeholder="搜尋禮服編號、顏色、裙型..."
-          style="font-size: 14px;"
+          style="font-size: 14px"
           @input="applyFilters"
         />
       </div>
 
       <!-- 顏色分類 -->
       <div class="mb-4">
-        <h6 class="fw-semibold mb-3" style="font-size: 14px;">顏色</h6>
+        <h6 class="fw-semibold mb-3" style="font-size: 14px">顏色</h6>
         <div class="d-flex flex-wrap gap-2">
           <button
             v-for="color in colorOptions"
@@ -35,16 +32,20 @@
             @click="toggleFilter('顏色', color.value)"
             :class="[
               'btn btn-sm rounded-pill d-flex align-items-center',
-              filters.顏色 === color.value ? 'btn-primary' : 'btn-outline-secondary'
+              filters.顏色 === color.value
+                ? 'btn-primary'
+                : 'btn-outline-secondary',
             ]"
-            style="font-size: 13px; padding: 8px 16px;"
+            style="font-size: 13px; padding: 8px 16px"
           >
-            <span 
+            <span
               class="rounded-circle me-2"
-              style="width: 16px; height: 16px; display: inline-block;"
+              style="width: 16px; height: 16px; display: inline-block"
               :style="{
                 backgroundColor: color.color,
-                border: color.border ? `1px solid ${color.border}` : '1px solid #E5E7EB'
+                border: color.border
+                  ? `1px solid ${color.border}`
+                  : '1px solid #E5E7EB',
               }"
             ></span>
             {{ color.label }}
@@ -54,7 +55,7 @@
 
       <!-- 裙型分類 -->
       <div class="mb-4">
-        <h6 class="fw-semibold mb-3" style="font-size: 14px;">裙型</h6>
+        <h6 class="fw-semibold mb-3" style="font-size: 14px">裙型</h6>
         <div class="d-flex flex-wrap gap-2">
           <button
             v-for="type in skirtOptions"
@@ -62,9 +63,11 @@
             @click="toggleFilter('裙型', type.value)"
             :class="[
               'btn btn-sm rounded-pill',
-              filters.裙型 === type.value ? 'btn-primary' : 'btn-outline-secondary'
+              filters.裙型 === type.value
+                ? 'btn-primary'
+                : 'btn-outline-secondary',
             ]"
-            style="font-size: 13px; padding: 8px 16px;"
+            style="font-size: 13px; padding: 8px 16px"
           >
             {{ type.label }}
           </button>
@@ -73,7 +76,7 @@
 
       <!-- 袖型分類 -->
       <div class="mb-4">
-        <h6 class="fw-semibold mb-3" style="font-size: 14px;">袖型</h6>
+        <h6 class="fw-semibold mb-3" style="font-size: 14px">袖型</h6>
         <div class="d-flex flex-wrap gap-2">
           <button
             v-for="sleeve in sleeveOptions"
@@ -81,9 +84,11 @@
             @click="toggleFilter('袖型', sleeve.value)"
             :class="[
               'btn btn-sm rounded-pill',
-              filters.袖型 === sleeve.value ? 'btn-primary' : 'btn-outline-secondary'
+              filters.袖型 === sleeve.value
+                ? 'btn-primary'
+                : 'btn-outline-secondary',
             ]"
-            style="font-size: 13px; padding: 8px 16px;"
+            style="font-size: 13px; padding: 8px 16px"
           >
             {{ sleeve.label }}
           </button>
@@ -92,7 +97,7 @@
 
       <!-- 領型分類 -->
       <div class="mb-4">
-        <h6 class="fw-semibold mb-3" style="font-size: 14px;">領型</h6>
+        <h6 class="fw-semibold mb-3" style="font-size: 14px">領型</h6>
         <div class="d-flex flex-wrap gap-2">
           <button
             v-for="neck in neckOptions"
@@ -100,9 +105,11 @@
             @click="toggleFilter('領型', neck.value)"
             :class="[
               'btn btn-sm rounded-pill',
-              filters.領型 === neck.value ? 'btn-primary' : 'btn-outline-secondary'
+              filters.領型 === neck.value
+                ? 'btn-primary'
+                : 'btn-outline-secondary',
             ]"
-            style="font-size: 13px; padding: 8px 16px;"
+            style="font-size: 13px; padding: 8px 16px"
           >
             {{ neck.label }}
           </button>
@@ -110,8 +117,10 @@
       </div>
 
       <!-- 篩選結果統計和清除按鈕 -->
-      <div class="d-flex justify-content-between align-items-center pt-3 border-top">
-        <span class="text-muted" style="font-size: 13px;">
+      <div
+        class="d-flex justify-content-between align-items-center pt-3 border-top"
+      >
+        <span class="text-muted" style="font-size: 13px">
           <i class="bi bi-funnel me-2"></i>
           找到 {{ filteredDresses.length }} 件禮服
           <span v-if="hasActiveFilters">（已篩選）</span>
@@ -120,7 +129,7 @@
           v-if="hasActiveFilters"
           @click="clearFilters"
           class="btn btn-outline-secondary btn-sm"
-          style="font-size: 13px;"
+          style="font-size: 13px"
         >
           <i class="bi bi-x-circle me-2"></i>清除篩選
         </button>
@@ -142,17 +151,20 @@
         :key="dress.id"
         class="col-lg-3 col-md-4 col-sm-6"
       >
-        <div 
+        <div
           class="card h-100 shadow-sm border-0 position-relative rounded-4"
-          style="cursor: pointer; transition: transform 0.2s ease-in-out;"
+          style="cursor: pointer; transition: transform 0.2s ease-in-out"
           @click="goToDressDetail(dress.id)"
-          @mouseenter="$event.currentTarget.style.transform = 'translateY(-4px)'"
+          @mouseenter="
+            $event.currentTarget.style.transform = 'translateY(-4px)'
+          "
           @mouseleave="$event.currentTarget.style.transform = 'translateY(0)'"
         >
-          
-
           <!-- 圖片 -->
-          <div class="card-img-top position-relative" style="height: 280px; overflow: hidden;">
+          <div
+            class="card-img-top position-relative"
+            style="height: 280px; overflow: hidden"
+          >
             <img
               v-if="dress.圖片 && dress.圖片.length > 0"
               :src="dress.圖片[0]"
@@ -163,7 +175,7 @@
               v-else
               class="w-100 h-100 bg-light d-flex align-items-center justify-content-center"
             >
-              <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+              <i class="bi bi-image text-muted" style="font-size: 3rem"></i>
             </div>
           </div>
 
@@ -171,20 +183,33 @@
           <div class="card-body d-flex flex-column">
             <h6 class="card-title fw-bold mb-1">{{ dress.編號 }}</h6>
             <p class="card-text text-muted small mb-2">
-              {{ dress.顏色 }} | {{ dress.裙型 }} | {{ dress.袖型 }} | {{ dress.領型 }}
+              {{ dress.顏色 }} | {{ dress.裙型 }} | {{ dress.袖型 }} |
+              {{ dress.領型 }}
             </p>
-            
+
             <!-- 價格 -->
             <div class="mt-auto">
-              <div class="d-flex align-items-center justify-content-between mb-2">
-                <span class="h6 mb-0 text-primary fw-bold">NT$ {{ (dress.租借金額 || dress.價格 || 0).toLocaleString() }}</span>
+              <div
+                class="d-flex align-items-center justify-content-between mb-2"
+              >
+                <span class="h6 mb-0 text-primary fw-bold"
+                  >NT$
+                  {{
+                    (dress.租借金額 || dress.價格 || 0).toLocaleString()
+                  }}</span
+                >
               </div>
-              <div class="d-flex align-items-center justify-content-between mb-2">
-              <small v-if="dress.加價金額 && dress.加價金額 > 0" class="text-secondary">
+              <div
+                class="d-flex align-items-center justify-content-between mb-2"
+              >
+                <small
+                  v-if="dress.加價金額 && dress.加價金額 > 0"
+                  class="text-secondary"
+                >
                   加價 NT$ {{ dress.加價金額.toLocaleString() }}
                 </small>
               </div>
-              
+
               <!-- 庫存狀態 -->
               <div class="mb-3">
                 <small class="text-muted">
@@ -195,27 +220,31 @@
 
               <!-- 操作按鈕 -->
               <div class="d-grid gap-2">
-                <button 
+                <button
                   @click.stop="toggleCartItem(dress)"
                   :class="[
                     'btn btn-sm',
-                    cartService.isInCart(dress.id) ? 'btn-success' : 'btn-primary'
+                    cartService.isInCart(dress.id)
+                      ? 'btn-success'
+                      : 'btn-primary',
                   ]"
                   :disabled="!dress.庫存數量 || dress.庫存數量 <= 0"
                 >
-                  <i :class="[
-                    'me-1',
-                    cartService.isInCart(dress.id) ? 'bi bi-cart-check' : 'bi bi-cart-plus'
-                  ]"></i>
+                  <i
+                    :class="[
+                      'me-1',
+                      cartService.isInCart(dress.id)
+                        ? 'bi bi-cart-check'
+                        : 'bi bi-cart-plus',
+                    ]"
+                  ></i>
                   <template v-if="!dress.庫存數量 || dress.庫存數量 <= 0">
                     缺貨
                   </template>
                   <template v-else-if="cartService.isInCart(dress.id)">
                     已加入
                   </template>
-                  <template v-else>
-                    加入合約
-                  </template>
+                  <template v-else> 加入合約 </template>
                 </button>
               </div>
             </div>
@@ -225,13 +254,20 @@
     </div>
 
     <!-- 空狀態 -->
-    <div v-if="!loading && filteredDresses.length === 0" class="text-center py-5">
+    <div
+      v-if="!loading && filteredDresses.length === 0"
+      class="text-center py-5"
+    >
       <i class="bi bi-gem display-1 text-muted"></i>
       <h3 class="mt-3 text-muted">
-        {{ dresses.length === 0 ? '沒有禮服' : '沒有符合條件的禮服' }}
+        {{ dresses.length === 0 ? "沒有禮服" : "沒有符合條件的禮服" }}
       </h3>
       <p class="mt-1 text-muted">
-        {{ dresses.length === 0 ? '開始新增您的第一件禮服' : '請調整篩選條件或清除篩選' }}
+        {{
+          dresses.length === 0
+            ? "開始新增您的第一件禮服"
+            : "請調整篩選條件或清除篩選"
+        }}
       </p>
       <div class="mt-4">
         <button
@@ -241,11 +277,7 @@
         >
           <i class="bi bi-plus-lg me-2"></i>新增禮服
         </button>
-        <button
-          v-else
-          @click="clearFilters"
-          class="btn btn-outline-primary"
-        >
+        <button v-else @click="clearFilters" class="btn btn-outline-primary">
           <i class="bi bi-x-circle me-2"></i>清除篩選
         </button>
       </div>
@@ -332,32 +364,59 @@ export default {
   },
   computed: {
     filteredDresses() {
-      return this.dresses.filter(dress => {
+      return this.dresses.filter((dress) => {
         // 關鍵字搜尋
-        const matchesKeyword = !this.filters.關鍵字 || 
-          dress.編號?.toLowerCase().includes(this.filters.關鍵字.toLowerCase()) ||
-          dress.顏色?.toLowerCase().includes(this.filters.關鍵字.toLowerCase()) ||
-          dress.裙型?.toLowerCase().includes(this.filters.關鍵字.toLowerCase()) ||
-          dress.袖型?.toLowerCase().includes(this.filters.關鍵字.toLowerCase()) ||
-          dress.領型?.toLowerCase().includes(this.filters.關鍵字.toLowerCase()) ||
+        const matchesKeyword =
+          !this.filters.關鍵字 ||
+          dress.編號
+            ?.toLowerCase()
+            .includes(this.filters.關鍵字.toLowerCase()) ||
+          dress.顏色
+            ?.toLowerCase()
+            .includes(this.filters.關鍵字.toLowerCase()) ||
+          dress.裙型
+            ?.toLowerCase()
+            .includes(this.filters.關鍵字.toLowerCase()) ||
+          dress.袖型
+            ?.toLowerCase()
+            .includes(this.filters.關鍵字.toLowerCase()) ||
+          dress.領型
+            ?.toLowerCase()
+            .includes(this.filters.關鍵字.toLowerCase()) ||
           dress.備註?.toLowerCase().includes(this.filters.關鍵字.toLowerCase());
-        
+
         // 檢查每個篩選條件
-        const matchesColor = !this.filters.顏色 || dress.顏色 === this.filters.顏色;
-        const matchesSkirtType = !this.filters.裙型 || dress.裙型 === this.filters.裙型;
-        const matchesSleeveType = !this.filters.袖型 || dress.袖型 === this.filters.袖型;
-        const matchesNeckType = !this.filters.領型 || dress.領型 === this.filters.領型;
-        
-        return matchesKeyword && matchesColor && matchesSkirtType && matchesSleeveType && matchesNeckType;
+        const matchesColor =
+          !this.filters.顏色 || dress.顏色 === this.filters.顏色;
+        const matchesSkirtType =
+          !this.filters.裙型 || dress.裙型 === this.filters.裙型;
+        const matchesSleeveType =
+          !this.filters.袖型 || dress.袖型 === this.filters.袖型;
+        const matchesNeckType =
+          !this.filters.領型 || dress.領型 === this.filters.領型;
+
+        return (
+          matchesKeyword &&
+          matchesColor &&
+          matchesSkirtType &&
+          matchesSleeveType &&
+          matchesNeckType
+        );
       });
     },
     hasActiveFilters() {
-      return this.filters.關鍵字 || this.filters.顏色 || this.filters.裙型 || this.filters.袖型 || this.filters.領型;
+      return (
+        this.filters.關鍵字 ||
+        this.filters.顏色 ||
+        this.filters.裙型 ||
+        this.filters.袖型 ||
+        this.filters.領型
+      );
     },
   },
   async mounted() {
     await this.loadDresses();
-    
+
     // 監聽購物車變化，更新按鈕狀態
     this.cartUnsubscribe = cartService.subscribe(() => {
       this.$forceUpdate();
@@ -400,22 +459,16 @@ export default {
       try {
         const success = cartService.addDress(dress);
         if (success) {
-          this.showToast(
-            `已將 "${dress.編號}" 加入合約`, 
-            "success"
-          );
+          this.showToast(`已將 "${dress.編號}" 加入合約`, "success");
           // 強制重新渲染以更新按鈕狀態
           this.$forceUpdate();
         } else {
           // 禮服已存在於購物車中
-          this.showToast(
-            `"${dress.編號}" 已在合約清單中`, 
-            "info"
-          );
+          this.showToast(`"${dress.編號}" 已在合約清單中`, "info");
         }
       } catch (error) {
-        console.error('加入購物車失敗:', error);
-        this.showToast('加入合約失敗，請稍後再試', 'error');
+        console.error("加入購物車失敗:", error);
+        this.showToast("加入合約失敗，請稍後再試", "error");
       }
     },
     toggleCartItem(dress) {
@@ -423,25 +476,19 @@ export default {
         if (cartService.isInCart(dress.id)) {
           // 如果已在購物車中，移除它
           cartService.removeDress(dress.id);
-          this.showToast(
-            `已將 "${dress.編號}" 從合約清單移除`, 
-            "info"
-          );
+          this.showToast(`已將 "${dress.編號}" 從合約清單移除`, "info");
         } else {
           // 如果不在購物車中，添加它
           const success = cartService.addDress(dress);
           if (success) {
-            this.showToast(
-              `已將 "${dress.編號}" 加入合約`, 
-              "success"
-            );
+            this.showToast(`已將 "${dress.編號}" 加入合約`, "success");
           }
         }
         // 強制重新渲染以更新按鈕狀態
         this.$forceUpdate();
       } catch (error) {
-        console.error('切換購物車項目失敗:', error);
-        this.showToast('操作失敗，請稍後再試', 'error');
+        console.error("切換購物車項目失敗:", error);
+        this.showToast("操作失敗，請稍後再試", "error");
       }
     },
     toggleFavorite(dress) {
@@ -460,7 +507,7 @@ export default {
     },
     applyFilters() {
       // 篩選會通過 computed property 自動更新
-      console.log('篩選條件已更新:', this.filters);
+      console.log("篩選條件已更新:", this.filters);
     },
     clearFilters() {
       this.filters = {
@@ -477,13 +524,15 @@ export default {
     },
     showToast(message, type = "info") {
       // 簡單的 toast 通知實現
-      const toastContainer = document.createElement('div');
-      toastContainer.className = `alert alert-${type === 'error' ? 'danger' : type} position-fixed top-0 start-50 translate-middle-x mt-3`;
-      toastContainer.style.zIndex = '9999';
+      const toastContainer = document.createElement("div");
+      toastContainer.className = `alert alert-${
+        type === "error" ? "danger" : type
+      } position-fixed top-0 start-50 translate-middle-x mt-3`;
+      toastContainer.style.zIndex = "9999";
       toastContainer.innerHTML = message;
-      
+
       document.body.appendChild(toastContainer);
-      
+
       setTimeout(() => {
         if (document.body.contains(toastContainer)) {
           document.body.removeChild(toastContainer);

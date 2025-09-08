@@ -149,22 +149,22 @@
               </div>
             </div>
 
-            <!-- 4. 使用時間 -->
+            <!-- 4. 租用時間 -->
             <div class="mb-4">
               <h5 class="card-title mb-3">
-                <i class="bi bi-calendar-range me-2"></i>使用時間
+                <i class="bi bi-calendar-range me-2"></i>租用時間
               </h5>
               <div class="row g-3">
                 <div class="col-md-6">
                   <div class="border rounded p-3">
-                    <small class="text-muted d-block">使用開始時間</small>
-                    <strong class="text-dark">{{ formatDateTime(contract.使用開始時間) }}</strong>
+                    <small class="text-muted d-block">租用開始時間</small>
+                    <strong class="text-dark">{{ formatDateTime(contract.租用開始時間) }}</strong>
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="border rounded p-3">
-                    <small class="text-muted d-block">使用結束時間</small>
-                    <strong class="text-dark">{{ formatDateTime(contract.使用結束時間) }}</strong>
+                    <small class="text-muted d-block">租用結束時間</small>
+                    <strong class="text-dark">{{ formatDateTime(contract.租用結束時間) }}</strong>
                   </div>
                 </div>
               </div>

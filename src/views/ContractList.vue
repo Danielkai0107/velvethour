@@ -51,8 +51,8 @@
                 <th class="border-0 fw-normal text-muted py-4 px-4" style="font-size: 14px; min-width: 150px; white-space: nowrap;">合約單號</th>
                 <th class="border-0 fw-normal text-muted py-4 px-4" style="font-size: 14px; min-width: 160px; white-space: nowrap;">客戶姓名</th>
                 <th class="border-0 fw-normal text-muted py-4 px-4" style="font-size: 14px; min-width: 120px; white-space: nowrap;">承辦人</th>
-                <th class="border-0 fw-normal text-muted py-4 px-4" style="font-size: 14px; min-width: 160px; white-space: nowrap;">使用開始時間</th>
-                <th class="border-0 fw-normal text-muted py-4 px-4" style="font-size: 14px; min-width: 160px; white-space: nowrap;">使用結束時間</th>
+                <th class="border-0 fw-normal text-muted py-4 px-4" style="font-size: 14px; min-width: 160px; white-space: nowrap;">租ㄩㄡˋ開始時間</th>
+                <th class="border-0 fw-normal text-muted py-4 px-4" style="font-size: 14px; min-width: 160px; white-space: nowrap;">租用結束時間</th>
                 <th class="border-0 fw-normal text-muted py-4 px-4" style="font-size: 14px; min-width: 100px; white-space: nowrap;">狀態</th>
                 <th class="border-0 fw-normal text-muted py-4 px-4" style="font-size: 14px; min-width: 150px; white-space: nowrap;">總金額</th>
               </tr>
@@ -77,10 +77,10 @@
                   <div class="fw-semibold text-dark" style="font-size: 15px;">{{ contract.承辦人 || '未指定' }}</div>
                 </td>
                 <td class="py-4 px-4 border-0" style="border-bottom: 1px solid #f0f0f0; white-space: nowrap;">
-                  <span class="text-dark" style="font-size: 15px;">{{ formatDateTime(contract.使用開始時間) }}</span>
+                  <span class="text-dark" style="font-size: 15px;">{{ formatDateTime(contract.租用開始時間) }}</span>
                 </td>
                 <td class="py-4 px-4 border-0" style="border-bottom: 1px solid #f0f0f0; white-space: nowrap;">
-                  <span class="text-dark" style="font-size: 15px;">{{ formatDateTime(contract.使用結束時間) }}</span>
+                  <span class="text-dark" style="font-size: 15px;">{{ formatDateTime(contract.租用結束時間) }}</span>
                 </td>
                 <td class="py-4 px-4 border-0" style="border-bottom: 1px solid #f0f0f0; white-space: nowrap;">
                   <span :class="['badge', getStatusBadgeClass(contract.處理狀態)]" style="font-size: 12px; padding: 6px 12px;">

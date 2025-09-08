@@ -38,10 +38,10 @@ export const dressService = {
           備註: "經典優雅的白色婚紗，適合各種婚禮場合。包含頭紗和手套。",
           圖片: [
             "https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?w=400",
-            "https://images.unsplash.com/photo-1549417229-aa67d3263c09?w=400"
+            "https://images.unsplash.com/photo-1549417229-aa67d3263c09?w=400",
           ],
-          新增時間戳: new Date('2024-01-15T10:30:00'),
-          創建時間: new Date('2024-01-15T10:30:00'),
+          新增時間戳: new Date("2024-01-15T10:30:00"),
+          創建時間: new Date("2024-01-15T10:30:00"),
         },
         {
           id: "demo-dress-2",
@@ -56,10 +56,10 @@ export const dressService = {
           備註: "時尚優雅的黑色晚禮服，完美展現女性魅力。適合晚宴和正式場合。",
           圖片: [
             "https://images.unsplash.com/photo-1566479179817-c08cbf4d8b90?w=400",
-            "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400"
+            "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400",
           ],
-          新增時間戳: new Date('2024-01-10T14:20:00'),
-          創建時間: new Date('2024-01-10T14:20:00'),
+          新增時間戳: new Date("2024-01-10T14:20:00"),
+          創建時間: new Date("2024-01-10T14:20:00"),
         },
         {
           id: "demo-dress-3",
@@ -73,10 +73,10 @@ export const dressService = {
           庫存數量: 1,
           備註: "夢幻般的粉色公主裙，讓您成為最美的公主。適合拍照和特殊場合。",
           圖片: [
-            "https://images.unsplash.com/photo-1515371180-a9d5c0b3d8c5?w=400"
+            "https://images.unsplash.com/photo-1515371180-a9d5c0b3d8c5?w=400",
           ],
-          新增時間戳: new Date('2024-01-05T16:45:00'),
-          創建時間: new Date('2024-01-05T16:45:00'),
+          新增時間戳: new Date("2024-01-05T16:45:00"),
+          創建時間: new Date("2024-01-05T16:45:00"),
         },
       ];
     }
@@ -123,113 +123,130 @@ export const dressService = {
       // 查詢包含此禮服的所有合約
       const q = query(
         collection(db, "contracts"),
-        orderBy("使用開始時間", "asc")
+        orderBy("租用開始時間", "asc")
       );
       const snapshot = await getDocs(q);
-      
+
       const rentalSchedule = [];
       snapshot.docs.forEach((doc) => {
         const contract = { id: doc.id, ...doc.data() };
-        
+
         // 檢查合約中是否包含此禮服
-        if (contract.禮服清單 && contract.禮服清單.some(item => item.禮服ID === dressId)) {
+        if (
+          contract.禮服清單 &&
+          contract.禮服清單.some((item) => item.禮服ID === dressId)
+        ) {
           rentalSchedule.push({
             合約單號: contract.合約單號,
             客戶姓名: contract.客戶姓名,
-            使用開始時間: contract.使用開始時間,
-            使用結束時間: contract.使用結束時間,
+            租用開始時間: contract.租用開始時間,
+            租用結束時間: contract.租用結束時間,
             處理狀態: contract.處理狀態,
-            合約ID: contract.id
+            合約ID: contract.id,
           });
         }
       });
-      
+
       return rentalSchedule;
     } catch (error) {
       console.warn("Firebase 未配置或連接失敗，返回示例資料:", error);
-      
+
       // 返回示例租用檔期資料
       if (dressId === "demo-dress-1") {
         return [
           {
             合約單號: "20241201-001",
             客戶姓名: "張小姐",
-            使用開始時間: new Date('2024-12-15T14:00:00'),
-            使用結束時間: new Date('2024-12-16T18:00:00'),
+            租用開始時間: new Date("2024-12-15T14:00:00"),
+            租用結束時間: new Date("2024-12-16T18:00:00"),
             處理狀態: "進行中",
-            合約ID: "demo-contract-1"
-          }
+            合約ID: "demo-contract-1",
+          },
         ];
       } else if (dressId === "demo-dress-2") {
         return [
           {
             合約單號: "20241201-001",
             客戶姓名: "張小姐",
-            使用開始時間: new Date('2024-12-15T14:00:00'),
-            使用結束時間: new Date('2024-12-16T18:00:00'),
+            租用開始時間: new Date("2024-12-15T14:00:00"),
+            租用結束時間: new Date("2024-12-16T18:00:00"),
             處理狀態: "進行中",
-            合約ID: "demo-contract-1"
+            合約ID: "demo-contract-1",
           },
           {
             合約單號: "20241201-002",
             客戶姓名: "李太太",
-            使用開始時間: new Date('2024-12-20T16:00:00'),
-            使用結束時間: new Date('2024-12-21T20:00:00'),
+            租用開始時間: new Date("2024-12-20T16:00:00"),
+            租用結束時間: new Date("2024-12-21T20:00:00"),
             處理狀態: "已確認",
-            合約ID: "demo-contract-2"
-          }
+            合約ID: "demo-contract-2",
+          },
         ];
       } else if (dressId === "demo-dress-3") {
         return [
           {
             合約單號: "20241130-003",
             客戶姓名: "王小姐",
-            使用開始時間: new Date('2024-11-30T12:00:00'),
-            使用結束時間: new Date('2024-11-30T22:00:00'),
+            租用開始時間: new Date("2024-11-30T12:00:00"),
+            租用結束時間: new Date("2024-11-30T22:00:00"),
             處理狀態: "已完成",
-            合約ID: "demo-contract-3"
-          }
+            合約ID: "demo-contract-3",
+          },
         ];
       }
-      
+
       return [];
     }
   },
 
   // 檢查禮服在指定時間是否可用
-  async checkDressAvailability(dressId, startTime, endTime, excludeContractId = null) {
+  async checkDressAvailability(
+    dressId,
+    startTime,
+    endTime,
+    excludeContractId = null
+  ) {
     try {
       const rentalSchedule = await this.getRentalSchedule(dressId);
-      
+
       // 過濾掉當前正在編輯的合約（如果有的話）
-      const filteredSchedule = excludeContractId 
-        ? rentalSchedule.filter(item => item.合約ID !== excludeContractId)
+      const filteredSchedule = excludeContractId
+        ? rentalSchedule.filter((item) => item.合約ID !== excludeContractId)
         : rentalSchedule;
-      
+
       // 檢查時間衝突
       const startDate = new Date(startTime);
       const endDate = new Date(endTime);
-      
+
       for (const schedule of filteredSchedule) {
-        const scheduleStart = schedule.使用開始時間 instanceof Date 
-          ? schedule.使用開始時間 
-          : schedule.使用開始時間.toDate ? schedule.使用開始時間.toDate() : new Date(schedule.使用開始時間);
-        const scheduleEnd = schedule.使用結束時間 instanceof Date 
-          ? schedule.使用結束時間 
-          : schedule.使用結束時間.toDate ? schedule.使用結束時間.toDate() : new Date(schedule.使用結束時間);
-        
+        const scheduleStart =
+          schedule.使用開始時間 instanceof Date
+            ? schedule.使用開始時間
+            : schedule.使用開始時間.toDate
+            ? schedule.使用開始時間.toDate()
+            : new Date(schedule.使用開始時間);
+        const scheduleEnd =
+          schedule.使用結束時間 instanceof Date
+            ? schedule.使用結束時間
+            : schedule.使用結束時間.toDate
+            ? schedule.使用結束時間.toDate()
+            : new Date(schedule.使用結束時間);
+
         // 檢查時間重疊
         if (!(endDate <= scheduleStart || startDate >= scheduleEnd)) {
           // 只有進行中、已確認的合約才算衝突
-          if (schedule.處理狀態 === "進行中" || schedule.處理狀態 === "已確認") {
+          if (
+            schedule.處理狀態 === "進行中" ||
+            schedule.處理狀態 === "已確認"
+          ) {
             return {
               available: false,
-              conflictContract: schedule
+              conflictContract: schedule,
             };
           }
         }
       }
-      
+
       return { available: true };
     } catch (error) {
       console.error("檢查禮服可用性失敗:", error);
@@ -256,9 +273,9 @@ export const contractService = {
         {
           id: "demo-contract-1",
           合約單號: "20241201-001",
-          合約建立日期時間: new Date('2024-12-01T10:30:00'),
-          使用開始時間: new Date('2024-12-15T14:00:00'),
-          使用結束時間: new Date('2024-12-16T18:00:00'),
+          合約建立日期時間: new Date("2024-12-01T10:30:00"),
+          使用開始時間: new Date("2024-12-15T14:00:00"),
+          使用結束時間: new Date("2024-12-16T18:00:00"),
           處理狀態: "進行中",
           客戶姓名: "張小姐",
           電話: "0912-345-678",
@@ -270,26 +287,26 @@ export const contractService = {
               禮服ID: "demo-dress-1",
               數量: 1,
               單價: 8000,
-              小計: 8000
+              小計: 8000,
             },
             {
               禮服ID: "demo-dress-2",
               數量: 1,
               單價: 1000,
-              小計: 1000
-            }
+              小計: 1000,
+            },
           ],
           合約總金額: 9000,
           備注: "客戶要求特殊修改，需要調整腰身尺寸。",
-          創建時間: new Date('2024-12-01T10:30:00'),
-          更新時間: new Date('2024-12-01T10:30:00'),
+          創建時間: new Date("2024-12-01T10:30:00"),
+          更新時間: new Date("2024-12-01T10:30:00"),
         },
         {
           id: "demo-contract-2",
           合約單號: "20241201-002",
-          合約建立日期時間: new Date('2024-12-01T14:20:00'),
-          使用開始時間: new Date('2024-12-20T16:00:00'),
-          使用結束時間: new Date('2024-12-21T20:00:00'),
+          合約建立日期時間: new Date("2024-12-01T14:20:00"),
+          使用開始時間: new Date("2024-12-20T16:00:00"),
+          使用結束時間: new Date("2024-12-21T20:00:00"),
           處理狀態: "已確認",
           客戶姓名: "李太太",
           電話: "0923-456-789",
@@ -301,20 +318,20 @@ export const contractService = {
               禮服ID: "demo-dress-2",
               數量: 1,
               單價: 6000,
-              小計: 6000
-            }
+              小計: 6000,
+            },
           ],
           合約總金額: 6000,
           備注: "客戶需要配件搭配，已確認頭紗和手套。",
-          創建時間: new Date('2024-12-01T14:20:00'),
-          更新時間: new Date('2024-12-01T14:20:00'),
+          創建時間: new Date("2024-12-01T14:20:00"),
+          更新時間: new Date("2024-12-01T14:20:00"),
         },
         {
           id: "demo-contract-3",
           合約單號: "20241130-003",
-          合約建立日期時間: new Date('2024-11-30T09:15:00'),
-          使用開始時間: new Date('2024-11-30T12:00:00'),
-          使用結束時間: new Date('2024-11-30T22:00:00'),
+          合約建立日期時間: new Date("2024-11-30T09:15:00"),
+          使用開始時間: new Date("2024-11-30T12:00:00"),
+          使用結束時間: new Date("2024-11-30T22:00:00"),
           處理狀態: "已完成",
           客戶姓名: "王小姐",
           電話: "0934-567-890",
@@ -326,13 +343,13 @@ export const contractService = {
               禮服ID: "demo-dress-3",
               數量: 1,
               單價: 5000,
-              小計: 5000
-            }
+              小計: 5000,
+            },
           ],
           合約總金額: 5000,
           備注: "婚禮拍攝用途，已順利完成。客戶非常滿意。",
-          創建時間: new Date('2024-11-30T09:15:00'),
-          更新時間: new Date('2024-11-30T23:30:00'),
+          創建時間: new Date("2024-11-30T09:15:00"),
+          更新時間: new Date("2024-11-30T23:30:00"),
         },
       ];
     }
@@ -409,10 +426,7 @@ export const staffService = {
   // 獲取所有承辦人
   async getAll() {
     try {
-      const q = query(
-        collection(db, "staff"),
-        orderBy("創建時間", "desc")
-      );
+      const q = query(collection(db, "staff"), orderBy("創建時間", "desc"));
       const snapshot = await getDocs(q);
       return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     } catch (error) {
@@ -428,10 +442,10 @@ export const staffService = {
           狀態: "在職",
           電話: "0912-111-111",
           email: "lin@velvethour.com",
-          加入日期: new Date('2024-01-15'),
+          加入日期: new Date("2024-01-15"),
           備註: "資深禮服顧問，擅長婚紗搭配和客戶服務。",
-          創建時間: new Date('2024-01-15T09:00:00'),
-          更新時間: new Date('2024-01-15T09:00:00'),
+          創建時間: new Date("2024-01-15T09:00:00"),
+          更新時間: new Date("2024-01-15T09:00:00"),
         },
         {
           id: "demo-staff-2",
@@ -442,10 +456,10 @@ export const staffService = {
           狀態: "在職",
           電話: "0923-222-222",
           email: "wang@velvethour.com",
-          加入日期: new Date('2024-02-01'),
+          加入日期: new Date("2024-02-01"),
           備註: "專業造型師，負責新娘造型設計和妝髮服務。",
-          創建時間: new Date('2024-02-01T10:30:00'),
-          更新時間: new Date('2024-02-01T10:30:00'),
+          創建時間: new Date("2024-02-01T10:30:00"),
+          更新時間: new Date("2024-02-01T10:30:00"),
         },
         {
           id: "demo-staff-3",
@@ -456,10 +470,10 @@ export const staffService = {
           狀態: "在職",
           電話: "0934-333-333",
           email: "chen@velvethour.com",
-          加入日期: new Date('2024-03-01'),
+          加入日期: new Date("2024-03-01"),
           備註: "負責客戶諮詢和售後服務，服務態度親切。",
-          創建時間: new Date('2024-03-01T14:20:00'),
-          更新時間: new Date('2024-03-01T14:20:00'),
+          創建時間: new Date("2024-03-01T14:20:00"),
+          更新時間: new Date("2024-03-01T14:20:00"),
         },
       ];
     }
@@ -477,7 +491,7 @@ export const staffService = {
     } catch (error) {
       // 如果是示例資料，從示例中查找
       const allStaff = await this.getAll();
-      const staff = allStaff.find(s => s.id === id);
+      const staff = allStaff.find((s) => s.id === id);
       if (staff) {
         return staff;
       }
