@@ -54,7 +54,8 @@
                         v-if="getDressById(item.禮服ID)?.圖片?.[0]"
                         :src="getDressById(item.禮服ID).圖片[0]"
                         :alt="getDressById(item.禮服ID).編號"
-                        class="w-100 h-100 object-fit-cover"
+                        class="w-100 h-100"
+                        style="object-fit: contain; background-color: #f8f9fa"
                       />
                       <div
                         v-else
@@ -526,7 +527,5 @@ export default {
 </script>
 
 <style scoped>
-.object-fit-cover {
-  object-fit: cover;
-}
+/* Styles for contract detail page */
 </style>

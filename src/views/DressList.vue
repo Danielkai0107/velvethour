@@ -173,7 +173,8 @@
               v-if="dress.圖片 && dress.圖片.length > 0"
               :src="dress.圖片[0]"
               :alt="dress.編號"
-              class="w-100 h-100 object-fit-cover"
+              class="w-100 h-100"
+              style="object-fit: contain; background-color: #f8f9fa"
             />
             <div
               v-else
