@@ -12,7 +12,6 @@
         <!-- Modal Header -->
         <div class="modal-header">
           <h5 class="modal-title">
-            <i class="bi bi-person me-2"></i>
             {{ staff ? "編輯承辦人" : "新增承辦人" }}
           </h5>
           <button
@@ -27,14 +26,12 @@
           <form @submit.prevent="handleSubmit">
             <!-- 基本資訊 -->
             <div class="mb-4">
-              <h5 class="fw-semibold mb-3">
-                <i class="bi bi-person me-2"></i>基本資訊
+              <h5 class="fw-semibold mb-3">基本資訊
               </h5>
               <div class="row g-3">
                 <!-- 姓名 -->
                 <div class="col-md-6">
-                  <label class="form-label fw-semibold">
-                    <i class="bi bi-person me-2"></i>姓名 *
+                  <label class="form-label fw-semibold">姓名 *
                   </label>
                   <input
                     v-model="formData.姓名"
@@ -47,8 +44,7 @@
 
                 <!-- 員工編號 -->
                 <div class="col-md-6">
-                  <label class="form-label fw-semibold">
-                    <i class="bi bi-hash me-2"></i>員工編號 *
+                  <label class="form-label fw-semibold">員工編號 *
                   </label>
                   <input
                     v-model="formData.員工編號"
@@ -61,8 +57,7 @@
 
                 <!-- 職位 -->
                 <div class="col-md-6">
-                  <label class="form-label fw-semibold">
-                    <i class="bi bi-briefcase me-2"></i>職位 *
+                  <label class="form-label fw-semibold">職位 *
                   </label>
                   <select v-model="formData.職位" class="form-select" required>
                     <option value="">請選擇職位</option>
@@ -78,8 +73,7 @@
 
                 <!-- 部門 -->
                 <div class="col-md-6">
-                  <label class="form-label fw-semibold">
-                    <i class="bi bi-building me-2"></i>部門
+                  <label class="form-label fw-semibold">部門
                   </label>
                   <select v-model="formData.部門" class="form-select">
                     <option value="">請選擇部門</option>
@@ -93,8 +87,7 @@
 
                 <!-- 狀態 -->
                 <div class="col-md-6">
-                  <label class="form-label fw-semibold">
-                    <i class="bi bi-flag me-2"></i>狀態 *
+                  <label class="form-label fw-semibold">狀態 *
                   </label>
                   <select v-model="formData.狀態" class="form-select" required>
                     <option value="">請選擇狀態</option>
@@ -106,8 +99,7 @@
 
                 <!-- 加入日期 -->
                 <div class="col-md-6">
-                  <label class="form-label fw-semibold">
-                    <i class="bi bi-calendar-event me-2"></i>加入日期 *
+                  <label class="form-label fw-semibold">加入日期 *
                   </label>
                   <input
                     v-model="formData.加入日期"
@@ -121,14 +113,12 @@
 
             <!-- 聯絡資訊 -->
             <div class="mb-4">
-              <h5 class="fw-semibold mb-3">
-                <i class="bi bi-telephone me-2"></i>聯絡資訊
+              <h5 class="fw-semibold mb-3">聯絡資訊
               </h5>
               <div class="row g-3">
                 <!-- 電話 -->
                 <div class="col-md-6">
-                  <label class="form-label fw-semibold">
-                    <i class="bi bi-telephone me-2"></i>電話 *
+                  <label class="form-label fw-semibold">電話 *
                   </label>
                   <input
                     v-model="formData.電話"
@@ -141,8 +131,7 @@
 
                 <!-- Email -->
                 <div class="col-md-6">
-                  <label class="form-label fw-semibold">
-                    <i class="bi bi-envelope me-2"></i>Email
+                  <label class="form-label fw-semibold">Email
                   </label>
                   <input
                     v-model="formData.email"
@@ -156,8 +145,7 @@
 
             <!-- 備註 -->
             <div class="mb-3">
-              <label class="form-label fw-semibold">
-                <i class="bi bi-card-text me-2"></i>備註
+              <label class="form-label fw-semibold">備註
               </label>
               <textarea
                 v-model="formData.備註"
@@ -169,8 +157,7 @@
 
             <!-- 創建時間 (顯示用，不可編輯) -->
             <div class="mb-3" v-if="formData.創建時間">
-              <label class="form-label fw-semibold">
-                <i class="bi bi-clock me-2"></i>建立時間
+              <label class="form-label fw-semibold">建立時間
               </label>
               <input
                 :value="formatTimestamp(formData.創建時間)"

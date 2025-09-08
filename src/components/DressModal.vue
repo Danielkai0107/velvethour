@@ -12,7 +12,6 @@
         <!-- Modal Header -->
         <div class="modal-header">
           <h5 class="modal-title">
-            <i class="bi bi-gem me-2"></i>
             {{ dress ? "編輯禮服" : "新增禮服" }}
           </h5>
           <button
@@ -27,9 +26,7 @@
           <form @submit.prevent="handleSubmit">
             <!-- 圖片上傳區域 -->
             <div class="mb-4">
-              <label class="form-label fw-semibold">
-                <i class="bi bi-images me-2"></i>禮服圖片
-              </label>
+              <label class="form-label fw-semibold"> 禮服圖片 </label>
 
               <!-- 圖片上傳區 -->
               <div
@@ -51,14 +48,13 @@
                 />
 
                 <div v-if="uploadingImages.length === 0">
-                  <i class="bi bi-cloud-upload display-4 text-muted"></i>
                   <div class="mt-2">
                     <button
                       type="button"
                       @click="$refs.fileInput.click()"
                       class="btn btn-outline-primary me-2"
                     >
-                      <i class="bi bi-folder2-open me-2"></i>選擇檔案
+                      選擇檔案
                     </button>
                     <span class="text-muted">或拖拽圖片到這裡</span>
                   </div>
@@ -100,7 +96,7 @@
                       class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1 rounded-circle p-1"
                       style="width: 24px; height: 24px; line-height: 1"
                     >
-                      <i class="bi bi-x"></i>
+                      <i class="bi bi-x-lg"></i>
                     </button>
                     <div
                       v-if="index === 0"
@@ -118,9 +114,7 @@
               <div class="col-md-6">
                 <!-- 禮服編號 -->
                 <div class="mb-3">
-                  <label class="form-label fw-semibold">
-                    <i class="bi bi-hash me-2"></i>禮服編號 *
-                  </label>
+                  <label class="form-label fw-semibold"> 禮服編號 * </label>
                   <input
                     v-model="formData.編號"
                     type="text"
@@ -132,9 +126,7 @@
 
                 <!-- 顏色 -->
                 <div class="mb-3">
-                  <label class="form-label fw-semibold">
-                    <i class="bi bi-palette me-2"></i>顏色 *
-                  </label>
+                  <label class="form-label fw-semibold"> 顏色 * </label>
                   <select v-model="formData.顏色" class="form-select" required>
                     <option value="">請選擇顏色</option>
                     <option value="白色">白色</option>
@@ -152,9 +144,7 @@
 
                 <!-- 裙型 -->
                 <div class="mb-3">
-                  <label class="form-label fw-semibold">
-                    <i class="bi bi-scissors me-2"></i>裙型 *
-                  </label>
+                  <label class="form-label fw-semibold"> 裙型 * </label>
                   <select v-model="formData.裙型" class="form-select" required>
                     <option value="">請選擇裙型</option>
                     <option value="魚尾">魚尾</option>
@@ -171,9 +161,7 @@
 
                 <!-- 袖型 -->
                 <div class="mb-3">
-                  <label class="form-label fw-semibold">
-                    <i class="bi bi-person-arms-up me-2"></i>袖型 *
-                  </label>
+                  <label class="form-label fw-semibold"> 袖型 * </label>
                   <select v-model="formData.袖型" class="form-select" required>
                     <option value="">請選擇袖型</option>
                     <option value="短袖">短袖</option>
@@ -184,9 +172,7 @@
 
                 <!-- 領型 -->
                 <div class="mb-3">
-                  <label class="form-label fw-semibold">
-                    <i class="bi bi-circle me-2"></i>領型 *
-                  </label>
+                  <label class="form-label fw-semibold"> 領型 * </label>
                   <select v-model="formData.領型" class="form-select" required>
                     <option value="">請選擇領型</option>
                     <option value="v領">v領</option>
@@ -210,7 +196,7 @@
                 <!-- 租借金額 -->
                 <div class="mb-3">
                   <label class="form-label fw-semibold">
-                    <i class="bi bi-currency-dollar me-2"></i>租借金額 (NT$) *
+                    租借金額 (NT$) *
                   </label>
                   <input
                     v-model.number="formData.租借金額"
@@ -224,9 +210,7 @@
 
                 <!-- 加價金額 -->
                 <div class="mb-3">
-                  <label class="form-label fw-semibold">
-                    <i class="bi bi-plus-circle me-2"></i>加價金額 (NT$)
-                  </label>
+                  <label class="form-label fw-semibold"> 加價金額 (NT$) </label>
                   <input
                     v-model.number="formData.加價金額"
                     type="number"
@@ -241,9 +225,7 @@
 
                 <!-- 庫存數量 -->
                 <div class="mb-3">
-                  <label class="form-label fw-semibold">
-                    <i class="bi bi-box-seam me-2"></i>庫存數量 *
-                  </label>
+                  <label class="form-label fw-semibold"> 庫存數量 * </label>
                   <input
                     v-model.number="formData.庫存數量"
                     type="number"
@@ -256,9 +238,7 @@
 
                 <!-- 備註 -->
                 <div class="mb-3">
-                  <label class="form-label fw-semibold">
-                    <i class="bi bi-card-text me-2"></i>備註
-                  </label>
+                  <label class="form-label fw-semibold"> 備註 </label>
                   <textarea
                     v-model="formData.備註"
                     class="form-control"
@@ -269,9 +249,7 @@
 
                 <!-- 新增時間戳 (顯示用，不可編輯) -->
                 <div class="mb-3" v-if="formData.新增時間戳">
-                  <label class="form-label fw-semibold">
-                    <i class="bi bi-clock me-2"></i>新增時間
-                  </label>
+                  <label class="form-label fw-semibold"> 新增時間 </label>
                   <input
                     :value="formatTimestamp(formData.新增時間戳)"
                     type="text"

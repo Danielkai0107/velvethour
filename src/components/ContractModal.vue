@@ -12,7 +12,6 @@
         <!-- Modal Header -->
         <div class="modal-header">
           <h5 class="modal-title">
-            <i class="bi bi-file-text me-2"></i>
             {{ contract ? "編輯合約" : "新增合約" }}
           </h5>
           <button
@@ -30,8 +29,7 @@
               <div
                 class="d-flex justify-content-between align-items-center mb-3"
               >
-                <h5 class="fw-semibold mb-0">
-                  <i class="bi bi-gem me-2"></i>禮服清單
+                <h5 class="fw-semibold mb-0">禮服清單
                 </h5>
                 <div class="d-flex gap-2">
                   <button
@@ -40,7 +38,6 @@
                     type="button"
                     class="btn btn-outline-primary btn-sm"
                   >
-                    <i class="bi bi-cart-plus me-1"></i>
                     載入購物車 ({{ cartService.getItemCount() }})
                   </button>
                   <button
@@ -49,7 +46,7 @@
                     type="button"
                     class="btn btn-outline-danger btn-sm"
                   >
-                    <i class="bi bi-cart-x me-1"></i>
+             
                     清空購物車
                   </button>
                   <button
@@ -57,7 +54,7 @@
                     @click="showDressSelectionModal = true"
                     class="btn btn-primary btn-sm"
                   >
-                    <i class="bi bi-plus me-1"></i>新增禮服
+                    <i class="bi bi-plus-lg me-1"></i>新增禮服
                   </button>
                 </div>
               </div>
@@ -194,8 +191,7 @@
               <!-- 總金額顯示 -->
               <div class="row g-3 mb-4">
                 <div class="col-md-6">
-                  <label class="form-label fw-semibold">
-                    <i class="bi bi-calculator me-2"></i>計算總金額
+                  <label class="form-label fw-semibold">計算總金額
                   </label>
                   <input
                     :value="calculateTotal()"
@@ -205,8 +201,7 @@
                   />
                 </div>
                 <div class="col-md-6">
-                  <label class="form-label fw-semibold">
-                    <i class="bi bi-cash me-2"></i>合約總金額 (NT$) *
+                  <label class="form-label fw-semibold">合約總金額 (NT$) *
                   </label>
                   <input
                     v-model.number="formData.合約總金額"
@@ -223,14 +218,12 @@
 
             <!-- 基本資訊 -->
             <div class="mb-4">
-              <h5 class="fw-semibold mb-3">
-                <i class="bi bi-person me-2"></i>客戶資訊
+              <h5 class="fw-semibold mb-3">客戶資訊
               </h5>
               <div class="row g-3">
                 <!-- 客戶姓名 -->
                 <div class="col-md-6">
-                  <label class="form-label fw-semibold">
-                    <i class="bi bi-person me-2"></i>客戶姓名 *
+                  <label class="form-label fw-semibold">客戶姓名 *
                   </label>
                   <input
                     v-model="formData.客戶姓名"
@@ -243,8 +236,7 @@
 
                 <!-- 電話 -->
                 <div class="col-md-6">
-                  <label class="form-label fw-semibold">
-                    <i class="bi bi-telephone me-2"></i>電話 *
+                  <label class="form-label fw-semibold">電話 *
                   </label>
                   <input
                     v-model="formData.電話"
@@ -257,8 +249,7 @@
 
                 <!-- Email -->
                 <div class="col-md-6">
-                  <label class="form-label fw-semibold">
-                    <i class="bi bi-envelope me-2"></i>Email
+                  <label class="form-label fw-semibold">Email
                   </label>
                   <input
                     v-model="formData.email"
@@ -270,8 +261,7 @@
 
                 <!-- 三圍 -->
                 <div class="col-md-6">
-                  <label class="form-label fw-semibold">
-                    <i class="bi bi-rulers me-2"></i>三圍
+                  <label class="form-label fw-semibold">三圍
                   </label>
                   <input
                     v-model="formData.三圍"
@@ -283,8 +273,7 @@
 
                 <!-- 承辦人 -->
                 <div class="col-md-6">
-                  <label class="form-label fw-semibold">
-                    <i class="bi bi-person-badge me-2"></i>承辦人 *
+                  <label class="form-label fw-semibold">承辦人 *
                   </label>
                   <select
                     v-model="formData.承辦人"
@@ -307,8 +296,7 @@
 
                 <!-- 處理狀態 -->
                 <div class="col-md-6">
-                  <label class="form-label fw-semibold">
-                    <i class="bi bi-flag me-2"></i>處理狀態 *
+                  <label class="form-label fw-semibold">處理狀態 *
                   </label>
                   <select
                     v-model="formData.處理狀態"
@@ -328,14 +316,12 @@
 
             <!-- 租用時間 -->
             <div class="mb-4">
-              <h5 class="fw-semibold mb-3">
-                <i class="bi bi-calendar-range me-2"></i>租用時間
+              <h5 class="fw-semibold mb-3">租用時間
               </h5>
               <div class="row g-3">
                 <!-- 租用開始時間 -->
                 <div class="col-md-6">
-                  <label class="form-label fw-semibold">
-                    <i class="bi bi-calendar-event me-2"></i>租用開始時間 *
+                  <label class="form-label fw-semibold">租用開始時間 *
                   </label>
                   <input
                     v-model="formData.租用開始時間"
@@ -348,8 +334,7 @@
 
                 <!-- 租用結束時間 -->
                 <div class="col-md-6">
-                  <label class="form-label fw-semibold">
-                    <i class="bi bi-calendar-x me-2"></i>租用結束時間 *
+                  <label class="form-label fw-semibold">租用結束時間 *
                   </label>
                   <input
                     v-model="formData.租用結束時間"
@@ -371,7 +356,6 @@
                 class="alert alert-warning mb-3 mt-3"
               >
                 <div class="d-flex align-items-center">
-                  <i class="bi bi-exclamation-triangle me-2"></i>
                   <span>租用結束時間必須晚於開始時間</span>
                 </div>
               </div>
@@ -459,8 +443,7 @@
 
             <!-- 備註 -->
             <div class="mb-3">
-              <label class="form-label fw-semibold">
-                <i class="bi bi-card-text me-2"></i>備註
+              <label class="form-label fw-semibold">備註
               </label>
               <textarea
                 v-model="formData.備注"
@@ -472,8 +455,7 @@
 
             <!-- 新增時間戳 (顯示用，不可編輯) -->
             <div class="mb-3" v-if="formData.創建時間">
-              <label class="form-label fw-semibold">
-                <i class="bi bi-clock me-2"></i>建立時間
+              <label class="form-label fw-semibold">建立時間
               </label>
               <input
                 :value="formatTimestamp(formData.創建時間)"
@@ -526,7 +508,6 @@
         <!-- Modal Header -->
         <div class="modal-header">
           <h5 class="modal-title">
-            <i class="bi bi-gem me-2"></i>
             禮服詳情 - {{ selectedDress.編號 }}
           </h5>
           <button
@@ -542,8 +523,7 @@
             <!-- 左側圖片區域 -->
             <div class="col-md-6">
               <div class="mb-4">
-                <h6 class="fw-semibold mb-3">
-                  <i class="bi bi-images me-2"></i>禮服圖片
+                <h6 class="fw-semibold mb-3">禮服圖片
                 </h6>
 
                 <!-- 主圖片 -->
@@ -605,8 +585,7 @@
             <!-- 右側詳細資訊 -->
             <div class="col-md-6">
               <div class="mb-4">
-                <h6 class="fw-semibold mb-3">
-                  <i class="bi bi-info-circle me-2"></i>基本資訊
+                <h6 class="fw-semibold mb-3">基本資訊
                 </h6>
 
                 <div class="row g-3">
@@ -650,8 +629,7 @@
               </div>
 
               <div class="mb-4">
-                <h6 class="fw-semibold mb-3">
-                  <i class="bi bi-cash me-2"></i>價格資訊
+                <h6 class="fw-semibold mb-3">價格資訊
                 </h6>
 
                 <div class="row g-3">
@@ -689,8 +667,7 @@
                 <div
                   class="d-flex justify-content-between align-items-center mb-3"
                 >
-                  <h6 class="fw-semibold mb-0">
-                    <i class="bi bi-calendar-range me-2"></i>租用檔期
+                  <h6 class="fw-semibold mb-0">租用檔期
                   </h6>
                   <div class="d-flex align-items-center">
                     <label class="form-label text-muted small mb-0 me-2"
@@ -793,7 +770,6 @@
                   >
                     <!-- 日期 -->
                     <div class="me-3">
-                      <i class="bi bi-calendar-range me-2 text-info"></i>
                       <span class="small fw-medium">{{
                         formatDateRange(
                           schedule.租用開始時間,
@@ -804,7 +780,6 @@
 
                     <!-- 合約編號 -->
                     <div class="me-3">
-                      <i class="bi bi-file-text me-2 text-muted"></i>
                       <span class="text-muted small">{{
                         schedule.合約單號
                       }}</span>
@@ -812,7 +787,6 @@
 
                     <!-- 客戶姓名 -->
                     <div class="flex-grow-1">
-                      <i class="bi bi-person-fill me-2 text-primary"></i>
                       <span class="fw-semibold small">{{
                         schedule.客戶姓名
                       }}</span>
@@ -828,8 +802,7 @@
               </div>
 
               <div v-if="selectedDress.備註" class="mb-4">
-                <h6 class="fw-semibold mb-3">
-                  <i class="bi bi-card-text me-2"></i>備註
+                <h6 class="fw-semibold mb-3">備註
                 </h6>
                 <div class="bg-light p-3 rounded">
                   {{ selectedDress.備註 }}

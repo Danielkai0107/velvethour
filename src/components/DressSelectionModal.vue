@@ -11,7 +11,7 @@
       <div class="modal-content bg-light">
         <!-- Modal Header -->
         <div class="modal-header">
-          <h5 class="modal-title"><i class="bi bi-gem me-2"></i>選擇禮服</h5>
+          <h5 class="modal-title">選擇禮服</h5>
           <button
             type="button"
             class="btn-close"
@@ -263,8 +263,8 @@
                           :class="[
                             'me-1',
                             isSelected(dress.id)
-                              ? 'bi bi-dash-lg'
-                              : 'bi bi-plus',
+                              ? 'bi bi-x-lg'
+                              : 'bi bi-plus-lg',
                           ]"
                         ></i>
                         <template v-if="!dress.庫存數量 || dress.庫存數量 <= 0">

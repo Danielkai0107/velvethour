@@ -12,7 +12,6 @@
         <!-- Modal Header -->
         <div class="modal-header">
           <h5 class="modal-title">
-            <i class="bi bi-gem me-2"></i>
             禮服詳情 - {{ dress?.編號 }}
           </h5>
           <button
@@ -26,8 +25,7 @@
         <div class="modal-body" v-if="dress">
           <!-- 1. 圖片 -->
           <div class="mb-4">
-            <h6 class="fw-semibold mb-3">
-              <i class="bi bi-images me-2"></i>禮服圖片
+            <h6 class="fw-semibold mb-3">禮服圖片
             </h6>
             
             <!-- 主圖片 -->
@@ -72,16 +70,14 @@
 
           <!-- 2. 禮服編號 -->
           <div class="mb-4">
-            <h6 class="fw-semibold mb-2">
-              <i class="bi bi-hash me-2"></i>禮服編號
+            <h6 class="fw-semibold mb-2">禮服編號
             </h6>
             <h4 class="text-primary fw-bold">{{ dress.編號 }}</h4>
           </div>
 
           <!-- 3. 規格 -->
           <div class="mb-4">
-            <h6 class="fw-semibold mb-3">
-              <i class="bi bi-list-check me-2"></i>規格資訊
+            <h6 class="fw-semibold mb-3">規格資訊
             </h6>
             <div class="row g-3">
               <div class="col-md-3 col-sm-6">
@@ -113,8 +109,7 @@
 
           <!-- 4. 金額 -->
           <div class="mb-4">
-            <h6 class="fw-semibold mb-3">
-              <i class="bi bi-currency-dollar me-2"></i>金額資訊
+            <h6 class="fw-semibold mb-3">金額資訊
             </h6>
             <div class="row g-3">
               <div class="col-md-6">
@@ -134,8 +129,7 @@
 
           <!-- 5. 庫存 -->
           <div class="mb-4">
-            <h6 class="fw-semibold mb-3">
-              <i class="bi bi-box-seam me-2"></i>庫存狀態
+            <h6 class="fw-semibold mb-3">庫存狀態
             </h6>
             <div class="border rounded p-3">
               <div class="d-flex align-items-center">
@@ -156,8 +150,7 @@
 
           <!-- 6. 備註 -->
           <div class="mb-4" v-if="dress.備註 || dress.備注">
-            <h6 class="fw-semibold mb-3">
-              <i class="bi bi-card-text me-2"></i>備註
+            <h6 class="fw-semibold mb-3">備註
             </h6>
             <div class="border rounded p-3">
               <p class="mb-0 text-dark" style="white-space: pre-wrap;">{{ dress.備註 || dress.備注 }}</p>
@@ -166,8 +159,7 @@
 
           <!-- 7. 新增＆編輯時間 -->
           <div class="mb-4">
-            <h6 class="fw-semibold mb-3">
-              <i class="bi bi-clock-history me-2"></i>時間記錄
+            <h6 class="fw-semibold mb-3">時間記錄
             </h6>
             <div class="row g-3">
               <div class="col-md-6">

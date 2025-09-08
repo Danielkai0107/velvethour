@@ -2,7 +2,11 @@
   <div class="container-fluid">
     <!-- 返回按鈕 -->
     <div class="mb-4">
-      <button @click="$router.back()" class="btn btn-outline-secondary">
+      <button
+        @click="$router.back()"
+        class="btn btn-outline-secondary"
+        style="font-size: 14px"
+      >
         <i class="bi bi-arrow-left me-2"></i>返回列表
       </button>
     </div>
@@ -22,9 +26,7 @@
           <div class="card-body p-4">
             <!-- 1. 圖片 -->
             <div class="mb-4">
-              <h5 class="card-title mb-3">
-                <i class="bi bi-images me-2"></i>禮服圖片
-              </h5>
+              <h5 class="card-title mb-3">禮服圖片</h5>
 
               <!-- 主圖片 -->
               <div class="mb-3">
@@ -87,17 +89,13 @@
 
             <!-- 2. 禮服編號 -->
             <div class="mb-4">
-              <h5 class="card-title mb-2">
-                <i class="bi bi-hash me-2"></i>禮服編號
-              </h5>
+              <h5 class="card-title mb-2">禮服編號</h5>
               <h2 class="text-primary fw-bold">{{ dress.編號 }}</h2>
             </div>
 
             <!-- 3. 規格 -->
             <div class="mb-4">
-              <h5 class="card-title mb-3">
-                <i class="bi bi-list-check me-2"></i>規格資訊
-              </h5>
+              <h5 class="card-title mb-3">規格資訊</h5>
               <div class="row g-3">
                 <div class="col-md-3 col-sm-6">
                   <div class="border rounded p-3 h-100">
@@ -128,9 +126,7 @@
 
             <!-- 4. 金額 -->
             <div class="mb-4">
-              <h5 class="card-title mb-3">
-                <i class="bi bi-currency-dollar me-2"></i>金額資訊
-              </h5>
+              <h5 class="card-title mb-3">金額資訊</h5>
               <div class="row g-3">
                 <div class="col-md-6">
                   <div class="border rounded p-3">
@@ -157,9 +153,7 @@
 
             <!-- 5. 庫存 -->
             <div class="mb-4">
-              <h5 class="card-title mb-3">
-                <i class="bi bi-box-seam me-2"></i>庫存狀態
-              </h5>
+              <h5 class="card-title mb-3">庫存狀態</h5>
               <div class="border rounded p-3">
                 <div class="d-flex align-items-center">
                   <div
@@ -181,9 +175,7 @@
 
             <!-- 6. 備註 -->
             <div class="mb-4" v-if="dress.備註 || dress.備注">
-              <h5 class="card-title mb-3">
-                <i class="bi bi-card-text me-2"></i>備註
-              </h5>
+              <h5 class="card-title mb-3">備註</h5>
               <div class="border rounded p-3">
                 <p class="mb-0 text-dark" style="white-space: pre-wrap">
                   {{ dress.備註 || dress.備注 }}
@@ -196,9 +188,7 @@
               <div
                 class="d-flex justify-content-between align-items-center mb-3"
               >
-                <h5 class="card-title mb-0">
-                  <i class="bi bi-calendar-range me-2"></i>租用檔期
-                </h5>
+                <h5 class="card-title mb-0">租用檔期</h5>
                 <div class="d-flex align-items-center gap-3">
                   <div class="d-flex align-items-center">
                     <label class="form-label text-muted small mb-0 me-2"
@@ -371,9 +361,7 @@
 
             <!-- 8. 新增＆編輯時間 -->
             <div class="mb-4">
-              <h5 class="card-title mb-3">
-                <i class="bi bi-clock-history me-2"></i>時間記錄
-              </h5>
+              <h5 class="card-title mb-3">時間記錄</h5>
               <div class="row g-3">
                 <div class="col-md-6">
                   <div class="border rounded p-3">

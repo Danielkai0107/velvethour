@@ -2,7 +2,11 @@
   <div class="container-fluid">
     <!-- 返回按鈕 -->
     <div class="mb-4">
-      <button @click="$router.back()" class="btn btn-outline-secondary">
+      <button
+        @click="$router.back()"
+        class="btn btn-outline-secondary"
+        style="font-size: 14px"
+      >
         <i class="bi bi-arrow-left me-2"></i>返回列表
       </button>
     </div>
@@ -22,9 +26,7 @@
           <div class="card-body p-4">
             <!-- 1. 禮服圖卡 -->
             <div class="mb-4">
-              <h5 class="card-title mb-3">
-                <i class="bi bi-gem me-2"></i>合約禮服
-              </h5>
+              <h5 class="card-title mb-3">合約禮服</h5>
 
               <!-- 禮服圖卡網格 -->
               <div class="row g-3" v-if="contractDresses.length > 0">
@@ -115,17 +117,13 @@
 
             <!-- 2. 合約單號 -->
             <div class="mb-4">
-              <h5 class="card-title mb-2">
-                <i class="bi bi-file-text me-2"></i>合約單號
-              </h5>
+              <h5 class="card-title mb-2">合約單號</h5>
               <h2 class="text-primary fw-bold">{{ contract.合約單號 }}</h2>
             </div>
 
             <!-- 3. 客戶資訊 -->
             <div class="mb-4">
-              <h5 class="card-title mb-3">
-                <i class="bi bi-person me-2"></i>客戶資訊
-              </h5>
+              <h5 class="card-title mb-3">客戶資訊</h5>
               <div class="row g-3">
                 <div class="col-md-3 col-sm-6">
                   <div class="border rounded p-3 h-100">
@@ -172,9 +170,7 @@
 
             <!-- 4. 租用時間 -->
             <div class="mb-4">
-              <h5 class="card-title mb-3">
-                <i class="bi bi-calendar-range me-2"></i>租用時間
-              </h5>
+              <h5 class="card-title mb-3">租用時間</h5>
               <div class="row g-3">
                 <div class="col-md-6">
                   <div class="border rounded p-3">
@@ -197,9 +193,7 @@
 
             <!-- 5. 金額詳情 -->
             <div class="mb-4">
-              <h5 class="card-title mb-3">
-                <i class="bi bi-currency-dollar me-2"></i>金額詳情
-              </h5>
+              <h5 class="card-title mb-3">金額詳情</h5>
 
               <!-- 禮服項目明細 -->
               <div class="border rounded p-3 mb-3">
@@ -244,9 +238,7 @@
 
             <!-- 6. 備註 -->
             <div class="mb-4" v-if="contract.備注">
-              <h5 class="card-title mb-3">
-                <i class="bi bi-card-text me-2"></i>備註
-              </h5>
+              <h5 class="card-title mb-3">備註</h5>
               <div class="border rounded p-3">
                 <p class="mb-0 text-dark" style="white-space: pre-wrap">
                   {{ contract.備注 }}
@@ -256,9 +248,7 @@
 
             <!-- 7. 建立＆編輯時間 -->
             <div class="mb-4">
-              <h5 class="card-title mb-3">
-                <i class="bi bi-clock-history me-2"></i>時間記錄
-              </h5>
+              <h5 class="card-title mb-3">時間記錄</h5>
               <div class="row g-3">
                 <div class="col-md-6">
                   <div class="border rounded p-3">

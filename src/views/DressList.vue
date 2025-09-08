@@ -3,7 +3,11 @@
     <!-- 頁面標題和新增按鈕 -->
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h1 class="h3 mb-0 fw-bold">禮服清單</h1>
-      <button @click="showAddModal = true" class="btn btn-outline-primary">
+      <button
+        @click="showAddModal = true"
+        class="btn btn-outline-primary"
+        style="font-size: 14px"
+      >
         <i class="bi bi-plus-lg me-2"></i>新增禮服
       </button>
     </div>
@@ -234,8 +238,8 @@
                     :class="[
                       'me-1',
                       cartService.isInCart(dress.id)
-                        ? 'bi bi-cart-check'
-                        : 'bi bi-cart-plus',
+                        ? 'bi bi-check-lg'
+                        : 'bi bi-plus-lg',
                     ]"
                   ></i>
                   <template v-if="!dress.庫存數量 || dress.庫存數量 <= 0">

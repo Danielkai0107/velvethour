@@ -2,7 +2,11 @@
   <div class="container-fluid">
     <!-- 返回按鈕 -->
     <div class="mb-4">
-      <button @click="$router.back()" class="btn btn-outline-secondary">
+      <button
+        @click="$router.back()"
+        class="btn btn-outline-secondary"
+        style="font-size: 14px"
+      >
         <i class="bi bi-arrow-left me-2"></i>返回列表
       </button>
     </div>
@@ -22,17 +26,13 @@
           <div class="card-body p-4">
             <!-- 1. 承辦人基本資訊 -->
             <div class="mb-4">
-              <h5 class="card-title mb-2">
-                <i class="bi bi-person me-2"></i>承辦人姓名
-              </h5>
+              <h5 class="card-title mb-2">承辦人姓名</h5>
               <h2 class="text-primary fw-bold">{{ staffMember.姓名 }}</h2>
             </div>
 
             <!-- 2. 基本資料 -->
             <div class="mb-4">
-              <h5 class="card-title mb-3">
-                <i class="bi bi-card-list me-2"></i>基本資料
-              </h5>
+              <h5 class="card-title mb-3">基本資料</h5>
               <div class="row g-3">
                 <div class="col-md-3 col-sm-6">
                   <div class="border rounded p-3 h-100">
@@ -71,9 +71,7 @@
 
             <!-- 3. 聯絡資訊 -->
             <div class="mb-4">
-              <h5 class="card-title mb-3">
-                <i class="bi bi-telephone me-2"></i>聯絡資訊
-              </h5>
+              <h5 class="card-title mb-3">聯絡資訊</h5>
               <div class="row g-3">
                 <div class="col-md-6">
                   <div class="border rounded p-3">
@@ -92,9 +90,7 @@
 
             <!-- 4. 備註 -->
             <div class="mb-4" v-if="staffMember.備註">
-              <h5 class="card-title mb-3">
-                <i class="bi bi-card-text me-2"></i>備註
-              </h5>
+              <h5 class="card-title mb-3">備註</h5>
               <div class="border rounded p-3">
                 <p class="mb-0 text-dark" style="white-space: pre-wrap">
                   {{ staffMember.備註 }}
@@ -104,9 +100,7 @@
 
             <!-- 5. 加入＆編輯時間 -->
             <div class="mb-4">
-              <h5 class="card-title mb-3">
-                <i class="bi bi-clock-history me-2"></i>時間記錄
-              </h5>
+              <h5 class="card-title mb-3">時間記錄</h5>
               <div class="row g-3">
                 <div class="col-md-6">
                   <div class="border rounded p-3">

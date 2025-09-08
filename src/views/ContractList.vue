@@ -11,13 +11,19 @@
           class="btn btn-outline-danger"
           :title="`清空購物車中的 ${cartItemCount} 件禮服`"
         >
-          <i class="bi bi-cart-x me-2"></i>清空所選 ({{ cartItemCount }})
+          <i class="bi bi-trash3 me-2"></i>清空 ({{ cartItemCount }})
         </button>
 
         <!-- 新增合約按鈕 -->
         <button
           @click="showAddModal = true"
           class="btn btn-outline-primary d-flex align-items-center"
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+          "
           :title="
             cartItemCount > 0
               ? `新增合約 (購物車有 ${cartItemCount} 件禮服)`
@@ -27,7 +33,18 @@
           <i class="bi bi-plus-lg me-2"></i>
           <span>新增合約</span>
           <!-- 購物車數量提示 -->
-          <span v-if="cartItemCount > 0" class="badge bg-danger ms-2">
+          <span
+            v-if="cartItemCount > 0"
+            class="badge bg-danger ms-2"
+            style="
+              font-size: 10px;
+              width: 20px;
+              height: 20px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            "
+          >
             {{ cartItemCount > 99 ? "99+" : cartItemCount }}
           </span>
         </button>
