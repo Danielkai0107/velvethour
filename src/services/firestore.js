@@ -207,38 +207,97 @@ export const dressService = {
     excludeContractId = null
   ) {
     try {
+      console.log(
+        `檢查禮服 ${dressId} 在時間 ${startTime} - ${endTime} 的可用性`
+      );
+
       const rentalSchedule = await this.getRentalSchedule(dressId);
+      console.log(`禮服 ${dressId} 的租用檔期:`, rentalSchedule);
 
       // 過濾掉當前正在編輯的合約（如果有的話）
       const filteredSchedule = excludeContractId
         ? rentalSchedule.filter((item) => item.合約ID !== excludeContractId)
         : rentalSchedule;
 
-      // 檢查時間衝突
-      const startDate = new Date(startTime);
-      const endDate = new Date(endTime);
+      console.log(
+        `過濾後的檔期 (排除合約 ${excludeContractId}):`,
+        filteredSchedule
+      );
+
+      // 檢查日期衝突 (只看日期，不看時間)
+      const contractStartDate = new Date(startTime);
+      const contractEndDate = new Date(endTime);
+
+      // 計算實際檔期：合約開始時間到開始時間+7天
+      const actualStartDate = new Date(
+        contractStartDate.getFullYear(),
+        contractStartDate.getMonth(),
+        contractStartDate.getDate()
+      );
+      const actualEndDate = new Date(actualStartDate);
+      actualEndDate.setDate(actualStartDate.getDate() + 7);
+
+      console.log("檔期計算:", {
+        合約開始時間: contractStartDate,
+        合約結束時間: contractEndDate,
+        實際檔期開始: actualStartDate,
+        實際檔期結束: actualEndDate,
+        說明: "實際檔期 = 合約開始時間 + 7天",
+      });
 
       for (const schedule of filteredSchedule) {
         const scheduleStart =
-          schedule.使用開始時間 instanceof Date
-            ? schedule.使用開始時間
-            : schedule.使用開始時間.toDate
-            ? schedule.使用開始時間.toDate()
-            : new Date(schedule.使用開始時間);
+          schedule.租用開始時間 instanceof Date
+            ? schedule.租用開始時間
+            : schedule.租用開始時間.toDate
+            ? schedule.租用開始時間.toDate()
+            : new Date(schedule.租用開始時間);
         const scheduleEnd =
-          schedule.使用結束時間 instanceof Date
-            ? schedule.使用結束時間
-            : schedule.使用結束時間.toDate
-            ? schedule.使用結束時間.toDate()
-            : new Date(schedule.使用結束時間);
+          schedule.租用結束時間 instanceof Date
+            ? schedule.租用結束時間
+            : schedule.租用結束時間.toDate
+            ? schedule.租用結束時間.toDate()
+            : new Date(schedule.租用結束時間);
 
-        // 檢查時間重疊
-        if (!(endDate <= scheduleStart || startDate >= scheduleEnd)) {
-          // 只有進行中、已確認的合約才算衝突
+        // 計算現有合約的實際檔期（也是開始時間+7天）
+        const scheduleActualStartDate = new Date(
+          scheduleStart.getFullYear(),
+          scheduleStart.getMonth(),
+          scheduleStart.getDate()
+        );
+        const scheduleActualEndDate = new Date(scheduleActualStartDate);
+        scheduleActualEndDate.setDate(scheduleActualStartDate.getDate() + 7);
+
+        console.log(`檢查與合約 ${schedule.合約單號} 的檔期重疊:`, {
+          現有合約開始: scheduleStart,
+          現有合約實際檔期開始: scheduleActualStartDate,
+          現有合約實際檔期結束: scheduleActualEndDate,
+          新合約實際檔期開始: actualStartDate,
+          新合約實際檔期結束: actualEndDate,
+          isOverlap: !(
+            actualEndDate < scheduleActualStartDate ||
+            actualStartDate > scheduleActualEndDate
+          ),
+          處理狀態: schedule.處理狀態,
+          說明: "比較實際檔期（都是開始時間+7天）",
+        });
+
+        // 檢查實際檔期重疊
+        if (
+          !(
+            actualEndDate < scheduleActualStartDate ||
+            actualStartDate > scheduleActualEndDate
+          )
+        ) {
+          // 只有進行中、已確認、待確認的合約才算衝突
           if (
             schedule.處理狀態 === "進行中" ||
-            schedule.處理狀態 === "已確認"
+            schedule.處理狀態 === "已確認" ||
+            schedule.處理狀態 === "待確認"
           ) {
+            console.log(
+              `發現衝突！合約 ${schedule.合約單號} 狀態: ${schedule.處理狀態}`
+            );
             return {
               available: false,
               conflictContract: schedule,
@@ -247,6 +306,7 @@ export const dressService = {
         }
       }
 
+      console.log(`禮服 ${dressId} 在指定時間可用`);
       return { available: true };
     } catch (error) {
       console.error("檢查禮服可用性失敗:", error);
@@ -274,8 +334,8 @@ export const contractService = {
           id: "demo-contract-1",
           合約單號: "20241201-001",
           合約建立日期時間: new Date("2024-12-01T10:30:00"),
-          使用開始時間: new Date("2024-12-15T14:00:00"),
-          使用結束時間: new Date("2024-12-16T18:00:00"),
+          租用開始時間: new Date("2024-12-15T14:00:00"),
+          租用結束時間: new Date("2024-12-16T18:00:00"),
           處理狀態: "進行中",
           客戶姓名: "張小姐",
           電話: "0912-345-678",
@@ -305,8 +365,8 @@ export const contractService = {
           id: "demo-contract-2",
           合約單號: "20241201-002",
           合約建立日期時間: new Date("2024-12-01T14:20:00"),
-          使用開始時間: new Date("2024-12-20T16:00:00"),
-          使用結束時間: new Date("2024-12-21T20:00:00"),
+          租用開始時間: new Date("2024-12-20T16:00:00"),
+          租用結束時間: new Date("2024-12-21T20:00:00"),
           處理狀態: "已確認",
           客戶姓名: "李太太",
           電話: "0923-456-789",
@@ -330,8 +390,8 @@ export const contractService = {
           id: "demo-contract-3",
           合約單號: "20241130-003",
           合約建立日期時間: new Date("2024-11-30T09:15:00"),
-          使用開始時間: new Date("2024-11-30T12:00:00"),
-          使用結束時間: new Date("2024-11-30T22:00:00"),
+          租用開始時間: new Date("2024-11-30T12:00:00"),
+          租用結束時間: new Date("2024-11-30T22:00:00"),
           處理狀態: "已完成",
           客戶姓名: "王小姐",
           電話: "0934-567-890",
@@ -367,42 +427,63 @@ export const contractService = {
 
   // 新增合約
   async create(contractData) {
-    // 產生合約單號
-    const today = new Date();
-    const dateStr = today.toISOString().split("T")[0].replace(/-/g, "");
+    try {
+      // 如果已經有合約單號，直接使用；否則生成一個
+      let contractNumber = contractData.合約單號;
 
-    // 查詢今天的合約數量
-    const startOfDay = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate()
-    );
-    const endOfDay = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate() + 1
-    );
+      if (!contractNumber) {
+        // 備用的合約單號生成邏輯（如果前端沒有生成）
+        const today = new Date();
+        const year = today.getFullYear().toString().slice(-2);
+        const month = (today.getMonth() + 1).toString().padStart(2, "0");
+        const day = today.getDate().toString().padStart(2, "0");
+        const dateStr = `${month}${day}`;
 
-    const q = query(
-      collection(db, "contracts"),
-      where("合約建立日期時間", ">=", startOfDay),
-      where("合約建立日期時間", "<", endOfDay)
-    );
-    const snapshot = await getDocs(q);
-    const todayCount = snapshot.size + 1;
+        // 查詢今天的合約數量
+        const startOfDay = new Date(today);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(today);
+        endOfDay.setHours(23, 59, 59, 999);
 
-    const contractNumber = `${dateStr}-${todayCount
-      .toString()
-      .padStart(3, "0")}`;
+        const allContracts = await this.getAll();
+        const todayContracts = allContracts.filter((contract) => {
+          if (!contract.創建時間) return false;
 
-    const docRef = await addDoc(collection(db, "contracts"), {
-      ...contractData,
-      合約單號: contractNumber,
-      合約建立日期時間: serverTimestamp(),
-      創建時間: serverTimestamp(),
-      更新時間: serverTimestamp(),
-    });
-    return docRef.id;
+          let contractDate;
+          if (
+            contract.創建時間.toDate &&
+            typeof contract.創建時間.toDate === "function"
+          ) {
+            contractDate = contract.創建時間.toDate();
+          } else if (contract.創建時間 instanceof Date) {
+            contractDate = contract.創建時間;
+          } else {
+            contractDate = new Date(contract.創建時間);
+          }
+
+          return contractDate >= startOfDay && contractDate <= endOfDay;
+        });
+
+        const serialNumber = (todayContracts.length + 1)
+          .toString()
+          .padStart(3, "0");
+        contractNumber = `V${year}${dateStr}${serialNumber}`;
+      }
+
+      console.log("保存合約，使用合約單號:", contractNumber);
+
+      const docRef = await addDoc(collection(db, "contracts"), {
+        ...contractData,
+        合約單號: contractNumber,
+        合約建立日期時間: contractData.合約建立日期時間 || serverTimestamp(),
+        創建時間: contractData.創建時間 || serverTimestamp(),
+        更新時間: serverTimestamp(),
+      });
+      return docRef.id;
+    } catch (error) {
+      console.error("新增合約失敗:", error);
+      throw error;
+    }
   },
 
   // 更新合約

@@ -62,86 +62,6 @@
                 </div>
               </div>
 
-              <!-- 檔期衝突狀態 -->
-              <div v-if="checkingConflicts" class="alert alert-info mb-3">
-                <div class="d-flex align-items-center">
-                  <div
-                    class="spinner-border spinner-border-sm me-2"
-                    role="status"
-                  >
-                    <span class="visually-hidden">檢查中...</span>
-                  </div>
-                  <span>正在檢查禮服檔期衝突...</span>
-                </div>
-              </div>
-
-              <!-- 檔期衝突警告 -->
-              <div
-                v-else-if="conflictWarnings.length > 0"
-                class="alert alert-warning mb-3"
-              >
-                <h6 class="alert-heading">
-                  <i class="bi bi-exclamation-triangle me-2"></i>檔期衝突警告
-                </h6>
-                <div
-                  v-for="warning in conflictWarnings"
-                  :key="warning.禮服ID"
-                  class="mb-2"
-                >
-                  <strong>{{ warning.禮服編號 }}</strong
-                  >:
-                  {{ warning.message }}
-                  <br />
-                  <small class="text-muted">
-                    衝突合約: {{ warning.conflictContract.合約單號 }} ({{
-                      warning.conflictContract.客戶姓名
-                    }},
-                    {{
-                      formatDateTimeShort(warning.conflictContract.租用開始時間)
-                    }}
-                    -
-                    {{
-                      formatDateTimeShort(
-                        warning.conflictContract.租用結束時間
-                      )
-                    }})
-                  </small>
-                </div>
-              </div>
-
-              <!-- 檔期檢查成功 -->
-              <div
-                v-else-if="hasValidTimeAndDresses && !checkingConflicts"
-                class="alert alert-success mb-3"
-              >
-                <div class="d-flex align-items-center">
-                  <i class="bi bi-check-circle me-2"></i>
-                  <span>所選禮服在指定時間段內可用</span>
-                </div>
-              </div>
-
-              <!-- 輸入提示 -->
-              <div
-                v-else-if="!hasValidTimeAndDresses && !checkingConflicts"
-                class="alert alert-light mb-3"
-              >
-                <div class="d-flex align-items-center">
-                  <i class="bi bi-info-circle me-2 text-muted"></i>
-                  <span class="text-muted">
-                    <template
-                      v-if="!formData.租用開始時間 || !formData.租用結束時間"
-                    >
-                      請先設定租用時間，
-                    </template>
-                    <template
-                      v-if="!formData.禮服清單.some((item) => item.禮服ID)"
-                    >
-                      然後選擇禮服，系統將自動檢查檔期衝突
-                    </template>
-                  </span>
-                </div>
-              </div>
-
               <!-- 禮服圖卡展示 -->
               <div
                 class="row g-3 mb-3"
@@ -422,7 +342,7 @@
                     type="datetime-local"
                     class="form-control"
                     required
-                    @change="onTimeOrDressChange"
+                    @change="onStartTimeChange"
                   />
                 </div>
 
@@ -438,6 +358,101 @@
                     required
                     @change="onTimeOrDressChange"
                   />
+                </div>
+              </div>
+
+              <!-- 時間範圍驗證錯誤 -->
+              <div
+                v-if="
+                  !isValidTimeRange &&
+                  formData.租用開始時間 &&
+                  formData.租用結束時間
+                "
+                class="alert alert-warning mb-3 mt-3"
+              >
+                <div class="d-flex align-items-center">
+                  <i class="bi bi-exclamation-triangle me-2"></i>
+                  <span>租用結束時間必須晚於開始時間</span>
+                </div>
+              </div>
+
+              <!-- 檔期衝突狀態 -->
+              <div v-if="checkingConflicts" class="alert alert-info mb-3 mt-3">
+                <div class="d-flex align-items-center">
+                  <div
+                    class="spinner-border spinner-border-sm me-2"
+                    role="status"
+                  >
+                    <span class="visually-hidden">檢查中...</span>
+                  </div>
+                  <span>正在檢查禮服檔期衝突...</span>
+                </div>
+              </div>
+
+              <!-- 檔期衝突警告 -->
+              <div
+                v-else-if="conflictWarnings.length > 0"
+                class="alert alert-danger mb-3 mt-3"
+              >
+                <h6 class="alert-heading">
+                  <i class="bi bi-exclamation-triangle me-2"></i>檔期衝突警告
+                </h6>
+                <div
+                  v-for="warning in conflictWarnings"
+                  :key="warning.禮服ID"
+                  class="mb-2"
+                >
+                  <strong>{{ warning.禮服編號 }}</strong
+                  >:
+                  {{ warning.message }}
+                  <br />
+                  <small class="text-muted">
+                    衝突合約: {{ warning.conflictContract.合約單號 }} ({{
+                      warning.conflictContract.客戶姓名
+                    }},
+                    {{
+                      formatDateTimeShort(warning.conflictContract.租用開始時間)
+                    }}
+                    -
+                    {{
+                      formatDateTimeShort(
+                        warning.conflictContract.租用結束時間
+                      )
+                    }})
+                  </small>
+                </div>
+              </div>
+
+              <!-- 檔期檢查成功 -->
+              <div
+                v-else-if="hasValidTimeAndDresses && !checkingConflicts"
+                class="alert alert-success mb-3 mt-3"
+              >
+                <div class="d-flex align-items-center">
+                  <i class="bi bi-check-circle me-2"></i>
+                  <span>所選禮服在指定時間段內可用</span>
+                </div>
+              </div>
+
+              <!-- 輸入提示 -->
+              <div
+                v-else-if="!hasValidTimeAndDresses && !checkingConflicts"
+                class="alert alert-light mb-3 mt-3"
+              >
+                <div class="d-flex align-items-center">
+                  <i class="bi bi-info-circle me-2 text-muted"></i>
+                  <span class="text-muted">
+                    <template
+                      v-if="!formData.租用開始時間 || !formData.租用結束時間"
+                    >
+                      請先設定租用時間，
+                    </template>
+                    <template
+                      v-if="!formData.禮服清單.some((item) => item.禮服ID)"
+                    >
+                      然後選擇禮服，系統將自動檢查檔期衝突
+                    </template>
+                  </span>
                 </div>
               </div>
             </div>
@@ -671,9 +686,88 @@
 
               <!-- 檔期時間 -->
               <div class="mb-4">
-                <h6 class="fw-semibold mb-3">
-                  <i class="bi bi-calendar-range me-2"></i>租用檔期
-                </h6>
+                <div
+                  class="d-flex justify-content-between align-items-center mb-3"
+                >
+                  <h6 class="fw-semibold mb-0">
+                    <i class="bi bi-calendar-range me-2"></i>租用檔期
+                  </h6>
+                  <div class="d-flex align-items-center">
+                    <label class="form-label text-muted small mb-0 me-2"
+                      >檢查日期衝突：</label
+                    >
+                    <input
+                      v-model="dressConflictCheckDate"
+                      type="date"
+                      class="form-control form-control-sm"
+                      style="width: 140px"
+                      @change="checkDressDateConflict"
+                    />
+                  </div>
+                </div>
+
+                <!-- 衝突檢查結果 -->
+                <div v-if="dressConflictCheckResult" class="mb-3">
+                  <div
+                    :class="[
+                      'alert alert-sm',
+                      dressConflictCheckResult.hasConflict
+                        ? 'alert-danger'
+                        : 'alert-success',
+                    ]"
+                    style="padding: 8px 12px"
+                  >
+                    <div class="d-flex align-items-center">
+                      <i
+                        :class="[
+                          'me-2',
+                          dressConflictCheckResult.hasConflict
+                            ? 'bi bi-exclamation-triangle'
+                            : 'bi bi-check-circle',
+                        ]"
+                      ></i>
+                      <div class="flex-grow-1">
+                        <strong>{{
+                          dressConflictCheckResult.hasConflict
+                            ? "檔期衝突"
+                            : "無衝突"
+                        }}</strong>
+                        <div class="small mt-1">
+                          檢查日期：{{
+                            formatDateOnly(dressConflictCheckDate)
+                          }}
+                          (前後4天：{{
+                            formatDateOnly(dressConflictCheckResult.startRange)
+                          }}
+                          ~
+                          {{
+                            formatDateOnly(dressConflictCheckResult.endRange)
+                          }})
+                        </div>
+                        <div
+                          v-if="
+                            dressConflictCheckResult.hasConflict &&
+                            dressConflictCheckResult.conflicts.length > 0
+                          "
+                          class="small mt-2"
+                        >
+                          <div class="fw-semibold text-danger mb-1">
+                            衝突的租用檔期：
+                          </div>
+                          <div
+                            v-for="conflict in dressConflictCheckResult.conflicts"
+                            :key="conflict.合約ID"
+                            class="mb-1"
+                          >
+                            • {{ conflict.合約單號 }} ({{ conflict.客戶姓名 }}):
+                            {{ formatDateOnly(conflict.租用開始時間) }} ~
+                            {{ formatDateOnly(conflict.租用結束時間) }}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
                 <!-- 載入狀態 -->
                 <div v-if="loadingSchedule" class="text-center py-3">
@@ -695,42 +789,33 @@
                   <div
                     v-for="(schedule, index) in dressSchedule"
                     :key="index"
-                    class="d-flex justify-content-between align-items-center py-2 px-2 rounded mb-2 bg-white shadow-sm"
+                    class="d-flex align-items-center py-2 px-3 rounded mb-2 bg-white shadow-sm"
                   >
-                    <div class="flex-grow-1">
-                      <div class="d-flex align-items-center mb-1">
-                        <i class="bi bi-person-fill me-2 text-primary"></i>
-                        <span class="fw-semibold small">{{
-                          schedule.客戶姓名
-                        }}</span>
-                      </div>
-                      <div class="d-flex align-items-center">
-                        <i class="bi bi-file-text me-2 text-muted"></i>
-                        <span class="text-muted small">{{
-                          schedule.合約單號
-                        }}</span>
-                      </div>
+                    <!-- 日期 -->
+                    <div class="me-3">
+                      <i class="bi bi-calendar-range me-2 text-info"></i>
+                      <span class="small fw-medium">{{
+                        formatDateRange(
+                          schedule.租用開始時間,
+                          schedule.租用結束時間
+                        )
+                      }}</span>
                     </div>
-                    <div class="text-end ms-3">
-                      <div
-                        class="d-flex align-items-center justify-content-end mb-1"
-                      >
-                        <i class="bi bi-calendar-range me-2 text-info"></i>
-                        <span class="small fw-medium">{{
-                          formatDateRange(
-                            schedule.租用開始時間,
-                            schedule.租用結束時間
-                          )
-                        }}</span>
-                      </div>
-                      <div class="d-flex justify-content-end">
-                        <span
-                          class="badge"
-                          :class="getScheduleStatusClass(schedule.處理狀態)"
-                        >
-                          {{ schedule.處理狀態 }}
-                        </span>
-                      </div>
+
+                    <!-- 合約編號 -->
+                    <div class="me-3">
+                      <i class="bi bi-file-text me-2 text-muted"></i>
+                      <span class="text-muted small">{{
+                        schedule.合約單號
+                      }}</span>
+                    </div>
+
+                    <!-- 客戶姓名 -->
+                    <div class="flex-grow-1">
+                      <i class="bi bi-person-fill me-2 text-primary"></i>
+                      <span class="fw-semibold small">{{
+                        schedule.客戶姓名
+                      }}</span>
                     </div>
                   </div>
                 </div>
@@ -805,7 +890,16 @@ export default {
     hasValidTimeAndDresses() {
       const hasTime = this.formData.租用開始時間 && this.formData.租用結束時間;
       const hasDresses = this.formData.禮服清單.some((item) => item.禮服ID);
-      return hasTime && hasDresses;
+      return hasTime && hasDresses && this.isValidTimeRange;
+    },
+    isValidTimeRange() {
+      if (!this.formData.租用開始時間 || !this.formData.租用結束時間) {
+        return true; // 如果任一時間未設定，不顯示錯誤
+      }
+      return (
+        new Date(this.formData.租用開始時間) <
+        new Date(this.formData.租用結束時間)
+      );
     },
     hasCartItems() {
       return !this.contract && cartService.getItemCount() > 0;
@@ -847,6 +941,8 @@ export default {
       loadingSchedule: false, // 載入檔期狀態
       dressSchedule: [], // 禮服檔期資料
       showDressSelectionModal: false, // 控制禮服選擇彈出視窗
+      dressConflictCheckDate: "", // 禮服詳情popup中的衝突檢查日期
+      dressConflictCheckResult: null, // 禮服詳情popup中的衝突檢查結果
     };
   },
   async mounted() {
@@ -1066,6 +1162,8 @@ export default {
       this.currentDressImage = null;
       this.dressSchedule = [];
       this.loadingSchedule = false;
+      this.dressConflictCheckDate = "";
+      this.dressConflictCheckResult = null;
     },
 
     // 獲取已選擇的禮服ID清單
@@ -1191,6 +1289,130 @@ export default {
       }
     },
 
+    // 檢查禮服詳情popup中的日期衝突
+    checkDressDateConflict() {
+      if (!this.dressConflictCheckDate || !this.dressSchedule) {
+        this.dressConflictCheckResult = null;
+        return;
+      }
+
+      try {
+        const checkDate = new Date(this.dressConflictCheckDate);
+
+        // 計算前後4天的範圍
+        const startRange = new Date(checkDate);
+        startRange.setDate(checkDate.getDate() - 4);
+
+        const endRange = new Date(checkDate);
+        endRange.setDate(checkDate.getDate() + 4);
+
+        // 將檢查範圍轉換為純日期（不含時間）
+        const checkStartDate = new Date(
+          startRange.getFullYear(),
+          startRange.getMonth(),
+          startRange.getDate()
+        );
+        const checkEndDate = new Date(
+          endRange.getFullYear(),
+          endRange.getMonth(),
+          endRange.getDate()
+        );
+
+        // 檢查與現有檔期的衝突
+        const conflicts = this.dressSchedule.filter((schedule) => {
+          // 跳過已取消的合約
+          if (schedule.處理狀態 === "已取消") {
+            return false;
+          }
+
+          let scheduleStart, scheduleEnd;
+
+          // 處理不同格式的時間
+          if (
+            schedule.租用開始時間 &&
+            schedule.租用開始時間.toDate &&
+            typeof schedule.租用開始時間.toDate === "function"
+          ) {
+            scheduleStart = schedule.租用開始時間.toDate();
+          } else if (schedule.租用開始時間 instanceof Date) {
+            scheduleStart = schedule.租用開始時間;
+          } else if (schedule.租用開始時間) {
+            scheduleStart = new Date(schedule.租用開始時間);
+          } else {
+            return false;
+          }
+
+          if (
+            schedule.租用結束時間 &&
+            schedule.租用結束時間.toDate &&
+            typeof schedule.租用結束時間.toDate === "function"
+          ) {
+            scheduleEnd = schedule.租用結束時間.toDate();
+          } else if (schedule.租用結束時間 instanceof Date) {
+            scheduleEnd = schedule.租用結束時間;
+          } else if (schedule.租用結束時間) {
+            scheduleEnd = new Date(schedule.租用結束時間);
+          } else {
+            return false;
+          }
+
+          // 將現有檔期也轉換為純日期
+          const scheduleStartDate = new Date(
+            scheduleStart.getFullYear(),
+            scheduleStart.getMonth(),
+            scheduleStart.getDate()
+          );
+          const scheduleEndDate = new Date(
+            scheduleEnd.getFullYear(),
+            scheduleEnd.getMonth(),
+            scheduleEnd.getDate()
+          );
+
+          // 檢查日期範圍是否重疊 (只看日期)
+          return !(
+            checkEndDate < scheduleStartDate || checkStartDate > scheduleEndDate
+          );
+        });
+
+        this.dressConflictCheckResult = {
+          hasConflict: conflicts.length > 0,
+          conflicts: conflicts,
+          startRange: startRange,
+          endRange: endRange,
+        };
+      } catch (error) {
+        console.error("檢查禮服檔期衝突失敗:", error);
+        this.showToast("檢查檔期衝突失敗: " + error.message, "error");
+      }
+    },
+
+    // 格式化日期（只顯示日期部分）
+    formatDateOnly(date) {
+      if (!date) return "未設定";
+
+      let dateObj;
+      if (typeof date === "string") {
+        dateObj = new Date(date);
+      } else if (date.toDate && typeof date.toDate === "function") {
+        // Firebase Timestamp
+        dateObj = date.toDate();
+      } else if (date instanceof Date) {
+        // JavaScript Date
+        dateObj = date;
+      } else {
+        // String or other format
+        dateObj = new Date(date);
+      }
+
+      return dateObj.toLocaleDateString("zh-TW", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        weekday: "short",
+        hour12: false,
+      });
+    },
+
     // 載入禮服檔期資訊
     async loadDressSchedule(dressId) {
       try {
@@ -1273,6 +1495,13 @@ export default {
 
       // 檢查是否有足夠的資訊進行衝突檢查
       if (!this.formData.租用開始時間 || !this.formData.租用結束時間) {
+        console.log("缺少租用時間資訊，跳過衝突檢查");
+        return;
+      }
+
+      // 檢查時間範圍是否有效
+      if (!this.isValidTimeRange) {
+        console.log("時間範圍無效，跳過衝突檢查");
         return;
       }
 
@@ -1280,6 +1509,7 @@ export default {
         (item) => item.禮服ID
       );
       if (validDressItems.length === 0) {
+        console.log("沒有有效的禮服項目，跳過衝突檢查");
         return;
       }
 
@@ -1287,13 +1517,24 @@ export default {
         this.checkingConflicts = true;
         const excludeContractId = this.contract?.id || null;
 
+        console.log("開始檢查檔期衝突:", {
+          租用開始時間: this.formData.租用開始時間,
+          租用結束時間: this.formData.租用結束時間,
+          禮服清單: validDressItems,
+          排除合約ID: excludeContractId,
+        });
+
         for (const item of validDressItems) {
+          console.log(`檢查禮服 ${item.禮服ID} 的可用性...`);
+
           const availability = await dressService.checkDressAvailability(
             item.禮服ID,
             this.formData.租用開始時間,
             this.formData.租用結束時間,
             excludeContractId
           );
+
+          console.log(`禮服 ${item.禮服ID} 檢查結果:`, availability);
 
           if (!availability.available) {
             const dress = this.availableDresses.find(
@@ -1307,11 +1548,35 @@ export default {
             });
           }
         }
+
+        console.log("檔期衝突檢查完成，衝突警告:", this.conflictWarnings);
       } catch (error) {
         console.error("檢查檔期衝突失敗:", error);
       } finally {
         this.checkingConflicts = false;
       }
+    },
+
+    // 當開始時間改變時自動設定結束時間
+    onStartTimeChange() {
+      if (this.formData.租用開始時間) {
+        const startDate = new Date(this.formData.租用開始時間);
+
+        // 自動設定結束時間為開始時間+4天
+        const endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + 4);
+
+        // 格式化為 datetime-local 輸入框需要的格式
+        this.formData.租用結束時間 = endDate.toISOString().slice(0, 16);
+
+        console.log("自動設定結束時間:", {
+          開始時間: this.formData.租用開始時間,
+          結束時間: this.formData.租用結束時間,
+        });
+      }
+
+      // 觸發檔期檢查
+      this.onTimeOrDressChange();
     },
 
     // 當時間或禮服選擇改變時觸發檔期檢查
@@ -1417,13 +1682,31 @@ export default {
         // 如果是新增模式，生成合約單號和時間戳
         if (!this.contract || !this.contract.id) {
           const now = new Date();
-          const dateStr = now.toISOString().split("T")[0].replace(/-/g, "");
 
-          // 簡單的流水號生成（實際應該查詢當天的合約數量）
-          const serialNumber = Math.floor(Math.random() * 999) + 1;
-          submitData.合約單號 = `${dateStr}-${serialNumber
+          // 生成合約單號：V + 年份後兩位 + 月日 + 今天第幾單
+          const year = now.getFullYear().toString().slice(-2); // 年份後兩位
+          const month = (now.getMonth() + 1).toString().padStart(2, "0"); // 月份
+          const day = now.getDate().toString().padStart(2, "0"); // 日期
+          const dateStr = `${month}${day}`; // 月日格式：0908
+
+          // 查詢今天已有的合約數量來生成序號
+          const todayContractNumber = await this.getTodayContractCount(now);
+          const serialNumber = (todayContractNumber + 1)
             .toString()
-            .padStart(3, "0")}`;
+            .padStart(3, "0");
+
+          const generatedContractNumber = `V${year}${dateStr}${serialNumber}`;
+          console.log("生成的合約單號:", {
+            year,
+            month,
+            day,
+            dateStr,
+            todayContractNumber,
+            serialNumber,
+            generatedContractNumber,
+          });
+
+          submitData.合約單號 = generatedContractNumber;
           submitData.合約建立日期時間 = now;
           submitData.創建時間 = now;
           submitData.更新時間 = now;
@@ -1480,6 +1763,7 @@ export default {
         hour: "2-digit",
         minute: "2-digit",
         second: "2-digit",
+        hour12: false,
       });
     },
 
@@ -1500,7 +1784,50 @@ export default {
         day: "2-digit",
         hour: "2-digit",
         minute: "2-digit",
+        hour12: false,
       });
+    },
+
+    // 獲取今天已有的合約數量
+    async getTodayContractCount(date) {
+      try {
+        // 計算今天的開始和結束時間
+        const startOfDay = new Date(date);
+        startOfDay.setHours(0, 0, 0, 0);
+
+        const endOfDay = new Date(date);
+        endOfDay.setHours(23, 59, 59, 999);
+
+        // 導入contractService來查詢合約
+        const { contractService } = await import("../services/firestore.js");
+        const allContracts = await contractService.getAll();
+
+        // 篩選今天建立的合約
+        const todayContracts = allContracts.filter((contract) => {
+          if (!contract.創建時間) return false;
+
+          let contractDate;
+          if (
+            contract.創建時間.toDate &&
+            typeof contract.創建時間.toDate === "function"
+          ) {
+            contractDate = contract.創建時間.toDate();
+          } else if (contract.創建時間 instanceof Date) {
+            contractDate = contract.創建時間;
+          } else {
+            contractDate = new Date(contract.創建時間);
+          }
+
+          return contractDate >= startOfDay && contractDate <= endOfDay;
+        });
+
+        console.log(`今天已有 ${todayContracts.length} 個合約`);
+        return todayContracts.length;
+      } catch (error) {
+        console.error("查詢今天合約數量失敗:", error);
+        // 如果查詢失敗，返回0，這樣會生成001
+        return 0;
+      }
     },
 
     showToast(message, type = "info") {

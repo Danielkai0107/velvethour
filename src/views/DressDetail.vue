@@ -319,11 +319,6 @@
                         <th
                           class="border-0 fw-normal text-muted small text-start py-3"
                         >
-                          處理狀態
-                        </th>
-                        <th
-                          class="border-0 fw-normal text-muted small text-start py-3"
-                        >
                           操作
                         </th>
                       </tr>
@@ -350,21 +345,6 @@
                           <span class="text-muted d-block">{{
                             formatDateTime(schedule.租用結束時間)
                           }}</span>
-                        </td>
-                        <td class="border-0 small text-start py-4">
-                          <span
-                            class="badge"
-                            style="font-size: 12px; padding: 6px 12px"
-                            :class="{
-                              'bg-success': schedule.處理狀態 === '已完成',
-                              'bg-primary': schedule.處理狀態 === '進行中',
-                              'bg-info': schedule.處理狀態 === '已確認',
-                              'bg-warning': schedule.處理狀態 === '待確認',
-                              'bg-secondary': schedule.處理狀態 === '已取消',
-                            }"
-                          >
-                            {{ schedule.處理狀態 }}
-                          </span>
                         </td>
                         <td class="border-0 small text-start py-4">
                           <router-link
@@ -569,6 +549,7 @@ export default {
         hour: "2-digit",
         minute: "2-digit",
         second: "2-digit",
+        hour12: false,
       });
     },
     formatDateTime(date) {
@@ -593,6 +574,7 @@ export default {
         hour: "2-digit",
         minute: "2-digit",
         weekday: "short",
+        hour12: false,
       });
     },
 
@@ -662,15 +644,35 @@ export default {
             return false;
           }
 
+          // 將現有檔期也轉換為純日期
+          const scheduleStartDate = new Date(
+            scheduleStart.getFullYear(),
+            scheduleStart.getMonth(),
+            scheduleStart.getDate()
+          );
+          const scheduleEndDate = new Date(
+            scheduleEnd.getFullYear(),
+            scheduleEnd.getMonth(),
+            scheduleEnd.getDate()
+          );
+
           console.log("檢查檔期:", {
             合約單號: schedule.合約單號,
-            scheduleStart: scheduleStart,
-            scheduleEnd: scheduleEnd,
-            isOverlap: startRange <= scheduleEnd && endRange >= scheduleStart,
+            scheduleStartDate: scheduleStartDate,
+            scheduleEndDate: scheduleEndDate,
+            checkStartDate: checkStartDate,
+            checkEndDate: checkEndDate,
+            isOverlap: !(
+              checkEndDate < scheduleStartDate ||
+              checkStartDate > scheduleEndDate
+            ),
+            說明: "只檢查日期重疊，不考慮具體時間",
           });
 
-          // 檢查日期範圍是否重疊
-          return startRange <= scheduleEnd && endRange >= scheduleStart;
+          // 檢查日期範圍是否重疊 (只看日期)
+          return !(
+            checkEndDate < scheduleStartDate || checkStartDate > scheduleEndDate
+          );
         });
 
         console.log("衝突結果:", conflicts);

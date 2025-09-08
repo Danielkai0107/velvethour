@@ -2,10 +2,7 @@
   <div class="container-fluid">
     <!-- 返回按鈕 -->
     <div class="mb-4">
-      <button
-        @click="$router.back()"
-        class="btn btn-outline-secondary"
-      >
+      <button @click="$router.back()" class="btn btn-outline-secondary">
         <i class="bi bi-arrow-left me-2"></i>返回列表
       </button>
     </div>
@@ -23,7 +20,6 @@
       <div class="col-12">
         <div class="card shadow-sm border-0">
           <div class="card-body p-4">
-            
             <!-- 1. 承辦人基本資訊 -->
             <div class="mb-4">
               <h5 class="card-title mb-2">
@@ -41,7 +37,9 @@
                 <div class="col-md-3 col-sm-6">
                   <div class="border rounded p-3 h-100">
                     <small class="text-muted d-block">員工編號</small>
-                    <strong class="text-dark">{{ staffMember.員工編號 }}</strong>
+                    <strong class="text-dark">{{
+                      staffMember.員工編號
+                    }}</strong>
                   </div>
                 </div>
                 <div class="col-md-3 col-sm-6">
@@ -53,13 +51,17 @@
                 <div class="col-md-3 col-sm-6">
                   <div class="border rounded p-3 h-100">
                     <small class="text-muted d-block">部門</small>
-                    <strong class="text-dark">{{ staffMember.部門 || '未設定' }}</strong>
+                    <strong class="text-dark">{{
+                      staffMember.部門 || "未設定"
+                    }}</strong>
                   </div>
                 </div>
                 <div class="col-md-3 col-sm-6">
                   <div class="border rounded p-3 h-100">
                     <small class="text-muted d-block">狀態</small>
-                    <span :class="['badge', getStatusBadgeClass(staffMember.狀態)]">
+                    <span
+                      :class="['badge', getStatusBadgeClass(staffMember.狀態)]"
+                    >
                       {{ staffMember.狀態 }}
                     </span>
                   </div>
@@ -94,7 +96,9 @@
                 <i class="bi bi-card-text me-2"></i>備註
               </h5>
               <div class="border rounded p-3">
-                <p class="mb-0 text-dark" style="white-space: pre-wrap;">{{ staffMember.備註 }}</p>
+                <p class="mb-0 text-dark" style="white-space: pre-wrap">
+                  {{ staffMember.備註 }}
+                </p>
               </div>
             </div>
 
@@ -107,13 +111,17 @@
                 <div class="col-md-6">
                   <div class="border rounded p-3">
                     <small class="text-muted d-block">加入日期</small>
-                    <strong class="text-dark">{{ formatDate(staffMember.加入日期 || staffMember.創建時間) }}</strong>
+                    <strong class="text-dark">{{
+                      formatDate(staffMember.加入日期 || staffMember.創建時間)
+                    }}</strong>
                   </div>
                 </div>
                 <div class="col-md-6" v-if="staffMember.更新時間">
                   <div class="border rounded p-3">
                     <small class="text-muted d-block">最後編輯時間</small>
-                    <strong class="text-dark">{{ formatDate(staffMember.更新時間) }}</strong>
+                    <strong class="text-dark">{{
+                      formatDate(staffMember.更新時間)
+                    }}</strong>
                   </div>
                 </div>
               </div>
@@ -121,16 +129,10 @@
 
             <!-- 操作按鈕 -->
             <div class="d-flex gap-3 justify-content-end mt-4 pt-3 border-top">
-              <button
-                @click="editStaff"
-                class="btn btn-primary"
-              >
+              <button @click="editStaff" class="btn btn-primary">
                 <i class="bi bi-pencil-square me-2"></i>編輯承辦人
               </button>
-              <button
-                @click="deleteStaff"
-                class="btn btn-outline-danger"
-              >
+              <button @click="deleteStaff" class="btn btn-outline-danger">
                 <i class="bi bi-trash me-2"></i>刪除承辦人
               </button>
             </div>
@@ -145,10 +147,7 @@
       <h3 class="mt-3 text-muted">找不到承辦人</h3>
       <p class="mt-1 text-muted">該承辦人可能已被刪除或不存在</p>
       <div class="mt-4">
-        <router-link
-          to="/staff"
-          class="btn btn-primary"
-        >
+        <router-link to="/staff" class="btn btn-primary">
           <i class="bi bi-arrow-left me-2"></i>返回承辦人清單
         </router-link>
       </div>
@@ -207,14 +206,18 @@ export default {
       this.showEditModal = true;
     },
     async deleteStaff() {
-      if (!confirm(`確定要刪除承辦人 "${this.staffMember.姓名}" 嗎？\n\n此操作無法復原！`)) {
+      if (
+        !confirm(
+          `確定要刪除承辦人 "${this.staffMember.姓名}" 嗎？\n\n此操作無法復原！`
+        )
+      ) {
         return;
       }
 
       try {
         await staffService.delete(this.staffMember.id);
         this.showToast("承辦人已刪除", "success");
-        
+
         setTimeout(() => {
           this.$router.push("/staff");
         }, 1500);
@@ -236,23 +239,24 @@ export default {
     },
     formatDate(date) {
       if (!date) return "未設定";
-      
+
       let dateObj;
-      if (date.toDate && typeof date.toDate === 'function') {
+      if (date.toDate && typeof date.toDate === "function") {
         dateObj = date.toDate();
       } else if (date instanceof Date) {
         dateObj = date;
       } else {
         dateObj = new Date(date);
       }
-      
-      return dateObj.toLocaleString('zh-TW', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
+
+      return dateObj.toLocaleString("zh-TW", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
       });
     },
     getStatusBadgeClass(status) {
@@ -264,18 +268,26 @@ export default {
       return statusClasses[status] || "bg-secondary text-white";
     },
     showToast(message, type = "info") {
-      const toastContainer = document.createElement('div');
-      toastContainer.className = `alert alert-${type === 'error' ? 'danger' : type} position-fixed top-0 start-50 translate-middle-x mt-3`;
-      toastContainer.style.zIndex = '9999';
+      const toastContainer = document.createElement("div");
+      toastContainer.className = `alert alert-${
+        type === "error" ? "danger" : type
+      } position-fixed top-0 start-50 translate-middle-x mt-3`;
+      toastContainer.style.zIndex = "9999";
       toastContainer.innerHTML = `
         <div class="d-flex align-items-center">
-          <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+          <i class="bi bi-${
+            type === "success"
+              ? "check-circle"
+              : type === "warning"
+              ? "exclamation-triangle"
+              : "info-circle"
+          } me-2"></i>
           ${message}
         </div>
       `;
-      
+
       document.body.appendChild(toastContainer);
-      
+
       setTimeout(() => {
         if (document.body.contains(toastContainer)) {
           document.body.removeChild(toastContainer);

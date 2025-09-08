@@ -4,7 +4,7 @@
     v-if="show"
     class="modal fade show d-block"
     tabindex="-1"
-    style="background-color: rgba(0,0,0,0.5);"
+    style="background-color: rgba(0, 0, 0, 0.5)"
     @click.self="$emit('close')"
   >
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
@@ -198,7 +198,10 @@
             :disabled="loading"
             class="btn btn-primary"
           >
-            <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
+            <span
+              v-if="loading"
+              class="spinner-border spinner-border-sm me-2"
+            ></span>
             <i v-else class="bi bi-check-lg me-2"></i>
             {{ loading ? "儲存中..." : "儲存" }}
           </button>
@@ -277,25 +280,30 @@ export default {
         創建時間: null,
       };
     },
-    
+
     async handleSubmit() {
       try {
         this.loading = true;
-        
+
         // 驗證必填欄位
-        if (!this.formData.姓名 || !this.formData.員工編號 || 
-            !this.formData.職位 || !this.formData.狀態 ||
-            !this.formData.電話 || !this.formData.加入日期) {
-          this.showToast('請填寫所有必填欄位', 'warning');
+        if (
+          !this.formData.姓名 ||
+          !this.formData.員工編號 ||
+          !this.formData.職位 ||
+          !this.formData.狀態 ||
+          !this.formData.電話 ||
+          !this.formData.加入日期
+        ) {
+          this.showToast("請填寫所有必填欄位", "warning");
           return;
         }
-        
+
         // 準備提交的資料
         const submitData = { ...this.formData };
-        
+
         // 轉換日期格式
         submitData.加入日期 = new Date(this.formData.加入日期);
-        
+
         // 如果是新增模式，添加時間戳
         if (!this.staff || !this.staff.id) {
           const now = new Date();
@@ -304,66 +312,75 @@ export default {
         } else {
           submitData.更新時間 = new Date();
         }
-        
+
         this.$emit("save", submitData);
       } catch (error) {
-        console.error('提交失敗:', error);
-        this.showToast('提交失敗，請稍後再試', 'error');
+        console.error("提交失敗:", error);
+        this.showToast("提交失敗，請稍後再試", "error");
       } finally {
         this.loading = false;
       }
     },
-    
+
     formatDateForInput(date) {
       if (!date) return "";
-      
+
       let dateObj;
-      if (date.toDate && typeof date.toDate === 'function') {
+      if (date.toDate && typeof date.toDate === "function") {
         dateObj = date.toDate();
       } else if (date instanceof Date) {
         dateObj = date;
       } else {
         dateObj = new Date(date);
       }
-      
-      return dateObj.toISOString().split('T')[0];
+
+      return dateObj.toISOString().split("T")[0];
     },
-    
+
     formatTimestamp(timestamp) {
       if (!timestamp) return "";
-      
+
       let date;
-      if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+      if (timestamp.toDate && typeof timestamp.toDate === "function") {
         date = timestamp.toDate();
       } else if (timestamp instanceof Date) {
         date = timestamp;
       } else {
         date = new Date(timestamp);
       }
-      
-      return date.toLocaleString('zh-TW', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
+
+      return date.toLocaleString("zh-TW", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
       });
     },
-    
+
     showToast(message, type = "info") {
-      const toastContainer = document.createElement('div');
-      toastContainer.className = `alert alert-${type === 'error' ? 'danger' : type} position-fixed top-0 start-50 translate-middle-x mt-3`;
-      toastContainer.style.zIndex = '9999';
+      const toastContainer = document.createElement("div");
+      toastContainer.className = `alert alert-${
+        type === "error" ? "danger" : type
+      } position-fixed top-0 start-50 translate-middle-x mt-3`;
+      toastContainer.style.zIndex = "9999";
       toastContainer.innerHTML = `
         <div class="d-flex align-items-center">
-          <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+          <i class="bi bi-${
+            type === "success"
+              ? "check-circle"
+              : type === "warning"
+              ? "exclamation-triangle"
+              : "info-circle"
+          } me-2"></i>
           ${message}
         </div>
       `;
-      
+
       document.body.appendChild(toastContainer);
-      
+
       setTimeout(() => {
         if (document.body.contains(toastContainer)) {
           document.body.removeChild(toastContainer);
