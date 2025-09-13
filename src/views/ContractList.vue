@@ -51,6 +51,90 @@
       </div>
     </div>
 
+    <!-- 搜尋篩選器 -->
+    <div class="bg-white rounded-4 shadow-sm border-0 mb-4 p-4">
+      <!-- 關鍵字搜尋 -->
+      <div class="mb-4">
+        <input
+          v-model="filters.關鍵字"
+          type="text"
+          class="form-control"
+          placeholder="搜尋合約單號、客戶姓名..."
+          style="font-size: 14px"
+          @input="applyFilters"
+        />
+      </div>
+
+      <div class="row g-3">
+        <!-- 承辦人篩選 -->
+        <div class="col-md-3">
+          <h6 class="fw-semibold mb-2" style="font-size: 14px">承辦人</h6>
+          <select
+            v-model="filters.承辦人"
+            class="form-select"
+            style="font-size: 14px"
+            @change="applyFilters"
+          >
+            <option value="">全部承辦人</option>
+            <option v-for="staff in staffOptions" :key="staff" :value="staff">
+              {{ staff }}
+            </option>
+          </select>
+        </div>
+
+        <!-- 狀態篩選 -->
+        <div class="col-md-3">
+          <h6 class="fw-semibold mb-2" style="font-size: 14px">狀態</h6>
+          <select
+            v-model="filters.處理狀態"
+            class="form-select"
+            style="font-size: 14px"
+            @change="applyFilters"
+          >
+            <option value="">全部狀態</option>
+            <option v-for="status in statusOptions" :key="status" :value="status">
+              {{ status }}
+            </option>
+          </select>
+        </div>
+
+        <!-- 開始日期篩選 -->
+        <div class="col-md-3">
+          <h6 class="fw-semibold mb-2" style="font-size: 14px">開始日期</h6>
+          <input
+            v-model="filters.開始日期"
+            type="date"
+            class="form-control"
+            style="font-size: 14px"
+            @change="applyFilters"
+          />
+        </div>
+
+        <!-- 結束日期篩選 -->
+        <div class="col-md-3">
+          <h6 class="fw-semibold mb-2" style="font-size: 14px">結束日期</h6>
+          <input
+            v-model="filters.結束日期"
+            type="date"
+            class="form-control"
+            style="font-size: 14px"
+            @change="applyFilters"
+          />
+        </div>
+      </div>
+
+      <!-- 清除篩選按鈕 -->
+      <div class="mt-3">
+        <button
+          @click="clearFilters"
+          class="btn btn-outline-secondary btn-sm"
+          style="font-size: 13px"
+        >
+          <i class="bi bi-x-circle me-1"></i>清除篩選
+        </button>
+      </div>
+    </div>
+
     <!-- 載入狀態 -->
     <div v-if="loading" class="text-center py-5">
       <div class="spinner-border text-primary" role="status">
@@ -93,15 +177,9 @@
                 </th>
                 <th
                   class="border-0 fw-normal text-muted py-4 px-4"
-                  style="font-size: 14px; min-width: 160px; white-space: nowrap"
+                  style="font-size: 14px; min-width: 200px; white-space: nowrap"
                 >
-                  租用開始時間
-                </th>
-                <th
-                  class="border-0 fw-normal text-muted py-4 px-4"
-                  style="font-size: 14px; min-width: 160px; white-space: nowrap"
-                >
-                  租用結束時間
+                  時間資訊
                 </th>
                 <th
                   class="border-0 fw-normal text-muted py-4 px-4"
@@ -160,19 +238,14 @@
                 </td>
                 <td
                   class="py-4 px-4 border-0"
-                  style="border-bottom: 1px solid #f0f0f0; white-space: nowrap"
+                  style="border-bottom: 1px solid #f0f0f0;"
                 >
-                  <span class="text-dark" style="font-size: 15px">{{
-                    formatDateTime(contract.租用開始時間)
-                  }}</span>
-                </td>
-                <td
-                  class="py-4 px-4 border-0"
-                  style="border-bottom: 1px solid #f0f0f0; white-space: nowrap"
-                >
-                  <span class="text-dark" style="font-size: 15px">{{
-                    formatDateTime(contract.租用結束時間)
-                  }}</span>
+                  <div class="fw-semibold text-dark" style="font-size: 15px">
+                    {{ formatDateRange(contract.租用開始時間, contract.租用結束時間) }}
+                  </div>
+                  <small class="text-muted" style="font-size: 12px">
+                    禮服檔期至: {{ formatDateOnly(contract.下次可用時間) }}
+                  </small>
                 </td>
                 <td
                   class="py-4 px-4 border-0"
@@ -247,12 +320,79 @@ export default {
       showAddModal: false,
       cartItemCount: 0,
       cartUnsubscribe: null,
+      filters: {
+        關鍵字: "",
+        承辦人: "",
+        處理狀態: "",
+        開始日期: "",
+        結束日期: "",
+      },
     };
   },
   computed: {
     filteredContracts() {
-      // 目前顯示所有合約，可以後續添加篩選邏輯
-      return this.contracts;
+      let filtered = this.contracts;
+
+      // 關鍵字搜尋 (合約單號和客戶姓名)
+      if (this.filters.關鍵字) {
+        const keyword = this.filters.關鍵字.toLowerCase();
+        filtered = filtered.filter(contract => 
+          (contract.合約單號 && contract.合約單號.toLowerCase().includes(keyword)) ||
+          (contract.客戶姓名 && contract.客戶姓名.toLowerCase().includes(keyword))
+        );
+      }
+
+      // 承辦人篩選
+      if (this.filters.承辦人) {
+        filtered = filtered.filter(contract => 
+          contract.承辦人 === this.filters.承辦人
+        );
+      }
+
+      // 狀態篩選
+      if (this.filters.處理狀態) {
+        filtered = filtered.filter(contract => 
+          contract.處理狀態 === this.filters.處理狀態
+        );
+      }
+
+      // 開始日期篩選
+      if (this.filters.開始日期) {
+        const filterStartDate = new Date(this.filters.開始日期);
+        filtered = filtered.filter(contract => {
+          const contractStartDate = this.parseDate(contract.租用開始時間);
+          if (!contractStartDate) return false;
+          const contractDateOnly = new Date(contractStartDate.getFullYear(), contractStartDate.getMonth(), contractStartDate.getDate());
+          return contractDateOnly >= filterStartDate;
+        });
+      }
+
+      // 結束日期篩選
+      if (this.filters.結束日期) {
+        const filterEndDate = new Date(this.filters.結束日期);
+        filtered = filtered.filter(contract => {
+          const contractEndDate = this.parseDate(contract.租用結束時間);
+          if (!contractEndDate) return false;
+          const contractDateOnly = new Date(contractEndDate.getFullYear(), contractEndDate.getMonth(), contractEndDate.getDate());
+          return contractDateOnly <= filterEndDate;
+        });
+      }
+
+      return filtered;
+    },
+    staffOptions() {
+      // 從合約中提取所有承辦人選項
+      const staffSet = new Set();
+      this.contracts.forEach(contract => {
+        if (contract.承辦人) {
+          staffSet.add(contract.承辦人);
+        }
+      });
+      return Array.from(staffSet).sort();
+    },
+    statusOptions() {
+      // 所有可能的狀態選項
+      return ["待確認", "已確認", "進行中", "已完成", "已取消"];
     },
   },
   async mounted() {
@@ -265,6 +405,14 @@ export default {
     this.cartUnsubscribe = cartService.subscribe(() => {
       this.updateCartItemCount();
     });
+  },
+  watch: {
+    // 監聽路由變化，確保切換回此頁面時重新載入資料
+    '$route'(to, from) {
+      if (to.name === 'ContractList' && from.name !== 'ContractList') {
+        this.loadContracts();
+      }
+    }
   },
   beforeUnmount() {
     // 取消監聽
@@ -360,6 +508,73 @@ export default {
           hour12: false,
         })
       );
+    },
+    formatDateRange(startDate, endDate) {
+      if (!startDate || !endDate) return "未設定";
+
+      const formatSingleDate = (date) => {
+        let dateObj;
+        if (date.toDate && typeof date.toDate === "function") {
+          dateObj = date.toDate();
+        } else if (date instanceof Date) {
+          dateObj = date;
+        } else {
+          dateObj = new Date(date);
+        }
+
+        return dateObj.toLocaleDateString("zh-TW", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        }).replace(/\//g, "/");
+      };
+
+      const start = formatSingleDate(startDate);
+      const end = formatSingleDate(endDate);
+      
+      return `${start}-${end}`;
+    },
+    formatDateOnly(date) {
+      if (!date) return "未設定";
+
+      let dateObj;
+      if (date.toDate && typeof date.toDate === "function") {
+        dateObj = date.toDate();
+      } else if (date instanceof Date) {
+        dateObj = date;
+      } else {
+        dateObj = new Date(date);
+      }
+
+      return dateObj.toLocaleDateString("zh-TW", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      });
+    },
+    parseDate(dateValue) {
+      if (!dateValue) return null;
+      
+      if (dateValue.toDate && typeof dateValue.toDate === "function") {
+        return dateValue.toDate();
+      } else if (dateValue instanceof Date) {
+        return dateValue;
+      } else {
+        return new Date(dateValue);
+      }
+    },
+    applyFilters() {
+      // 篩選會透過 computed property 自動更新
+      // 這個方法主要用於觸發重新計算
+    },
+    clearFilters() {
+      this.filters = {
+        關鍵字: "",
+        承辦人: "",
+        處理狀態: "",
+        開始日期: "",
+        結束日期: "",
+      };
     },
     getStatusBadgeClass(status) {
       const statusClasses = {

@@ -233,7 +233,7 @@
                         檢查日期：{{
                           formatDateOnly(conflictCheckDate)
                         }}
-                        (前後4天：{{
+                        (實際檔期：{{
                           formatDateOnly(conflictCheckResult.startRange)
                         }}
                         ~ {{ formatDateOnly(conflictCheckResult.endRange) }})
@@ -299,12 +299,12 @@
                         <th
                           class="border-0 fw-normal text-muted small text-start py-3"
                         >
-                          租用開始時間
+                          合約期間
                         </th>
                         <th
                           class="border-0 fw-normal text-muted small text-start py-3"
                         >
-                          租用結束時間
+                          禮服檔期
                         </th>
                         <th
                           class="border-0 fw-normal text-muted small text-start py-3"
@@ -327,14 +327,16 @@
                           {{ schedule.客戶姓名 }}
                         </td>
                         <td class="border-0 small text-start py-4">
-                          <span class="text-muted d-block">{{
-                            formatDateTime(schedule.租用開始時間)
+                          <span class="text-dark fw-medium">{{
+                            formatDateRange(schedule.租用開始時間, schedule.租用結束時間)
                           }}</span>
+                          <div class="text-muted" style="font-size: 11px;">合約期間</div>
                         </td>
                         <td class="border-0 small text-start py-4">
-                          <span class="text-muted d-block">{{
-                            formatDateTime(schedule.租用結束時間)
+                          <span class="text-primary fw-medium">{{
+                            formatDateRange(schedule.租用開始時間, schedule.下次可用時間 || calculateLegacyEndDate(schedule.租用開始時間))
                           }}</span>
+                          <div class="text-muted" style="font-size: 11px;">禮服檔期</div>
                         </td>
                         <td class="border-0 small text-start py-4">
                           <router-link
@@ -421,6 +423,7 @@
 
 <script>
 import { dressService } from "../services/firestore.js";
+import { settingsService } from "../services/settings.js";
 import DressModal from "../components/DressModal.vue";
 
 export default {
@@ -578,28 +581,32 @@ export default {
         console.log("租用檔期資料:", this.rentalSchedule);
 
         const checkDate = new Date(this.conflictCheckDate);
+        const rentalPeriodDays = settingsService.getRentalPeriodDays();
 
-        // 計算前後4天的範圍
-        const startRange = new Date(checkDate);
-        startRange.setDate(checkDate.getDate() - 4);
-
-        const endRange = new Date(checkDate);
-        endRange.setDate(checkDate.getDate() + 4);
+        // 計算檢查日期的預設檔期範圍（模擬新合約的檔期）
+        const actualStartDate = new Date(
+          checkDate.getFullYear(),
+          checkDate.getMonth(),
+          checkDate.getDate()
+        );
+        const actualEndDate = new Date(actualStartDate);
+        actualEndDate.setDate(actualStartDate.getDate() + rentalPeriodDays);
 
         console.log("檢查範圍:", {
-          startRange: startRange,
-          endRange: endRange,
-          checkDate: checkDate,
+          假設租用開始時間: actualStartDate,
+          假設下次可用時間: actualEndDate,
+          檔期天數: rentalPeriodDays
         });
 
         // 檢查與現有檔期的衝突
         const conflicts = this.rentalSchedule.filter((schedule) => {
-          // 跳過已取消的合約
-          if (schedule.處理狀態 === "已取消") {
+          // 跳過已取消和已完成的合約
+          if (schedule.處理狀態 === "已取消" || schedule.處理狀態 === "已完成") {
+            console.log(`跳過合約 ${schedule.合約單號} (狀態: ${schedule.處理狀態})`);
             return false;
           }
 
-          let scheduleStart, scheduleEnd;
+          let scheduleStart;
 
           // 處理不同格式的時間
           if (
@@ -617,59 +624,86 @@ export default {
             return false;
           }
 
-          if (
-            schedule.租用結束時間 &&
-            schedule.租用結束時間.toDate &&
-            typeof schedule.租用結束時間.toDate === "function"
-          ) {
-            scheduleEnd = schedule.租用結束時間.toDate();
-          } else if (schedule.租用結束時間 instanceof Date) {
-            scheduleEnd = schedule.租用結束時間;
-          } else if (schedule.租用結束時間) {
-            scheduleEnd = new Date(schedule.租用結束時間);
-          } else {
-            console.warn("租用結束時間為空:", schedule);
-            return false;
-          }
+          // 計算現有合約的禮服檔期
+          let scheduleActualStartDate, scheduleActualEndDate;
+          
+          if (schedule.下次可用時間) {
+            // 新格式：使用租用開始時間～下次可用時間
+            const scheduleNextAvailable =
+              schedule.下次可用時間 instanceof Date
+                ? schedule.下次可用時間
+                : schedule.下次可用時間.toDate
+                ? schedule.下次可用時間.toDate()
+                : new Date(schedule.下次可用時間);
 
-          // 將現有檔期也轉換為純日期
-          const scheduleStartDate = new Date(
-            scheduleStart.getFullYear(),
-            scheduleStart.getMonth(),
-            scheduleStart.getDate()
-          );
-          const scheduleEndDate = new Date(
-            scheduleEnd.getFullYear(),
-            scheduleEnd.getMonth(),
-            scheduleEnd.getDate()
-          );
+            scheduleActualStartDate = new Date(
+              scheduleStart.getFullYear(),
+              scheduleStart.getMonth(),
+              scheduleStart.getDate()
+            );
+            scheduleActualEndDate = new Date(
+              scheduleNextAvailable.getFullYear(),
+              scheduleNextAvailable.getMonth(),
+              scheduleNextAvailable.getDate()
+            );
+          } else {
+            // 舊格式：使用租用開始時間+設定天數（向後兼容）
+            scheduleActualStartDate = new Date(
+              scheduleStart.getFullYear(),
+              scheduleStart.getMonth(),
+              scheduleStart.getDate()
+            );
+            scheduleActualEndDate = new Date(scheduleActualStartDate);
+            scheduleActualEndDate.setDate(scheduleActualStartDate.getDate() + rentalPeriodDays);
+          }
 
           console.log("檢查檔期:", {
             合約單號: schedule.合約單號,
-            scheduleStartDate: scheduleStartDate,
-            scheduleEndDate: scheduleEndDate,
-            checkStartDate: checkStartDate,
-            checkEndDate: checkEndDate,
-            isOverlap: !(
-              checkEndDate < scheduleStartDate ||
-              checkStartDate > scheduleEndDate
-            ),
-            說明: "只檢查日期重疊，不考慮具體時間",
+            合約禮服檔期: `${scheduleActualStartDate.toDateString()} ~ ${scheduleActualEndDate.toDateString()}`,
+            檢查假設檔期: `${actualStartDate.toDateString()} ~ ${actualEndDate.toDateString()}`,
+            處理狀態: schedule.處理狀態,
+            使用新格式: !!schedule.下次可用時間
           });
 
-          // 檢查日期範圍是否重疊 (只看日期)
-          return !(
-            checkEndDate < scheduleStartDate || checkStartDate > scheduleEndDate
+          // 檢查實際檔期重疊 - 使用正確的日期區間重疊邏輯
+          const isOverlap = !(
+            actualEndDate <= scheduleActualStartDate ||
+            actualStartDate >= scheduleActualEndDate
           );
+
+          console.log(`合約 ${schedule.合約單號} 重疊檢查:`, {
+            是否重疊: isOverlap,
+            計算說明: `!(${actualEndDate.toDateString()} <= ${scheduleActualStartDate.toDateString()} || ${actualStartDate.toDateString()} >= ${scheduleActualEndDate.toDateString()})`
+          });
+
+          // 只有進行中、已確認、待確認的合約才算衝突
+          if (isOverlap) {
+            if (
+              schedule.處理狀態 === "進行中" ||
+              schedule.處理狀態 === "已確認" ||
+              schedule.處理狀態 === "待確認"
+            ) {
+              console.log(`發現衝突！合約 ${schedule.合約單號} 狀態: ${schedule.處理狀態}`);
+              return true;
+            } else {
+              console.log(`檔期重疊但狀態不算衝突: ${schedule.合約單號} (${schedule.處理狀態})`);
+              return false;
+            }
+          }
+
+          return false;
         });
 
-        console.log("衝突結果:", conflicts);
+        console.log("衝突檢查結果:", {
+          衝突數量: conflicts.length,
+          衝突合約: conflicts.map(c => `${c.合約單號} (${c.客戶姓名})`)
+        });
 
         this.conflictCheckResult = {
           hasConflict: conflicts.length > 0,
           conflicts: conflicts,
-          startRange: startRange,
-          endRange: endRange,
+          startRange: actualStartDate,
+          endRange: actualEndDate,
         };
       } catch (error) {
         console.error("檢查日期衝突失敗:", error);
@@ -701,6 +735,57 @@ export default {
         day: "2-digit",
         weekday: "short",
       });
+    },
+
+    // 格式化日期範圍 (2025/09/23 - 2025/09/27)
+    formatDateRange(startDate, endDate) {
+      if (!startDate || !endDate) return "未設定";
+
+      const formatSingleDate = (date) => {
+        let dateObj;
+        if (typeof date === "string") {
+          dateObj = new Date(date);
+        } else if (date.toDate && typeof date.toDate === "function") {
+          dateObj = date.toDate();
+        } else if (date instanceof Date) {
+          dateObj = date;
+        } else {
+          dateObj = new Date(date);
+        }
+
+        return dateObj.toLocaleDateString("zh-TW", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        }).replace(/\//g, "/");
+      };
+
+      const startStr = formatSingleDate(startDate);
+      const endStr = formatSingleDate(endDate);
+
+      return `${startStr} - ${endStr}`;
+    },
+
+    // 計算舊格式的結束日期（向後兼容）
+    calculateLegacyEndDate(startDate) {
+      if (!startDate) return null;
+
+      const rentalPeriodDays = settingsService.getRentalPeriodDays();
+      let dateObj;
+      
+      if (typeof startDate === "string") {
+        dateObj = new Date(startDate);
+      } else if (startDate.toDate && typeof startDate.toDate === "function") {
+        dateObj = startDate.toDate();
+      } else if (startDate instanceof Date) {
+        dateObj = startDate;
+      } else {
+        dateObj = new Date(startDate);
+      }
+
+      const endDate = new Date(dateObj);
+      endDate.setDate(dateObj.getDate() + rentalPeriodDays);
+      return endDate;
     },
 
     showToast(message, type = "info") {

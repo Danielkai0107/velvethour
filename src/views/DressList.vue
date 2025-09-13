@@ -427,6 +427,14 @@ export default {
       this.$forceUpdate();
     });
   },
+  watch: {
+    // 監聽路由變化，確保切換回此頁面時重新載入資料
+    '$route'(to, from) {
+      if (to.name === 'DressList' && from.name !== 'DressList') {
+        this.loadDresses();
+      }
+    }
+  },
   beforeUnmount() {
     // 取消監聽
     if (this.cartUnsubscribe) {

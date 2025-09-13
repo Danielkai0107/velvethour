@@ -12,6 +12,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "../firebase.js";
+import { settingsService } from "./settings.js";
 
 // 禮服相關操作
 export const dressService = {
@@ -159,6 +160,7 @@ export const dressService = {
             客戶姓名: "張小姐",
             租用開始時間: new Date("2024-12-15T14:00:00"),
             租用結束時間: new Date("2024-12-16T18:00:00"),
+            下次可用時間: new Date("2024-12-22T09:00:00"),
             處理狀態: "進行中",
             合約ID: "demo-contract-1",
           },
@@ -170,6 +172,7 @@ export const dressService = {
             客戶姓名: "張小姐",
             租用開始時間: new Date("2024-12-15T14:00:00"),
             租用結束時間: new Date("2024-12-16T18:00:00"),
+            下次可用時間: new Date("2024-12-22T09:00:00"),
             處理狀態: "進行中",
             合約ID: "demo-contract-1",
           },
@@ -178,6 +181,7 @@ export const dressService = {
             客戶姓名: "李太太",
             租用開始時間: new Date("2024-12-20T16:00:00"),
             租用結束時間: new Date("2024-12-21T20:00:00"),
+            下次可用時間: new Date("2024-12-27T09:00:00"),
             處理狀態: "已確認",
             合約ID: "demo-contract-2",
           },
@@ -189,6 +193,7 @@ export const dressService = {
             客戶姓名: "王小姐",
             租用開始時間: new Date("2024-11-30T12:00:00"),
             租用結束時間: new Date("2024-11-30T22:00:00"),
+            下次可用時間: new Date("2024-12-07T09:00:00"),
             處理狀態: "已完成",
             合約ID: "demo-contract-3",
           },
@@ -204,12 +209,15 @@ export const dressService = {
     dressId,
     startTime,
     endTime,
+    nextAvailableTime,
     excludeContractId = null
   ) {
     try {
       console.log(
-        `檢查禮服 ${dressId} 在時間 ${startTime} - ${endTime} 的可用性`
+        `檢查禮服 ${dressId} 的檔期可用性`
       );
+      console.log(`合約時間: ${startTime} ~ ${endTime}`);
+      console.log(`禮服檔期: ${startTime} ~ ${nextAvailableTime}`);
 
       const rentalSchedule = await this.getRentalSchedule(dressId);
       console.log(`禮服 ${dressId} 的租用檔期:`, rentalSchedule);
@@ -224,71 +232,98 @@ export const dressService = {
         filteredSchedule
       );
 
-      // 檢查日期衝突 (只看日期，不看時間)
-      const contractStartDate = new Date(startTime);
-      const contractEndDate = new Date(endTime);
+      // 計算新合約的禮服檔期：租用開始時間～下次可用時間
+      const newContractStartDate = new Date(startTime);
+      const newContractNextAvailableDate = new Date(nextAvailableTime);
 
-      // 計算實際檔期：合約開始時間到開始時間+7天
+      // 轉換為純日期（不含時間）
       const actualStartDate = new Date(
-        contractStartDate.getFullYear(),
-        contractStartDate.getMonth(),
-        contractStartDate.getDate()
+        newContractStartDate.getFullYear(),
+        newContractStartDate.getMonth(),
+        newContractStartDate.getDate()
       );
-      const actualEndDate = new Date(actualStartDate);
-      actualEndDate.setDate(actualStartDate.getDate() + 7);
+      const actualEndDate = new Date(
+        newContractNextAvailableDate.getFullYear(),
+        newContractNextAvailableDate.getMonth(),
+        newContractNextAvailableDate.getDate()
+      );
 
-      console.log("檔期計算:", {
-        合約開始時間: contractStartDate,
-        合約結束時間: contractEndDate,
-        實際檔期開始: actualStartDate,
-        實際檔期結束: actualEndDate,
-        說明: "實際檔期 = 合約開始時間 + 7天",
+      console.log("新合約禮服檔期計算:", {
+        合約開始時間: newContractStartDate,
+        下次可用時間: newContractNextAvailableDate,
+        禮服檔期開始: actualStartDate,
+        禮服檔期結束: actualEndDate,
+        說明: "禮服檔期 = 租用開始時間 ~ 下次可用時間",
       });
 
       for (const schedule of filteredSchedule) {
+        // 跳過已取消和已完成的合約
+        if (schedule.處理狀態 === "已取消" || schedule.處理狀態 === "已完成") {
+          console.log(`跳過合約 ${schedule.合約單號} (狀態: ${schedule.處理狀態})`);
+          continue;
+        }
+
         const scheduleStart =
           schedule.租用開始時間 instanceof Date
             ? schedule.租用開始時間
             : schedule.租用開始時間.toDate
             ? schedule.租用開始時間.toDate()
             : new Date(schedule.租用開始時間);
-        const scheduleEnd =
-          schedule.租用結束時間 instanceof Date
-            ? schedule.租用結束時間
-            : schedule.租用結束時間.toDate
-            ? schedule.租用結束時間.toDate()
-            : new Date(schedule.租用結束時間);
 
-        // 計算現有合約的實際檔期（也是開始時間+7天）
-        const scheduleActualStartDate = new Date(
-          scheduleStart.getFullYear(),
-          scheduleStart.getMonth(),
-          scheduleStart.getDate()
-        );
-        const scheduleActualEndDate = new Date(scheduleActualStartDate);
-        scheduleActualEndDate.setDate(scheduleActualStartDate.getDate() + 7);
+        // 計算現有合約的禮服檔期
+        let scheduleActualStartDate, scheduleActualEndDate;
+        
+        if (schedule.下次可用時間) {
+          // 新格式：使用租用開始時間～下次可用時間
+          const scheduleNextAvailable =
+            schedule.下次可用時間 instanceof Date
+              ? schedule.下次可用時間
+              : schedule.下次可用時間.toDate
+              ? schedule.下次可用時間.toDate()
+              : new Date(schedule.下次可用時間);
+
+          scheduleActualStartDate = new Date(
+            scheduleStart.getFullYear(),
+            scheduleStart.getMonth(),
+            scheduleStart.getDate()
+          );
+          scheduleActualEndDate = new Date(
+            scheduleNextAvailable.getFullYear(),
+            scheduleNextAvailable.getMonth(),
+            scheduleNextAvailable.getDate()
+          );
+        } else {
+          // 舊格式：使用租用開始時間+設定天數（向後兼容）
+          const rentalPeriodDays = settingsService.getRentalPeriodDays();
+          scheduleActualStartDate = new Date(
+            scheduleStart.getFullYear(),
+            scheduleStart.getMonth(),
+            scheduleStart.getDate()
+          );
+          scheduleActualEndDate = new Date(scheduleActualStartDate);
+          scheduleActualEndDate.setDate(scheduleActualStartDate.getDate() + rentalPeriodDays);
+        }
 
         console.log(`檢查與合約 ${schedule.合約單號} 的檔期重疊:`, {
           現有合約開始: scheduleStart,
-          現有合約實際檔期開始: scheduleActualStartDate,
-          現有合約實際檔期結束: scheduleActualEndDate,
-          新合約實際檔期開始: actualStartDate,
-          新合約實際檔期結束: actualEndDate,
-          isOverlap: !(
-            actualEndDate < scheduleActualStartDate ||
-            actualStartDate > scheduleActualEndDate
-          ),
+          現有合約實際檔期: `${scheduleActualStartDate.toDateString()} ~ ${scheduleActualEndDate.toDateString()}`,
+          新合約實際檔期: `${actualStartDate.toDateString()} ~ ${actualEndDate.toDateString()}`,
           處理狀態: schedule.處理狀態,
-          說明: "比較實際檔期（都是開始時間+7天）",
         });
 
-        // 檢查實際檔期重疊
-        if (
-          !(
-            actualEndDate < scheduleActualStartDate ||
-            actualStartDate > scheduleActualEndDate
-          )
-        ) {
+        // 檢查實際檔期重疊 - 使用正確的日期區間重疊邏輯
+        // 兩個日期區間重疊的條件：!(A.end <= B.start || A.start >= B.end)
+        const isOverlap = !(
+          actualEndDate <= scheduleActualStartDate ||
+          actualStartDate >= scheduleActualEndDate
+        );
+
+        console.log(`重疊檢查結果:`, {
+          是否重疊: isOverlap,
+          邏輯說明: `!(${actualEndDate.toDateString()} <= ${scheduleActualStartDate.toDateString()} || ${actualStartDate.toDateString()} >= ${scheduleActualEndDate.toDateString()})`
+        });
+
+        if (isOverlap) {
           // 只有進行中、已確認、待確認的合約才算衝突
           if (
             schedule.處理狀態 === "進行中" ||
@@ -336,6 +371,7 @@ export const contractService = {
           合約建立日期時間: new Date("2024-12-01T10:30:00"),
           租用開始時間: new Date("2024-12-15T14:00:00"),
           租用結束時間: new Date("2024-12-16T18:00:00"),
+          下次可用時間: new Date("2024-12-22T09:00:00"),
           處理狀態: "進行中",
           客戶姓名: "張小姐",
           電話: "0912-345-678",
@@ -367,6 +403,7 @@ export const contractService = {
           合約建立日期時間: new Date("2024-12-01T14:20:00"),
           租用開始時間: new Date("2024-12-20T16:00:00"),
           租用結束時間: new Date("2024-12-21T20:00:00"),
+          下次可用時間: new Date("2024-12-27T09:00:00"),
           處理狀態: "已確認",
           客戶姓名: "李太太",
           電話: "0923-456-789",
@@ -392,6 +429,7 @@ export const contractService = {
           合約建立日期時間: new Date("2024-11-30T09:15:00"),
           租用開始時間: new Date("2024-11-30T12:00:00"),
           租用結束時間: new Date("2024-11-30T22:00:00"),
+          下次可用時間: new Date("2024-12-07T09:00:00"),
           處理狀態: "已完成",
           客戶姓名: "王小姐",
           電話: "0934-567-890",

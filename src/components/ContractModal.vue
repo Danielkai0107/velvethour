@@ -320,7 +320,7 @@
               </h5>
               <div class="row g-3">
                 <!-- 租用開始時間 -->
-                <div class="col-md-6">
+                <div class="col-md-4">
                   <label class="form-label fw-semibold">租用開始時間 *
                   </label>
                   <input
@@ -330,10 +330,11 @@
                     required
                     @change="onStartTimeChange"
                   />
+                  <div class="form-text">合約使用的開始時間</div>
                 </div>
 
                 <!-- 租用結束時間 -->
-                <div class="col-md-6">
+                <div class="col-md-4">
                   <label class="form-label fw-semibold">租用結束時間 *
                   </label>
                   <input
@@ -341,8 +342,23 @@
                     type="datetime-local"
                     class="form-control"
                     required
+                    @change="onEndTimeChange"
+                  />
+                  <div class="form-text">合約使用的結束時間 (自動+4天)</div>
+                </div>
+
+                <!-- 下次可用時間 -->
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">下次可用時間 *
+                  </label>
+                  <input
+                    v-model="formData.下次可用時間"
+                    type="datetime-local"
+                    class="form-control"
+                    required
                     @change="onTimeOrDressChange"
                   />
+                  <div class="form-text">禮服可再次租用的時間 (自動+7天)</div>
                 </div>
               </div>
 
@@ -351,12 +367,20 @@
                 v-if="
                   !isValidTimeRange &&
                   formData.租用開始時間 &&
-                  formData.租用結束時間
+                  formData.租用結束時間 &&
+                  formData.下次可用時間
                 "
                 class="alert alert-warning mb-3 mt-3"
               >
                 <div class="d-flex align-items-center">
-                  <span>租用結束時間必須晚於開始時間</span>
+                  <i class="bi bi-exclamation-triangle me-2"></i>
+                  <div>
+                    <div>時間設定錯誤：</div>
+                    <small>
+                      • 租用結束時間必須晚於開始時間<br>
+                      • 下次可用時間必須不早於租用結束時間
+                    </small>
+                  </div>
                 </div>
               </div>
 
@@ -713,7 +737,7 @@
                           檢查日期：{{
                             formatDateOnly(dressConflictCheckDate)
                           }}
-                          (前後4天：{{
+                          (實際檔期：{{
                             formatDateOnly(dressConflictCheckResult.startRange)
                           }}
                           ~
@@ -841,6 +865,7 @@
 <script>
 import { dressService, staffService } from "../services/firestore.js";
 import { cartService } from "../services/cart.js";
+import { settingsService } from "../services/settings.js";
 import DressSelectionModal from "./DressSelectionModal.vue";
 
 export default {
@@ -861,17 +886,21 @@ export default {
   emits: ["close", "save"],
   computed: {
     hasValidTimeAndDresses() {
-      const hasTime = this.formData.租用開始時間 && this.formData.租用結束時間;
+      const hasTime = this.formData.租用開始時間 && this.formData.租用結束時間 && this.formData.下次可用時間;
       const hasDresses = this.formData.禮服清單.some((item) => item.禮服ID);
       return hasTime && hasDresses && this.isValidTimeRange;
     },
     isValidTimeRange() {
-      if (!this.formData.租用開始時間 || !this.formData.租用結束時間) {
+      if (!this.formData.租用開始時間 || !this.formData.租用結束時間 || !this.formData.下次可用時間) {
         return true; // 如果任一時間未設定，不顯示錯誤
       }
+      const startTime = new Date(this.formData.租用開始時間);
+      const endTime = new Date(this.formData.租用結束時間);
+      const nextAvailableTime = new Date(this.formData.下次可用時間);
+      
       return (
-        new Date(this.formData.租用開始時間) <
-        new Date(this.formData.租用結束時間)
+        startTime < endTime && 
+        endTime <= nextAvailableTime
       );
     },
     hasCartItems() {
@@ -894,6 +923,7 @@ export default {
         承辦人: "",
         租用開始時間: "",
         租用結束時間: "",
+        下次可用時間: "",
         處理狀態: "",
         禮服清單: [
           {
@@ -945,6 +975,7 @@ export default {
             承辦人: newContract.承辦人 || "",
             租用開始時間: this.formatDateTimeForInput(newContract.租用開始時間),
             租用結束時間: this.formatDateTimeForInput(newContract.租用結束時間),
+            下次可用時間: this.formatDateTimeForInput(newContract.下次可用時間),
             處理狀態: newContract.處理狀態 || "",
             禮服清單: newContract.禮服清單
               ? [...newContract.禮服清單]
@@ -986,6 +1017,7 @@ export default {
         承辦人: "",
         租用開始時間: "",
         租用結束時間: "",
+        下次可用時間: "",
         處理狀態: "",
         禮服清單: [
           {
@@ -1271,34 +1303,39 @@ export default {
 
       try {
         const checkDate = new Date(this.dressConflictCheckDate);
+        const rentalPeriodDays = settingsService.getRentalPeriodDays();
+        
+        console.log("檢查日期衝突:", {
+          檢查日期: this.dressConflictCheckDate,
+          檢查日期物件: checkDate,
+          現有檔期數量: this.dressSchedule.length,
+          檔期天數設定: rentalPeriodDays
+        });
 
-        // 計算前後4天的範圍
-        const startRange = new Date(checkDate);
-        startRange.setDate(checkDate.getDate() - 4);
-
-        const endRange = new Date(checkDate);
-        endRange.setDate(checkDate.getDate() + 4);
-
-        // 將檢查範圍轉換為純日期（不含時間）
-        const checkStartDate = new Date(
-          startRange.getFullYear(),
-          startRange.getMonth(),
-          startRange.getDate()
+        // 計算檢查日期的預設檔期範圍（模擬新合約的檔期）
+        const actualStartDate = new Date(
+          checkDate.getFullYear(),
+          checkDate.getMonth(),
+          checkDate.getDate()
         );
-        const checkEndDate = new Date(
-          endRange.getFullYear(),
-          endRange.getMonth(),
-          endRange.getDate()
-        );
+        const actualEndDate = new Date(actualStartDate);
+        actualEndDate.setDate(actualStartDate.getDate() + rentalPeriodDays);
+
+        console.log("檢查範圍:", {
+          假設租用開始時間: actualStartDate,
+          假設下次可用時間: actualEndDate,
+          檔期天數: rentalPeriodDays
+        });
 
         // 檢查與現有檔期的衝突
         const conflicts = this.dressSchedule.filter((schedule) => {
-          // 跳過已取消的合約
-          if (schedule.處理狀態 === "已取消") {
+          // 跳過已取消和已完成的合約
+          if (schedule.處理狀態 === "已取消" || schedule.處理狀態 === "已完成") {
+            console.log(`跳過合約 ${schedule.合約單號} (狀態: ${schedule.處理狀態})`);
             return false;
           }
 
-          let scheduleStart, scheduleEnd;
+          let scheduleStart;
 
           // 處理不同格式的時間
           if (
@@ -1312,46 +1349,90 @@ export default {
           } else if (schedule.租用開始時間) {
             scheduleStart = new Date(schedule.租用開始時間);
           } else {
+            console.log(`合約 ${schedule.合約單號} 缺少開始時間`);
             return false;
           }
 
-          if (
-            schedule.租用結束時間 &&
-            schedule.租用結束時間.toDate &&
-            typeof schedule.租用結束時間.toDate === "function"
-          ) {
-            scheduleEnd = schedule.租用結束時間.toDate();
-          } else if (schedule.租用結束時間 instanceof Date) {
-            scheduleEnd = schedule.租用結束時間;
-          } else if (schedule.租用結束時間) {
-            scheduleEnd = new Date(schedule.租用結束時間);
+          // 計算現有合約的禮服檔期
+          let scheduleActualStartDate, scheduleActualEndDate;
+          
+          if (schedule.下次可用時間) {
+            // 新格式：使用租用開始時間～下次可用時間
+            const scheduleNextAvailable =
+              schedule.下次可用時間 instanceof Date
+                ? schedule.下次可用時間
+                : schedule.下次可用時間.toDate
+                ? schedule.下次可用時間.toDate()
+                : new Date(schedule.下次可用時間);
+
+            scheduleActualStartDate = new Date(
+              scheduleStart.getFullYear(),
+              scheduleStart.getMonth(),
+              scheduleStart.getDate()
+            );
+            scheduleActualEndDate = new Date(
+              scheduleNextAvailable.getFullYear(),
+              scheduleNextAvailable.getMonth(),
+              scheduleNextAvailable.getDate()
+            );
           } else {
-            return false;
+            // 舊格式：使用租用開始時間+設定天數（向後兼容）
+            scheduleActualStartDate = new Date(
+              scheduleStart.getFullYear(),
+              scheduleStart.getMonth(),
+              scheduleStart.getDate()
+            );
+            scheduleActualEndDate = new Date(scheduleActualStartDate);
+            scheduleActualEndDate.setDate(scheduleActualStartDate.getDate() + rentalPeriodDays);
           }
 
-          // 將現有檔期也轉換為純日期
-          const scheduleStartDate = new Date(
-            scheduleStart.getFullYear(),
-            scheduleStart.getMonth(),
-            scheduleStart.getDate()
-          );
-          const scheduleEndDate = new Date(
-            scheduleEnd.getFullYear(),
-            scheduleEnd.getMonth(),
-            scheduleEnd.getDate()
+          console.log(`檢查合約 ${schedule.合約單號}:`, {
+            合約開始時間: scheduleStart,
+            合約禮服檔期: `${scheduleActualStartDate.toDateString()} ~ ${scheduleActualEndDate.toDateString()}`,
+            檢查假設檔期: `${actualStartDate.toDateString()} ~ ${actualEndDate.toDateString()}`,
+            處理狀態: schedule.處理狀態,
+            使用新格式: !!schedule.下次可用時間
+          });
+
+          // 檢查實際檔期重疊 - 使用正確的日期區間重疊邏輯
+          const isOverlap = !(
+            actualEndDate <= scheduleActualStartDate ||
+            actualStartDate >= scheduleActualEndDate
           );
 
-          // 檢查日期範圍是否重疊 (只看日期)
-          return !(
-            checkEndDate < scheduleStartDate || checkStartDate > scheduleEndDate
-          );
+          console.log(`合約 ${schedule.合約單號} 重疊檢查:`, {
+            是否重疊: isOverlap,
+            計算說明: `!(${actualEndDate.toDateString()} <= ${scheduleActualStartDate.toDateString()} || ${actualStartDate.toDateString()} >= ${scheduleActualEndDate.toDateString()})`
+          });
+
+          // 只有進行中、已確認、待確認的合約才算衝突
+          if (isOverlap) {
+            if (
+              schedule.處理狀態 === "進行中" ||
+              schedule.處理狀態 === "已確認" ||
+              schedule.處理狀態 === "待確認"
+            ) {
+              console.log(`發現衝突！合約 ${schedule.合約單號} 狀態: ${schedule.處理狀態}`);
+              return true;
+            } else {
+              console.log(`檔期重疊但狀態不算衝突: ${schedule.合約單號} (${schedule.處理狀態})`);
+              return false;
+            }
+          }
+
+          return false;
+        });
+
+        console.log("衝突檢查結果:", {
+          衝突數量: conflicts.length,
+          衝突合約: conflicts.map(c => `${c.合約單號} (${c.客戶姓名})`)
         });
 
         this.dressConflictCheckResult = {
           hasConflict: conflicts.length > 0,
           conflicts: conflicts,
-          startRange: startRange,
-          endRange: endRange,
+          startRange: actualStartDate,
+          endRange: actualEndDate,
         };
       } catch (error) {
         console.error("檢查禮服檔期衝突失敗:", error);
@@ -1467,7 +1548,7 @@ export default {
       this.conflictWarnings = [];
 
       // 檢查是否有足夠的資訊進行衝突檢查
-      if (!this.formData.租用開始時間 || !this.formData.租用結束時間) {
+      if (!this.formData.租用開始時間 || !this.formData.租用結束時間 || !this.formData.下次可用時間) {
         console.log("缺少租用時間資訊，跳過衝突檢查");
         return;
       }
@@ -1493,6 +1574,7 @@ export default {
         console.log("開始檢查檔期衝突:", {
           租用開始時間: this.formData.租用開始時間,
           租用結束時間: this.formData.租用結束時間,
+          下次可用時間: this.formData.下次可用時間,
           禮服清單: validDressItems,
           排除合約ID: excludeContractId,
         });
@@ -1504,6 +1586,7 @@ export default {
             item.禮服ID,
             this.formData.租用開始時間,
             this.formData.租用結束時間,
+            this.formData.下次可用時間,
             excludeContractId
           );
 
@@ -1530,7 +1613,7 @@ export default {
       }
     },
 
-    // 當開始時間改變時自動設定結束時間
+    // 當開始時間改變時自動設定結束時間和下次可用時間
     onStartTimeChange() {
       if (this.formData.租用開始時間) {
         const startDate = new Date(this.formData.租用開始時間);
@@ -1539,13 +1622,42 @@ export default {
         const endDate = new Date(startDate);
         endDate.setDate(startDate.getDate() + 4);
 
+        // 自動設定下次可用時間為開始時間+7天
+        const nextAvailableDate = new Date(startDate);
+        nextAvailableDate.setDate(startDate.getDate() + 7);
+
         // 格式化為 datetime-local 輸入框需要的格式
         this.formData.租用結束時間 = endDate.toISOString().slice(0, 16);
+        this.formData.下次可用時間 = nextAvailableDate.toISOString().slice(0, 16);
 
-        console.log("自動設定結束時間:", {
+        console.log("自動設定時間:", {
           開始時間: this.formData.租用開始時間,
-          結束時間: this.formData.租用結束時間,
+          結束時間: `${this.formData.租用結束時間} (+4天)`,
+          下次可用時間: `${this.formData.下次可用時間} (+7天)`,
         });
+      }
+
+      // 觸發檔期檢查
+      this.onTimeOrDressChange();
+    },
+
+    // 當結束時間改變時自動調整下次可用時間
+    onEndTimeChange() {
+      if (this.formData.租用結束時間) {
+        const endDate = new Date(this.formData.租用結束時間);
+
+        // 如果下次可用時間早於結束時間，自動調整為結束時間+3天
+        if (!this.formData.下次可用時間 || new Date(this.formData.下次可用時間) < endDate) {
+          const nextAvailableDate = new Date(endDate);
+          nextAvailableDate.setDate(endDate.getDate() + 3); // 結束時間+3天緩衝
+
+          this.formData.下次可用時間 = nextAvailableDate.toISOString().slice(0, 16);
+
+          console.log("自動調整下次可用時間:", {
+            結束時間: this.formData.租用結束時間,
+            下次可用時間: `${this.formData.下次可用時間} (+3天緩衝)`,
+          });
+        }
       }
 
       // 觸發檔期檢查
@@ -1611,18 +1723,25 @@ export default {
           !this.formData.承辦人 ||
           !this.formData.租用開始時間 ||
           !this.formData.租用結束時間 ||
+          !this.formData.下次可用時間 ||
           !this.formData.處理狀態
         ) {
           this.showToast("請填寫所有必填欄位", "warning");
           return;
         }
 
-        // 驗證時間
-        if (
-          new Date(this.formData.租用開始時間) >=
-          new Date(this.formData.租用結束時間)
-        ) {
+        // 驗證時間邏輯
+        const startTime = new Date(this.formData.租用開始時間);
+        const endTime = new Date(this.formData.租用結束時間);
+        const nextAvailableTime = new Date(this.formData.下次可用時間);
+        
+        if (startTime >= endTime) {
           this.showToast("租用結束時間必須晚於開始時間", "warning");
+          return;
+        }
+        
+        if (endTime > nextAvailableTime) {
+          this.showToast("下次可用時間不能早於租用結束時間", "warning");
           return;
         }
 
@@ -1648,6 +1767,7 @@ export default {
         // 轉換時間格式為 Firebase Timestamp
         submitData.租用開始時間 = new Date(this.formData.租用開始時間);
         submitData.租用結束時間 = new Date(this.formData.租用結束時間);
+        submitData.下次可用時間 = new Date(this.formData.下次可用時間);
 
         // 過濾有效的禮服項目
         submitData.禮服清單 = validDressItems;

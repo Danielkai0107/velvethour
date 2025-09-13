@@ -126,6 +126,14 @@ export default {
   async mounted() {
     await this.loadStaff();
   },
+  watch: {
+    // 監聽路由變化，確保切換回此頁面時重新載入資料
+    '$route'(to, from) {
+      if (to.name === 'StaffList' && from.name !== 'StaffList') {
+        this.loadStaff();
+      }
+    }
+  },
   methods: {
     async loadStaff() {
       try {

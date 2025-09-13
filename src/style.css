@@ -54,7 +54,9 @@ body {
 
 /* 側邊欄響應式設計 */
 .sidebar {
-  width: 200px;
+  width: 220px;
+  min-width: 220px;
+  flex-shrink: 0;
   transition: width 0.3s ease-in-out;
 }
 
