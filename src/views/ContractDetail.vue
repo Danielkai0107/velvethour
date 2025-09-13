@@ -88,22 +88,9 @@
                       <h6 class="card-title fw-bold mb-1">
                         {{ getDressById(item.禮服ID)?.編號 || item.禮服ID }}
                       </h6>
-                      <p class="card-text text-muted small mb-2">
+                      <p class="card-text text-muted small mb-0">
                         {{ getDressInfo(item.禮服ID) }}
                       </p>
-
-                      <!-- 價格資訊 -->
-                      <div
-                        class="d-flex justify-content-between align-items-center"
-                      >
-                        <span class="text-primary fw-semibold"
-                          >NT$ {{ item.單價?.toLocaleString() || 0 }}</span
-                        >
-                        <span class="text-muted small"
-                          >小計: NT$
-                          {{ item.小計?.toLocaleString() || 0 }}</span
-                        >
-                      </div>
                     </div>
                   </div>
                 </div>
