@@ -6,7 +6,10 @@
     </div>
 
     <!-- 承辦人篩選 -->
-    <div class="bg-white rounded-4 shadow-sm border-0 mb-4 p-3">
+    <div 
+      class="filter-container bg-white rounded-4 shadow-sm border-0 mb-4 p-3"
+      :class="{ 'with-sidebar': selectedContract }"
+    >
       <div class="row align-items-center">
         <div class="col-4">
           <select
@@ -42,13 +45,126 @@
       <p class="mt-2 text-muted">載入合約資料中...</p>
     </div>
 
-    <!-- FullCalendar 日曆 -->
-    <div v-else class="bg-white rounded-4 shadow-sm border-0 overflow-hidden" style="border: 1px solid #f0f0f0;">
-      <div class="p-4">
-        <FullCalendar
-          :options="calendarOptions"
-          ref="fullCalendar"
-        />
+    <!-- 主要內容區域 -->
+    <div v-else class="position-relative">
+      <!-- 日曆區域 -->
+      <div 
+        class="calendar-container"
+        :class="{ 'with-sidebar': selectedContract }"
+      >
+        <div class="bg-white rounded-4 shadow-sm border-0 overflow-hidden" style="border: 1px solid #f0f0f0;">
+          <div class="p-4">
+            <FullCalendar
+              :options="calendarOptions"
+              ref="fullCalendar"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- 合約簡介側邊欄 -->
+      <div 
+        class="contract-sidebar"
+        :class="{ 'sidebar-open': selectedContract }"
+      >
+        <div class="bg-white rounded-4 shadow-lg border-0 h-100" style="border: 1px solid #f0f0f0;">
+          <div class="p-4">
+            <!-- 關閉按鈕 -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h6 class="fw-semibold mb-0">合約資訊</h6>
+              <button 
+                @click="closeContractSidebar"
+                class="btn btn-sm btn-outline-secondary"
+                style="font-size: 12px; padding: 4px 8px;"
+              >
+                <i class="bi bi-x"></i>
+              </button>
+            </div>
+
+            <div v-if="selectedContract">
+              <!-- 1. 可編輯標題 -->
+              <div class="mb-3">
+                <label class="form-label fw-semibold" style="font-size: 13px;">標題</label>
+                <input
+                  v-if="editingTitle"
+                  v-model="editableTitle"
+                  @blur="saveTitle"
+                  @keyup.enter="saveTitle"
+                  class="form-control form-control-sm"
+                  style="font-size: 14px;"
+                  ref="titleInput"
+                />
+                <div
+                  v-else
+                  @click="startEditTitle"
+                  class="p-2 border rounded cursor-pointer hover-bg-light"
+                  style="font-size: 14px; min-height: 32px; display: flex; align-items: center;"
+                >
+                  {{ editableTitle }}
+                  <i class="bi bi-pencil ms-auto text-muted" style="font-size: 12px;"></i>
+                </div>
+              </div>
+
+              <!-- 2. 客戶姓名 -->
+              <div class="mb-3">
+                <label class="form-label fw-semibold" style="font-size: 13px;">客戶姓名</label>
+                <div class="p-2 bg-light rounded" style="font-size: 14px;">
+                  {{ selectedContract.客戶姓名 }}
+                </div>
+              </div>
+
+              <!-- 3. 租期 -->
+              <div class="mb-3">
+                <label class="form-label fw-semibold" style="font-size: 13px;">租期</label>
+                <div class="p-2 bg-light rounded" style="font-size: 14px;">
+                  {{ formatDateRange(selectedContract.租用開始時間, selectedContract.租用結束時間) }}
+                </div>
+              </div>
+
+              <!-- 4. 合約備註 -->
+              <div class="mb-3">
+                <label class="form-label fw-semibold" style="font-size: 13px;">合約備註</label>
+                <div class="p-2 bg-light rounded" style="font-size: 14px; min-height: 60px;">
+                  {{ selectedContract.備注 || "無" }}
+                </div>
+              </div>
+
+              <!-- 5. 可編輯備註 -->
+              <div class="mb-4">
+                <label class="form-label fw-semibold" style="font-size: 13px;">描述</label>
+                <textarea
+                  v-if="editingNote"
+                  v-model="editableNote"
+                  @blur="saveNote"
+                  class="form-control form-control-sm"
+                  style="font-size: 14px; min-height: 80px;"
+                  placeholder="新增備註..."
+                  ref="noteTextarea"
+                ></textarea>
+                <div
+                  v-else
+                  @click="startEditNote"
+                  class="p-2 border rounded cursor-pointer hover-bg-light"
+                  style="font-size: 14px; min-height: 80px; display: flex; align-items: flex-start;"
+                >
+                  <span class="flex-grow-1">{{ editableNote || "點擊新增備註..." }}</span>
+                  <i class="bi bi-pencil text-muted" style="font-size: 12px; margin-top: 2px;"></i>
+                </div>
+              </div>
+
+              <!-- 查看詳細合約按鈕 -->
+              <div class="text-center">
+                <button
+                  @click="goToContractDetail(selectedContract.id)"
+                  class="btn btn-outline-primary btn-sm w-100"
+                  style="font-size: 14px;"
+                >
+                  <i class="bi bi-eye me-2"></i>查看詳細合約
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -70,6 +186,11 @@ export default {
       loading: true,
       contracts: [],
       selectedStaff: "",
+      selectedContract: null,
+      editingTitle: false,
+      editingNote: false,
+      editableTitle: "",
+      editableNote: "",
       calendarOptions: {
         plugins: [dayGridPlugin, interactionPlugin],
         initialView: 'dayGridMonth',
@@ -166,10 +287,8 @@ export default {
         const startDate = this.formatDateForCalendar(startTime);
         const endDate = this.formatDateForCalendar(nextAvailableTime, true); // 結束日期需要+1天
         
-        // 格式化開始時間
-        const startTimeFormatted = this.formatStartTime(contract.租用開始時間);
-        console.log('Start time for contract:', contract.合約單號, 'Original:', contract.租用開始時間, 'Formatted:', startTimeFormatted);
-        const eventTitle = startTimeFormatted ? `${startTimeFormatted} ${contract.客戶姓名}` : contract.客戶姓名;
+        // 使用自定義標題或預設標題
+        const eventTitle = contract.自定義標題 || this.getDefaultTitle(contract);
 
         events.push({
           id: contract.id,
@@ -308,7 +427,10 @@ export default {
     },
     handleEventClick(info) {
       const contractId = info.event.id;
-      this.goToContractDetail(contractId);
+      const contract = this.contracts.find(c => c.id === contractId);
+      if (contract) {
+        this.showContractSidebar(contract);
+      }
     },
     handleEventMount(info) {
       const contract = info.event.extendedProps.contract;
@@ -340,14 +462,12 @@ export default {
     },
     renderEventContent(info) {
       const contract = info.event.extendedProps.contract;
-      const startTimeFormatted = this.formatStartTime(contract.租用開始時間);
-      const displayName = startTimeFormatted ? `${startTimeFormatted} ${contract.客戶姓名}` : contract.客戶姓名;
+      const displayTitle = contract.自定義標題 || this.getDefaultTitle(contract);
       
       return {
         html: `
           <div class="contract-event-content">
-            <div class="contract-title">${displayName}</div>
-            <div class="contract-number">${contract.合約單號}</div>
+            <div class="contract-title">${displayTitle}</div>
           </div>
         `
       };
@@ -377,6 +497,111 @@ export default {
     clearStaffFilter() {
       this.selectedStaff = "";
       this.updateCalendarEvents();
+    },
+    showContractSidebar(contract) {
+      this.selectedContract = contract;
+      // 使用已有的自定義標題，如果沒有則使用預設標題
+      this.editableTitle = contract.自定義標題 || this.getDefaultTitle(contract);
+      this.editableNote = contract.自定義備註 || "";
+      this.editingTitle = false;
+      this.editingNote = false;
+      
+      // 延遲調整日曆大小，等待 CSS 動畫完成
+      setTimeout(() => {
+        if (this.$refs.fullCalendar) {
+          this.$refs.fullCalendar.getApi().updateSize();
+        }
+      }, 350);
+    },
+    closeContractSidebar() {
+      this.selectedContract = null;
+      this.editingTitle = false;
+      this.editingNote = false;
+      
+      // 延遲調整日曆大小，等待 CSS 動畫完成
+      setTimeout(() => {
+        if (this.$refs.fullCalendar) {
+          this.$refs.fullCalendar.getApi().updateSize();
+        }
+      }, 350);
+    },
+    getDefaultTitle(contract) {
+      const startTime = this.formatStartTime(contract.租用開始時間);
+      return startTime ? `${startTime} ${contract.客戶姓名}` : contract.客戶姓名;
+    },
+    startEditTitle() {
+      this.editingTitle = true;
+      this.$nextTick(() => {
+        if (this.$refs.titleInput) {
+          this.$refs.titleInput.focus();
+        }
+      });
+    },
+    async saveTitle() {
+      this.editingTitle = false;
+      // 這裡可以添加保存到資料庫的邏輯
+      try {
+        await contractService.update(this.selectedContract.id, {
+          自定義標題: this.editableTitle
+        });
+        this.showToast("標題已更新", "success");
+        // 更新本地資料
+        const contractIndex = this.contracts.findIndex(c => c.id === this.selectedContract.id);
+        if (contractIndex !== -1) {
+          this.contracts[contractIndex].自定義標題 = this.editableTitle;
+          this.selectedContract.自定義標題 = this.editableTitle;
+        }
+        // 重新更新日曆事件以反映標題變化
+        this.updateCalendarEvents();
+      } catch (error) {
+        console.error("更新標題失敗:", error);
+        this.showToast("更新標題失敗", "error");
+      }
+    },
+    startEditNote() {
+      this.editingNote = true;
+      this.$nextTick(() => {
+        if (this.$refs.noteTextarea) {
+          this.$refs.noteTextarea.focus();
+        }
+      });
+    },
+    async saveNote() {
+      this.editingNote = false;
+      // 這裡可以添加保存到資料庫的邏輯
+      try {
+        await contractService.update(this.selectedContract.id, {
+          自定義備註: this.editableNote
+        });
+        this.showToast("備註已更新", "success");
+        // 更新本地資料
+        const contractIndex = this.contracts.findIndex(c => c.id === this.selectedContract.id);
+        if (contractIndex !== -1) {
+          this.contracts[contractIndex].自定義備註 = this.editableNote;
+        }
+      } catch (error) {
+        console.error("更新備註失敗:", error);
+        this.showToast("更新備註失敗", "error");
+      }
+    },
+    formatDateRange(startDate, endDate) {
+      if (!startDate || !endDate) return "未設定";
+
+      const formatSingleDate = (date) => {
+        const dateObj = this.parseDate(date);
+        if (!dateObj) return "未設定";
+
+        return dateObj.toLocaleDateString("zh-TW", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        });
+      };
+
+      const start = formatSingleDate(startDate);
+      const end = formatSingleDate(endDate);
+      
+      return `${start} - ${end}`;
     },
     formatDateTime(date) {
       if (!date) return "未設定";
@@ -719,6 +944,88 @@ export default {
   
   :deep(.fc-daygrid-day) {
     min-height: 60px;
+  }
+}
+
+/* 日曆容器和側邊欄動畫 */
+.calendar-container {
+  transition: margin-right 0.3s ease;
+  margin-right: 0;
+}
+
+.calendar-container.with-sidebar {
+  margin-right: 400px; /* 380px 側邊欄 + 20px 間距 */
+}
+
+/* 篩選區域也要跟著壓縮 */
+.filter-container {
+  transition: margin-right 0.3s ease;
+  margin-right: 0;
+}
+
+.filter-container.with-sidebar {
+  margin-right: 400px; /* 380px 側邊欄 + 20px 間距 */
+}
+
+.contract-sidebar {
+  position: fixed;
+  top: 0;
+  right: -400px; /* 初始隱藏在右側外 */
+  width: 380px;
+  height: 100vh;
+  z-index: 1050;
+  transition: right 0.3s ease;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.contract-sidebar.sidebar-open {
+  right: 0; /* 推出到可見位置 */
+}
+
+/* 側邊欄內容樣式 */
+.hover-bg-light:hover {
+  background-color: #f8f9fa !important;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+/* 響應式設計 */
+@media (max-width: 1200px) {
+  .calendar-container.with-sidebar {
+    margin-right: 0;
+  }
+  
+  .filter-container.with-sidebar {
+    margin-right: 0;
+  }
+  
+  .contract-sidebar {
+    position: fixed;
+    right: -100%;
+    width: 100%;
+    padding: 20px;
+  }
+  
+  .contract-sidebar.sidebar-open {
+    right: 0;
+  }
+  
+  .contract-sidebar .bg-white {
+    max-width: 400px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .contract-sidebar {
+    padding: 15px;
+  }
+  
+  .contract-sidebar .bg-white {
+    max-width: none;
   }
 }
 </style>
