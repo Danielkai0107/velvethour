@@ -5,7 +5,6 @@
       <button
         @click="$router.back()"
         class="btn btn-outline-secondary"
-        style="font-size: 14px"
       >
         <i class="bi bi-arrow-left me-2"></i>返回列表
       </button>
@@ -16,7 +15,7 @@
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">載入中...</span>
       </div>
-      <p class="mt-2 text-muted">載入中...</p>
+      <p class="mt-2 text-muted" style="font-size: 14px;">載入中...</p>
     </div>
 
     <!-- 合約詳情 -->
@@ -143,16 +142,6 @@
                     <strong class="text-dark">{{ contract.承辦人 }}</strong>
                   </div>
                 </div>
-                <div class="col-md-3 col-sm-6">
-                  <div class="border rounded p-3 h-100">
-                    <small class="text-muted d-block">處理狀態</small>
-                    <span
-                      :class="['badge', getStatusBadgeClass(contract.處理狀態)]"
-                    >
-                      {{ contract.處理狀態 }}
-                    </span>
-                  </div>
-                </div>
               </div>
             </div>
 
@@ -264,8 +253,10 @@
               <button @click="editContract" class="btn btn-primary">
                 <i class="bi bi-pencil-square me-2"></i>編輯合約
               </button>
-              <button @click="deleteContract" class="btn btn-outline-danger">
-                <i class="bi bi-trash me-2"></i>刪除合約
+              <button @click="deleteContract" class="btn btn-outline-danger" :disabled="deleting">
+                <span v-if="deleting" class="spinner-border spinner-border-sm me-2" role="status"></span>
+                <i v-else class="bi bi-trash me-2"></i>
+                <span style="font-size: 14px;">{{ deleting ? '刪除中...' : '刪除合約' }}</span>
               </button>
             </div>
           </div>
@@ -325,6 +316,8 @@ export default {
     return {
       contract: null,
       loading: true,
+      deleting: false,
+      saving: false,
       showEditModal: false,
       showDressDetailModal: false,
       selectedDress: null,
@@ -424,6 +417,7 @@ export default {
       }
 
       try {
+        this.deleting = true;
         await contractService.delete(this.contract.id);
         this.showToast("合約已刪除", "success");
 
@@ -434,6 +428,8 @@ export default {
       } catch (error) {
         console.error("刪除合約失敗:", error);
         this.showToast("刪除合約失敗，請稍後再試", "error");
+      } finally {
+        this.deleting = false;
       }
     },
 
@@ -523,16 +519,6 @@ export default {
       return Math.round(originalTotal * discountRate);
     },
 
-    getStatusBadgeClass(status) {
-      const statusClasses = {
-        待確認: "bg-warning text-dark",
-        已確認: "bg-info text-white",
-        進行中: "bg-success text-white",
-        已完成: "bg-secondary text-white",
-        已取消: "bg-danger text-white",
-      };
-      return statusClasses[status] || "bg-secondary text-white";
-    },
 
     showToast(message, type = "info") {
       const toastContainer = document.createElement("div");

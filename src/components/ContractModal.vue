@@ -141,27 +141,50 @@
                         {{ getDressById(item.禮服ID)?.領型 }}
                       </p>
 
+                      <!-- 價格變更提示 -->
+                      <div v-if="hasPriceChange(item.禮服ID)" class="alert alert-warning p-2 mb-2" style="font-size: 12px;">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        <strong>金額有變更</strong>
+                        <div class="mt-1">
+                          <div>租借: NT$ {{ priceChanges[item.禮服ID]?.原租借金額.toLocaleString() }} → NT$ {{ priceChanges[item.禮服ID]?.新租借金額.toLocaleString() }}</div>
+                          <div v-if="priceChanges[item.禮服ID]?.原加價金額 !== priceChanges[item.禮服ID]?.新加價金額">
+                            加價: NT$ {{ priceChanges[item.禮服ID]?.原加價金額.toLocaleString() }} → NT$ {{ priceChanges[item.禮服ID]?.新加價金額.toLocaleString() }}
+                          </div>
+                        </div>
+                      </div>
+
                       <!-- 金額資訊 -->
                       <div class="mb-2">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                           <small class="text-muted">租借金額</small>
                           <span class="fw-bold text-primary">
-                            NT$ {{ (getDressById(item.禮服ID)?.租借金額 || getDressById(item.禮服ID)?.價格 || 0).toLocaleString() }}
+                            NT$ {{ (item.單價 || 0).toLocaleString() }}
                           </span>
                         </div>
                         <div 
-                          v-if="formData.選擇方案 && getDressById(item.禮服ID)?.加價金額 && getDressById(item.禮服ID)?.加價金額 > 0"
+                          v-if="formData.選擇方案 && (item.加價金額 || getDressById(item.禮服ID)?.加價金額) && (item.加價金額 || getDressById(item.禮服ID)?.加價金額) > 0"
                         class="d-flex justify-content-between align-items-center"
                       >
                           <small class="text-muted">加價金額</small>
                           <span class="fw-bold text-warning">
-                            + NT$ {{ getDressById(item.禮服ID)?.加價金額.toLocaleString() }}
+                            + NT$ {{ (item.加價金額 || getDressById(item.禮服ID)?.加價金額 || 0).toLocaleString() }}
                           </span>
                         </div>
                       </div>
 
-                      <!-- 查看詳情按鈕 -->
+                      <!-- 按鈕區域 -->
                       <div class="d-grid gap-1 mt-2">
+                        <!-- 價格更新按鈕 -->
+                        <button
+                          v-if="hasPriceChange(item.禮服ID)"
+                          type="button"
+                          @click="updateDressPrice(item.禮服ID)"
+                          class="btn btn-warning btn-sm"
+                        >
+                          <i class="bi bi-arrow-clockwise me-1"></i>更新價格
+                        </button>
+                        
+                        <!-- 查看詳情按鈕 -->
                         <button
                           type="button"
                           @click="viewDressDetail(item.禮服ID)"
@@ -560,7 +583,7 @@
               class="spinner-border spinner-border-sm me-2"
             ></span>
             <i v-else class="bi bi-check-lg me-2"></i>
-            {{ loading ? "儲存中..." : "儲存" }}
+            <span style="font-size: 14px;">{{ loading ? "儲存中..." : "儲存" }}</span>
           </button>
                   </div>
                 </div>
@@ -832,7 +855,7 @@
                   >
                     <span class="visually-hidden">載入中...</span>
                   </div>
-                  <small class="text-muted ms-2">載入檔期資訊...</small>
+                  <small class="text-muted ms-2" style="font-size: 14px;">載入檔期資訊...</small>
                 </div>
 
                 <!-- 檔期列表 -->
@@ -1016,6 +1039,7 @@ export default {
       dressConflictCheckDate: "", // 禮服詳情popup中的衝突檢查日期
       dressConflictCheckResult: null, // 禮服詳情popup中的衝突檢查結果
       hasCheckedConflicts: false, // 是否已執行過衝突檢查
+      priceChanges: {}, // 追蹤價格變更 {禮服ID: {原價格, 新價格, 原加價, 新加價}}
     };
   },
   computed: {
@@ -1091,6 +1115,11 @@ export default {
       try {
         this.loadingDresses = true;
         this.availableDresses = await dressService.getAll();
+        
+        // 載入完成後檢查價格變更（編輯模式）
+        this.$nextTick(() => {
+          this.checkPriceChanges();
+        });
       } catch (error) {
         console.error("載入禮服清單失敗:", error);
       } finally {
@@ -1244,6 +1273,68 @@ export default {
     // 根據ID獲取禮服資料
     getDressById(dressId) {
       return this.availableDresses.find((dress) => dress.id === dressId);
+    },
+
+    // 檢查禮服價格是否有變更
+    checkPriceChanges() {
+      if (!this.contract || !this.contract.id) return; // 只在編輯模式檢查
+
+      this.priceChanges = {};
+      
+      this.formData.禮服清單.forEach(item => {
+        if (item.禮服ID) {
+          const currentDress = this.getDressById(item.禮服ID);
+          if (currentDress) {
+            const originalPrice = item.單價 || 0;
+            const currentPrice = currentDress.租借金額 || currentDress.價格 || 0;
+            const originalExtraPrice = item.加價金額 || 0;
+            const currentExtraPrice = currentDress.加價金額 || 0;
+
+            if (originalPrice !== currentPrice || originalExtraPrice !== currentExtraPrice) {
+              this.priceChanges[item.禮服ID] = {
+                原租借金額: originalPrice,
+                新租借金額: currentPrice,
+                原加價金額: originalExtraPrice,
+                新加價金額: currentExtraPrice,
+                hasChange: true
+              };
+            }
+          }
+        }
+      });
+
+      console.log('價格變更檢測:', this.priceChanges);
+    },
+
+    // 檢查特定禮服是否有價格變更
+    hasPriceChange(dressId) {
+      return this.priceChanges[dressId]?.hasChange || false;
+    },
+
+    // 更新特定禮服的價格
+    updateDressPrice(dressId) {
+      const priceChange = this.priceChanges[dressId];
+      if (!priceChange) return;
+
+      // 找到禮服項目並更新價格
+      const itemIndex = this.formData.禮服清單.findIndex(item => item.禮服ID === dressId);
+      if (itemIndex !== -1) {
+        this.formData.禮服清單[itemIndex].單價 = priceChange.新租借金額;
+        this.formData.禮服清單[itemIndex].加價金額 = priceChange.新加價金額;
+        
+        // 重新計算小計
+        const item = this.formData.禮服清單[itemIndex];
+        item.小計 = (item.單價 || 0) * (item.數量 || 1);
+
+        // 移除價格變更記錄
+        delete this.priceChanges[dressId];
+
+        // 更新總金額
+        this.updateTotalAmount();
+
+        const dress = this.getDressById(dressId);
+        this.showToast(`已更新 "${dress?.編號}" 的價格`, "success");
+      }
     },
 
     // 查看禮服詳情

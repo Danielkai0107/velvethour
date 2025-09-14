@@ -1,39 +1,82 @@
 <template>
-  <div class="container-fluid">
-    <!-- 頁面標題 -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h1 class="h3 mb-0 fw-bold">合約檔期日曆</h1>
-    </div>
-
-    <!-- 承辦人篩選 -->
-    <div 
-      class="filter-container bg-white rounded-4 shadow-sm border-0 mb-4 p-3"
-      :class="{ 'with-sidebar': selectedContract }"
-    >
-      <div class="row align-items-center">
-        <div class="col-4">
-          <select
-            v-model="selectedStaff"
-            class="form-select"
-            style="font-size: 14px"
-            @change="updateCalendarEvents"
-          >
-            <option value="">全部承辦人</option>
-            <option v-for="staff in staffOptions" :key="staff" :value="staff">
-              {{ staff }}
-            </option>
-          </select>
+  <div class="container-fluid px-4 py-3">
+    <!-- 頂部工具欄 -->
+    <div class="top-toolbar d-flex justify-content-between align-items-center mb-4">
+      <!-- 左側：搜索和篩選 -->
+      <div class="d-flex align-items-center gap-3">
+        <!-- 搜索框 -->
+        <div class="search-container position-relative">
+          <i class="bi bi-search search-icon"></i>
+          <input
+            type="text"
+            class="form-control search-input"
+            placeholder="在行事曆中搜尋"
+            v-model="searchQuery"
+            @input="handleSearch"
+          />
         </div>
-        <div class="col-8">
-          <button
-            v-if="selectedStaff"
-            @click="clearStaffFilter"
-            class="btn btn-outline-secondary btn-sm"
-            style="font-size: 13px"
+        
+        <!-- 篩選器 -->
+        <div class="filter-dropdowns d-flex gap-2">
+          <!-- 承辦人篩選 -->
+          <div class="dropdown">
+            <button
+              class="btn btn-outline-secondary dropdown-toggle filter-btn"
+              type="button"
+              data-bs-toggle="dropdown"
+            >
+              承辦人
+              <span v-if="selectedStaff" class="badge bg-primary ms-1">1</span>
+            </button>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#" @click="clearStaffFilter">全部承辦人</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li v-for="staff in staffOptions" :key="staff">
+                <a 
+                  class="dropdown-item" 
+                  href="#" 
+                  @click="setStaffFilter(staff)"
+                  :class="{ active: selectedStaff === staff }"
+                >
+                  {{ staff }}
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 右側：日期導航和視圖控制 -->
+      <div class="d-flex align-items-center gap-3">
+        <!-- 今天按鈕 -->
+        <button 
+          class="btn btn-outline-secondary today-btn"
+          @click="goToToday"
+        >
+          今天
+        </button>
+        
+        <!-- 日期導航 -->
+        <div class="date-navigation d-flex align-items-center">
+          <button 
+            class="btn btn-ghost nav-btn"
+            @click="previousPeriod"
           >
-            <i class="bi bi-x-circle me-1"></i>清除篩選
+            <i class="bi bi-chevron-left"></i>
+          </button>
+          
+          <div class="current-period">
+            <h4 class="mb-0 fw-semibold current-date">{{ currentPeriodTitle }}</h4>
+          </div>
+          
+          <button 
+            class="btn btn-ghost nav-btn"
+            @click="nextPeriod"
+          >
+            <i class="bi bi-chevron-right"></i>
           </button>
         </div>
+        
       </div>
     </div>
 
@@ -42,128 +85,104 @@
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">載入中...</span>
       </div>
-      <p class="mt-2 text-muted">載入合約資料中...</p>
+      <p class="mt-2 text-muted" style="font-size: 14px;">載入合約資料中...</p>
     </div>
 
-    <!-- 主要內容區域 -->
-    <div v-else class="position-relative">
-      <!-- 日曆區域 -->
-      <div 
-        class="calendar-container"
-        :class="{ 'with-sidebar': selectedContract }"
-      >
-        <div class="bg-white rounded-4 shadow-sm border-0 overflow-hidden" style="border: 1px solid #f0f0f0;">
-          <div class="p-4">
-            <FullCalendar
-              :options="calendarOptions"
-              ref="fullCalendar"
-            />
-          </div>
-        </div>
+    <!-- 日曆主體 -->
+    <div v-else class="calendar-main">
+      <div class="calendar-container bg-white rounded-3 shadow-sm">
+        <FullCalendar
+          :options="calendarOptions"
+          ref="fullCalendar"
+        />
       </div>
+    </div>
 
-      <!-- 合約簡介側邊欄 -->
-      <div 
-        class="contract-sidebar"
-        :class="{ 'sidebar-open': selectedContract }"
-      >
-        <div class="bg-white rounded-4 shadow-lg border-0 h-100" style="border: 1px solid #f0f0f0;">
-          <div class="p-4">
-            <!-- 關閉按鈕 -->
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <h6 class="fw-semibold mb-0">合約資訊</h6>
-              <button 
-                @click="closeContractSidebar"
-                class="btn btn-sm btn-outline-secondary"
-                style="font-size: 12px; padding: 4px 8px;"
-              >
-                <i class="bi bi-x"></i>
-              </button>
-            </div>
-
-            <div v-if="selectedContract">
-              <!-- 1. 可編輯標題 -->
-              <div class="mb-3">
-                <label class="form-label fw-semibold" style="font-size: 13px;">標題</label>
-                <input
-                  v-if="editingTitle"
-                  v-model="editableTitle"
-                  @blur="saveTitle"
-                  @keyup.enter="saveTitle"
-                  class="form-control form-control-sm"
-                  style="font-size: 14px;"
-                  ref="titleInput"
-                />
-                <div
-                  v-else
-                  @click="startEditTitle"
-                  class="p-2 border rounded cursor-pointer hover-bg-light"
-                  style="font-size: 14px; min-height: 32px; display: flex; align-items: center;"
-                >
-                  {{ editableTitle }}
-                  <i class="bi bi-pencil ms-auto text-muted" style="font-size: 12px;"></i>
-                </div>
-              </div>
-
-              <!-- 2. 客戶姓名 -->
-              <div class="mb-3">
-                <label class="form-label fw-semibold" style="font-size: 13px;">客戶姓名</label>
-                <div class="p-2 bg-light rounded" style="font-size: 14px;">
-                  {{ selectedContract.客戶姓名 }}
-                </div>
-              </div>
-
-              <!-- 3. 租期 -->
-              <div class="mb-3">
-                <label class="form-label fw-semibold" style="font-size: 13px;">租期</label>
-                <div class="p-2 bg-light rounded" style="font-size: 14px;">
-                  {{ formatDateRange(selectedContract.租用開始時間, selectedContract.租用結束時間) }}
-                </div>
-              </div>
-
-              <!-- 4. 合約備註 -->
-              <div class="mb-3">
-                <label class="form-label fw-semibold" style="font-size: 13px;">合約備註</label>
-                <div class="p-2 bg-light rounded" style="font-size: 14px; min-height: 60px;">
-                  {{ selectedContract.備注 || "無" }}
-                </div>
-              </div>
-
-              <!-- 5. 可編輯備註 -->
-              <div class="mb-4">
-                <label class="form-label fw-semibold" style="font-size: 13px;">描述</label>
-                <textarea
-                  v-if="editingNote"
-                  v-model="editableNote"
-                  @blur="saveNote"
-                  class="form-control form-control-sm"
-                  style="font-size: 14px; min-height: 80px;"
-                  placeholder="新增備註..."
-                  ref="noteTextarea"
-                ></textarea>
-                <div
-                  v-else
-                  @click="startEditNote"
-                  class="p-2 border rounded cursor-pointer hover-bg-light"
-                  style="font-size: 14px; min-height: 80px; display: flex; align-items: flex-start;"
-                >
-                  <span class="flex-grow-1">{{ editableNote || "點擊新增備註..." }}</span>
-                  <i class="bi bi-pencil text-muted" style="font-size: 12px; margin-top: 2px;"></i>
-                </div>
-              </div>
-
-              <!-- 查看詳細合約按鈕 -->
-              <div class="text-center">
-                <button
-                  @click="goToContractDetail(selectedContract.id)"
-                  class="btn btn-outline-primary btn-sm w-100"
-                  style="font-size: 14px;"
-                >
-                  <i class="bi bi-eye me-2"></i>查看詳細合約
-                </button>
-              </div>
+    <!-- 合約詳情側邊欄 -->
+    <div 
+      class="contract-sidebar offcanvas offcanvas-end"
+      :class="{ 'show': selectedContract }"
+      tabindex="-1"
+    >
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title">合約資訊</h5>
+        <button 
+          type="button" 
+          class="btn-close" 
+          @click="closeContractSidebar"
+        ></button>
+      </div>
+      
+      <div class="offcanvas-body" v-if="selectedContract">
+        <!-- 合約詳情內容 -->
+        <div class="contract-details">
+          <!-- 標題 -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold small">標題</label>
+            <input
+              v-if="editingTitle"
+              v-model="editableTitle"
+              @blur="saveTitle"
+              @keyup.enter="saveTitle"
+              class="form-control"
+              ref="titleInput"
+            />
+            <div
+              v-else
+              @click="startEditTitle"
+              class="form-control-plaintext border rounded p-2 cursor-pointer"
+            >
+              {{ editableTitle }}
+              <i class="bi bi-pencil float-end text-muted small"></i>
             </div>
           </div>
+
+          <!-- 客戶姓名 -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold small">客戶姓名</label>
+            <div class="form-control-plaintext bg-light rounded p-2">
+              {{ selectedContract.客戶姓名 }}
+            </div>
+          </div>
+
+          <!-- 租期 -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold small">租期</label>
+            <div class="form-control-plaintext bg-light rounded p-2">
+              {{ formatDateRange(selectedContract.租用開始時間, selectedContract.租用結束時間) }}
+            </div>
+          </div>
+
+
+          <!-- 備註 -->
+          <div class="mb-4">
+            <label class="form-label fw-semibold small">備註</label>
+            <textarea
+              v-if="editingNote"
+              v-model="editableNote"
+              @blur="saveNote"
+              class="form-control"
+              rows="3"
+              ref="noteTextarea"
+            ></textarea>
+            <div
+              v-else
+              @click="startEditNote"
+              class="form-control-plaintext border rounded p-2 cursor-pointer"
+              style="min-height: 80px;"
+            >
+              {{ editableNote || "點擊新增備註..." }}
+              <i class="bi bi-pencil float-end text-muted small"></i>
+            </div>
+          </div>
+
+          <!-- 查看詳情按鈕 -->
+          <button
+            @click="goToContractDetail(selectedContract.id)"
+            class="btn btn-primary w-100"
+          >
+            <i class="bi bi-eye me-2"></i>查看詳細合約
+          </button>
         </div>
       </div>
     </div>
@@ -185,6 +204,7 @@ export default {
     return {
       loading: true,
       contracts: [],
+      searchQuery: "",
       selectedStaff: "",
       selectedContract: null,
       editingTitle: false,
@@ -194,14 +214,10 @@ export default {
       calendarOptions: {
         plugins: [dayGridPlugin, interactionPlugin],
         initialView: 'dayGridMonth',
-        locale: 'en',
-        headerToolbar: {
-          left: 'prev,next',
-          center: 'title',
-          right: 'today'
-        },
+        locale: 'zh-tw',
+        headerToolbar: false, // 隱藏預設工具欄
         height: 'auto',
-        aspectRatio: 2.5,
+        aspectRatio: 1.8,
         dayMaxEvents: false,
         moreLinkClick: 'popover',
         eventDisplay: 'block',
@@ -210,14 +226,8 @@ export default {
         eventClick: this.handleEventClick,
         eventDidMount: this.handleEventMount,
         dayCellDidMount: this.handleDayCellMount,
-        buttonText: {
-          today: '今天',
-          month: '月',
-          week: '週',
-          day: '日'
-        },
+        firstDay: 1, // 週一為第一天
         dayHeaderFormat: { weekday: 'short' },
-        titleFormat: { year: 'numeric', month: 'long' },
         eventClassNames: this.getEventClassNames,
         eventContent: this.renderEventContent,
       }
@@ -225,7 +235,6 @@ export default {
   },
   computed: {
     staffOptions() {
-      // 從合約中提取所有承辦人選項
       const staffSet = new Set();
       this.contracts.forEach(contract => {
         if (contract.承辦人) {
@@ -235,24 +244,42 @@ export default {
       return Array.from(staffSet).sort();
     },
     filteredContracts() {
-      // 根據選擇的承辦人篩選合約
-      if (!this.selectedStaff) {
-        return this.contracts;
+      let filtered = this.contracts;
+      
+      // 承辦人篩選
+      if (this.selectedStaff) {
+        filtered = filtered.filter(contract => 
+          contract.承辦人 === this.selectedStaff
+        );
       }
-      return this.contracts.filter(contract => 
-        contract.承辦人 === this.selectedStaff
-      );
+      
+      // 搜索篩選
+      if (this.searchQuery.trim()) {
+        const query = this.searchQuery.toLowerCase();
+        filtered = filtered.filter(contract => 
+          contract.客戶姓名?.toLowerCase().includes(query) ||
+          contract.合約單號?.toLowerCase().includes(query) ||
+          contract.承辦人?.toLowerCase().includes(query)
+        );
+      }
+      
+      return filtered;
     },
+    currentPeriodTitle() {
+      if (this.$refs.fullCalendar) {
+        const calendarApi = this.$refs.fullCalendar.getApi();
+        const currentDate = calendarApi.getDate();
+        
+        return currentDate.toLocaleDateString('zh-TW', { 
+          year: 'numeric', 
+          month: 'long' 
+        });
+      }
+      return new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: 'long' });
+    }
   },
   async mounted() {
     await this.loadContracts();
-  },
-  watch: {
-    '$route'(to, from) {
-      if (to.name === 'CalendarView' && from.name !== 'CalendarView') {
-        this.loadContracts();
-      }
-    }
   },
   methods: {
     async loadContracts() {
@@ -267,14 +294,12 @@ export default {
         this.loading = false;
       }
     },
+    
     updateCalendarEvents() {
       const events = [];
       
       this.filteredContracts.forEach(contract => {
-        // 跳過已取消的合約
-        if (contract.處理狀態 === "已取消") {
-          return;
-        }
+        if (contract.處理狀態 === "已取消") return;
         
         const startTime = this.parseDate(contract.租用開始時間);
         const nextAvailableTime = contract.下次可用時間 
@@ -283,11 +308,8 @@ export default {
           
         if (!startTime || !nextAvailableTime) return;
         
-        // 格式化為 FullCalendar 需要的日期格式
         const startDate = this.formatDateForCalendar(startTime);
-        const endDate = this.formatDateForCalendar(nextAvailableTime, true); // 結束日期需要+1天
-        
-        // 使用自定義標題或預設標題
+        const endDate = this.formatDateForCalendar(nextAvailableTime, true);
         const eventTitle = contract.自定義標題 || this.getDefaultTitle(contract);
 
         events.push({
@@ -301,17 +323,146 @@ export default {
             status: contract.處理狀態,
             staff: contract.承辦人,
             amount: contract.合約總金額,
-            isRentalPeriod: this.isInRentalPeriod(contract),
           },
-          backgroundColor: this.getEventBackgroundColor(contract, events),
-          borderColor: this.getEventBorderColor(contract, events),
-          textColor: this.getEventTextColor(contract, events),
+          backgroundColor: this.getEventBackgroundColor(contract),
+          borderColor: this.getEventBorderColor(contract),
+          textColor: this.getEventTextColor(contract),
         });
       });
       
-      // 更新日曆事件
       this.calendarOptions.events = events;
     },
+
+    // 搜索處理
+    handleSearch() {
+      this.updateCalendarEvents();
+    },
+
+    // 篩選器方法
+    setStaffFilter(staff) {
+      this.selectedStaff = staff;
+      this.updateCalendarEvents();
+    },
+    
+    clearStaffFilter() {
+      this.selectedStaff = "";
+      this.updateCalendarEvents();
+    },
+
+    // 日期導航
+    goToToday() {
+      if (this.$refs.fullCalendar) {
+        this.$refs.fullCalendar.getApi().today();
+      }
+    },
+    
+    previousPeriod() {
+      if (this.$refs.fullCalendar) {
+        this.$refs.fullCalendar.getApi().prev();
+      }
+    },
+    
+    nextPeriod() {
+      if (this.$refs.fullCalendar) {
+        this.$refs.fullCalendar.getApi().next();
+      }
+    },
+
+
+    // 事件處理
+    handleEventClick(info) {
+      const contractId = info.event.id;
+      const contract = this.contracts.find(c => c.id === contractId);
+      if (contract) {
+        this.showContractSidebar(contract);
+      }
+    },
+
+    handleEventMount(info) {
+      const contract = info.event.extendedProps.contract;
+      info.el.title = this.getContractTooltip(contract);
+      info.el.style.cursor = 'pointer';
+    },
+
+    handleDayCellMount(info) {
+      if (info.isToday) {
+        info.el.classList.add('fc-day-today');
+      }
+    },
+
+    // 側邊欄處理
+    showContractSidebar(contract) {
+      this.selectedContract = contract;
+      this.editableTitle = contract.自定義標題 || this.getDefaultTitle(contract);
+      this.editableNote = contract.自定義備註 || "";
+      this.editingTitle = false;
+      this.editingNote = false;
+    },
+
+    closeContractSidebar() {
+      this.selectedContract = null;
+      this.editingTitle = false;
+      this.editingNote = false;
+    },
+
+    // 編輯功能
+    startEditTitle() {
+      this.editingTitle = true;
+      this.$nextTick(() => {
+        if (this.$refs.titleInput) {
+          this.$refs.titleInput.focus();
+        }
+      });
+    },
+
+    async saveTitle() {
+      this.editingTitle = false;
+      try {
+        await contractService.update(this.selectedContract.id, {
+          自定義標題: this.editableTitle
+        });
+        this.showToast("標題已更新", "success");
+        
+        const contractIndex = this.contracts.findIndex(c => c.id === this.selectedContract.id);
+        if (contractIndex !== -1) {
+          this.contracts[contractIndex].自定義標題 = this.editableTitle;
+          this.selectedContract.自定義標題 = this.editableTitle;
+        }
+        this.updateCalendarEvents();
+      } catch (error) {
+        console.error("更新標題失敗:", error);
+        this.showToast("更新標題失敗", "error");
+      }
+    },
+
+    startEditNote() {
+      this.editingNote = true;
+      this.$nextTick(() => {
+        if (this.$refs.noteTextarea) {
+          this.$refs.noteTextarea.focus();
+        }
+      });
+    },
+
+    async saveNote() {
+      this.editingNote = false;
+      try {
+        await contractService.update(this.selectedContract.id, {
+          自定義備註: this.editableNote
+        });
+        this.showToast("備註已更新", "success");
+        
+        const contractIndex = this.contracts.findIndex(c => c.id === this.selectedContract.id);
+        if (contractIndex !== -1) {
+          this.contracts[contractIndex].自定義備註 = this.editableNote;
+        }
+      } catch (error) {
+        console.error("更新備註失敗:", error);
+        this.showToast("更新備註失敗", "error");
+      }
+    },
+
+    // 工具方法
     parseDate(dateValue) {
       if (!dateValue) return null;
       
@@ -323,6 +474,7 @@ export default {
         return new Date(dateValue);
       }
     },
+
     formatDateForCalendar(date, isEndDate = false) {
       const dateObj = this.parseDate(date);
       if (!dateObj) return null;
@@ -333,133 +485,42 @@ export default {
       
       return `${year}-${month}-${day}`;
     },
-    isInRentalPeriod(contract) {
-      const now = new Date();
-      const rentStart = this.parseDate(contract.租用開始時間);
-      const rentEnd = this.parseDate(contract.租用結束時間);
-      
-      return now >= rentStart && now <= rentEnd;
+
+    getDefaultTitle(contract) {
+      return `${contract.客戶姓名} - ${contract.合約單號}`;
     },
-    getEventBackgroundColor(contract, existingEvents) {
-      // 已取消的合約使用灰色
-      if (contract.處理狀態 === "已取消") {
-        return "#f8f9fa";
-      }
-      
-      // 重複事件的顏色序列
-      const overlapColors = [
-        "#e2b9db", // 第一層
-        "#ffb5cc", // 第二層
-        "#fadce4", // 第三層
-        "#9dd2d8", // 第四層
-        "#9dc3e2", // 第五層
-      ];
-      
-      const overlapLevel = this.getOverlapLevel(contract, existingEvents);
-      
-      // 根據重複層次返回對應顏色
-      if (overlapLevel < overlapColors.length) {
-        return overlapColors[overlapLevel];
-      } else {
-        // 如果超過預設顏色數量，循環使用
-        return overlapColors[overlapLevel % overlapColors.length];
-      }
+
+    getEventBackgroundColor(contract) {
+      const statusColors = {
+        '待確認': '#fff3cd',
+        '已確認': '#d1ecf1', 
+        '進行中': '#d4edda',
+        '已完成': '#e2e3e5',
+        '已取消': '#f8d7da'
+      };
+      return statusColors[contract.處理狀態] || '#e2e3e5';
     },
-    getEventBorderColor(contract, existingEvents) {
-      if (contract.處理狀態 === "已取消") {
-        return "#dee2e6";
-      }
-      
-      // 邊框顏色比背景顏色稍深
-      const overlapBorderColors = [
-        "#d4a5c7", // 第一層邊框
-        "#ff9bb8", // 第二層邊框
-        "#f5c8d0", // 第三層邊框
-        "#7bc5cb", // 第四層邊框
-        "#7fb6d8", // 第五層邊框
-      ];
-      
-      const overlapLevel = this.getOverlapLevel(contract, existingEvents);
-      
-      if (overlapLevel < overlapBorderColors.length) {
-        return overlapBorderColors[overlapLevel];
-      } else {
-        return overlapBorderColors[overlapLevel % overlapBorderColors.length];
-      }
+
+    getEventBorderColor(contract) {
+      const borderColors = {
+        '待確認': '#ffeaa7',
+        '已確認': '#74b9ff',
+        '進行中': '#00b894',
+        '已完成': '#636e72',
+        '已取消': '#e17055'
+      };
+      return borderColors[contract.處理狀態] || '#636e72';
     },
-    getEventTextColor(contract, existingEvents) {
-      if (contract.處理狀態 === "已取消") {
-        return "#6c757d";
-      }
-      
-      // 統一使用黑色文字以確保最佳可讀性
-      return "#333333";
+
+    getEventTextColor(contract) {
+      return '#2d3436';
     },
-    getOverlapLevel(contract, existingEvents) {
-      const contractStartDate = this.formatDateForCalendar(this.parseDate(contract.租用開始時間));
-      const contractEndDate = this.formatDateForCalendar(
-        contract.下次可用時間 
-          ? this.parseDate(contract.下次可用時間)
-          : this.parseDate(contract.租用結束時間), 
-        true
-      );
-      
-      // 計算與現有事件的重複數量
-      let overlapCount = 0;
-      existingEvents.forEach(existingEvent => {
-        // 跳過自己和已取消的事件
-        if (existingEvent.id === contract.id || 
-            existingEvent.extendedProps?.contract?.處理狀態 === "已取消") {
-          return;
-        }
-        
-        // 檢查日期範圍是否重疊
-        const existingStart = existingEvent.start;
-        const existingEnd = existingEvent.end;
-        
-        // 簡單的日期重疊檢查
-        if (!(contractEndDate <= existingStart || contractStartDate >= existingEnd)) {
-          overlapCount++;
-        }
-      });
-      
-      return overlapCount;
-    },
-    handleEventClick(info) {
-      const contractId = info.event.id;
-      const contract = this.contracts.find(c => c.id === contractId);
-      if (contract) {
-        this.showContractSidebar(contract);
-      }
-    },
-    handleEventMount(info) {
-      const contract = info.event.extendedProps.contract;
-      
-      // 設置工具提示
-      info.el.title = this.getContractTooltip(contract);
-      
-      // 添加自定義樣式
-      info.el.style.cursor = 'pointer';
-      info.el.style.borderRadius = '4px';
-      info.el.style.fontSize = '12px';
-      info.el.style.fontWeight = '500';
-    },
-    handleDayCellMount(info) {
-      // 可以在這裡自定義日期格子的樣式
-      if (info.isToday) {
-        info.el.style.backgroundColor = '#e3f2fd';
-      }
-    },
+
     getEventClassNames(info) {
       const contract = info.event.extendedProps.contract;
-      const classes = ['contract-event'];
-      
-      if (contract.處理狀態 === "進行中") {
-        classes.push('contract-active');
-      }
-      
-      return classes;
+      return [`contract-${contract.處理狀態}`];
     },
+
     renderEventContent(info) {
       const contract = info.event.extendedProps.contract;
       const displayTitle = contract.自定義標題 || this.getDefaultTitle(contract);
@@ -468,132 +529,36 @@ export default {
         html: `
           <div class="contract-event-content">
             <div class="contract-title">${displayTitle}</div>
+            <div class="contract-time">${this.formatStartTime(contract.租用開始時間)}</div>
           </div>
         `
       };
     },
+
     getContractTooltip(contract) {
       const startTime = this.formatDateTime(contract.租用開始時間);
       const endTime = this.formatDateTime(contract.租用結束時間);
-      const nextAvailable = contract.下次可用時間 
-        ? this.formatDateTime(contract.下次可用時間)
-        : null;
       
       let tooltip = `合約: ${contract.合約單號}\n`;
       tooltip += `客戶: ${contract.客戶姓名}\n`;
       tooltip += `狀態: ${contract.處理狀態}\n`;
       tooltip += `租用時間: ${startTime} ~ ${endTime}\n`;
-      if (nextAvailable) {
-        tooltip += `下次可用: ${nextAvailable}\n`;
-      }
       tooltip += `承辦人: ${contract.承辦人 || "未指定"}\n`;
       tooltip += `金額: NT$ ${contract.合約總金額?.toLocaleString() || 0}`;
       
       return tooltip;
     },
-    goToContractDetail(contractId) {
-      this.$router.push(`/contracts/${contractId}`);
-    },
-    clearStaffFilter() {
-      this.selectedStaff = "";
-      this.updateCalendarEvents();
-    },
-    showContractSidebar(contract) {
-      this.selectedContract = contract;
-      // 使用已有的自定義標題，如果沒有則使用預設標題
-      this.editableTitle = contract.自定義標題 || this.getDefaultTitle(contract);
-      this.editableNote = contract.自定義備註 || "";
-      this.editingTitle = false;
-      this.editingNote = false;
-      
-      // 延遲調整日曆大小，等待 CSS 動畫完成
-      setTimeout(() => {
-        if (this.$refs.fullCalendar) {
-          this.$refs.fullCalendar.getApi().updateSize();
-        }
-      }, 350);
-    },
-    closeContractSidebar() {
-      this.selectedContract = null;
-      this.editingTitle = false;
-      this.editingNote = false;
-      
-      // 延遲調整日曆大小，等待 CSS 動畫完成
-      setTimeout(() => {
-        if (this.$refs.fullCalendar) {
-          this.$refs.fullCalendar.getApi().updateSize();
-        }
-      }, 350);
-    },
-    getDefaultTitle(contract) {
-      const startTime = this.formatStartTime(contract.租用開始時間);
-      return startTime ? `${startTime} ${contract.客戶姓名}` : contract.客戶姓名;
-    },
-    startEditTitle() {
-      this.editingTitle = true;
-      this.$nextTick(() => {
-        if (this.$refs.titleInput) {
-          this.$refs.titleInput.focus();
-        }
-      });
-    },
-    async saveTitle() {
-      this.editingTitle = false;
-      // 這裡可以添加保存到資料庫的邏輯
-      try {
-        await contractService.update(this.selectedContract.id, {
-          自定義標題: this.editableTitle
-        });
-        this.showToast("標題已更新", "success");
-        // 更新本地資料
-        const contractIndex = this.contracts.findIndex(c => c.id === this.selectedContract.id);
-        if (contractIndex !== -1) {
-          this.contracts[contractIndex].自定義標題 = this.editableTitle;
-          this.selectedContract.自定義標題 = this.editableTitle;
-        }
-        // 重新更新日曆事件以反映標題變化
-        this.updateCalendarEvents();
-      } catch (error) {
-        console.error("更新標題失敗:", error);
-        this.showToast("更新標題失敗", "error");
-      }
-    },
-    startEditNote() {
-      this.editingNote = true;
-      this.$nextTick(() => {
-        if (this.$refs.noteTextarea) {
-          this.$refs.noteTextarea.focus();
-        }
-      });
-    },
-    async saveNote() {
-      this.editingNote = false;
-      // 這裡可以添加保存到資料庫的邏輯
-      try {
-        await contractService.update(this.selectedContract.id, {
-          自定義備註: this.editableNote
-        });
-        this.showToast("備註已更新", "success");
-        // 更新本地資料
-        const contractIndex = this.contracts.findIndex(c => c.id === this.selectedContract.id);
-        if (contractIndex !== -1) {
-          this.contracts[contractIndex].自定義備註 = this.editableNote;
-        }
-      } catch (error) {
-        console.error("更新備註失敗:", error);
-        this.showToast("更新備註失敗", "error");
-      }
-    },
+
+
     formatDateRange(startDate, endDate) {
       if (!startDate || !endDate) return "未設定";
 
       const formatSingleDate = (date) => {
         const dateObj = this.parseDate(date);
         if (!dateObj) return "未設定";
-
         return dateObj.toLocaleDateString("zh-TW", {
           year: "numeric",
-          month: "2-digit",
+          month: "2-digit", 
           day: "2-digit",
         });
       };
@@ -603,6 +568,7 @@ export default {
       
       return `${start} - ${end}`;
     },
+
     formatDateTime(date) {
       if (!date) return "未設定";
       
@@ -619,27 +585,24 @@ export default {
         hour12: false,
       });
     },
+
     formatStartTime(date) {
-      if (!date) {
-        console.log('formatStartTime: No date provided');
-        return "";
-      }
+      if (!date) return "";
       
       const dateObj = this.parseDate(date);
-      if (!dateObj) {
-        console.log('formatStartTime: Failed to parse date:', date);
-        return "";
-      }
+      if (!dateObj) return "";
       
-      const timeString = dateObj.toLocaleTimeString("zh-TW", {
+      return dateObj.toLocaleTimeString("zh-TW", {
         hour: "2-digit",
         minute: "2-digit",
         hour12: false,
       });
-      
-      console.log('formatStartTime: Input:', date, 'Parsed:', dateObj, 'Output:', timeString);
-      return timeString;
     },
+
+    goToContractDetail(contractId) {
+      this.$router.push(`/contracts/${contractId}`);
+    },
+
     showToast(message, type = "info") {
       const toastContainer = document.createElement("div");
       toastContainer.className = `alert alert-${
@@ -672,360 +635,276 @@ export default {
 </script>
 
 <style scoped>
-/* FullCalendar 自定義樣式 - 簡約白色風格 */
-:deep(.fc) {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: transparent;
+/* 整體容器 */
+.container-fluid {
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
-:deep(.fc-toolbar-title) {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #333;
+/* 頂部工具欄 */
+.top-toolbar {
+  padding: 1rem 0;
+  border-bottom: 1px solid #e9ecef;
+  margin-bottom: 2rem;
 }
 
-/* 簡約按鈕樣式 */
-:deep(.fc-button) {
-  background-color: #fff;
+/* 搜索框 */
+.search-container {
+  width: 300px;
+}
+
+.search-input {
+  padding-left: 2.5rem;
   border: 1px solid #dee2e6;
-  color: #495057;
   border-radius: 8px;
-  font-size: 0.875rem;
-  padding: 0.5rem 0.875rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  box-shadow: none;
+  font-size: 14px;
 }
 
-:deep(.fc-button:hover) {
+.search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6c757d;
+  z-index: 5;
+}
+
+/* 篩選按鈕 */
+.filter-btn {
+  font-size: 14px;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+/* 今天按鈕 */
+.today-btn {
+  font-size: 14px;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+}
+
+/* 日期導航 */
+.date-navigation {
+  gap: 1rem;
+}
+
+.nav-btn {
+  border: none;
+  background: none;
+  padding: 0.5rem;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.nav-btn:hover {
   background-color: #f8f9fa;
-  border-color: #dee2e6;
-  color: #495057;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
 }
 
-:deep(.fc-button:focus) {
-  box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+.current-date {
+  font-size: 1.5rem;
+  color: #2d3436;
+  min-width: 200px;
+  text-align: center;
 }
 
-:deep(.fc-button-primary:not(:disabled):active),
-:deep(.fc-button-primary:not(:disabled).fc-button-active) {
-  background-color: #007bff;
-  border-color: #007bff;
-  color: #fff;
+
+
+/* 日曆容器 */
+.calendar-main {
+  margin-top: 1rem;
 }
 
-:deep(.fc-today-button) {
-  background-color: #fff;
-  border-color: #8E3E36;
-  color: #8E3E36;
+.calendar-container {
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  overflow: hidden;
+  padding: 1.5rem;
 }
 
-:deep(.fc-today-button:hover) {
-  background-color: #8E3E36;
-  border-color: #8E3E36;
-  color: #fff;
+/* FullCalendar 自定義樣式 */
+:deep(.fc) {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* 日期格子樣式 - 簡約風格 */
+/* 隱藏預設工具欄 */
+:deep(.fc-header-toolbar) {
+  display: none;
+}
+
+/* 日期格子 */
 :deep(.fc-daygrid-day) {
-  min-height: 60px;
-  background-color: #fff;
+  min-height: 120px;
+  border: 1px solid #f1f3f4;
 }
 
 :deep(.fc-daygrid-day-number) {
-  font-weight: 600;
-  color: #333;
-  padding: 8px;
   font-size: 14px;
-  text-decoration: none !important;
-}
-
-/* 移除日期數字的底線 */
-:deep(.fc-daygrid-day-number a) {
-  text-decoration: none !important;
-  color: inherit;
-}
-
-:deep(.fc-daygrid-day-top a) {
-  text-decoration: none !important;
-  color: inherit;
+  font-weight: 500;
+  color: #5f6368;
+  padding: 8px 12px;
+  text-decoration: none;
 }
 
 :deep(.fc-day-today) {
   background-color: #fff !important;
-  position: relative;
 }
 
 :deep(.fc-day-today .fc-daygrid-day-number) {
-  color: #8E3E36;
-  font-weight: 700;
+  position: relative !important;
+  color: #333 !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+  padding-left: 16px !important;
 }
 
-:deep(.fc-day-other) {
-  background-color: #fafbfc;
+:deep(.fc-day-today .fc-daygrid-day-number::before) {
+  content: '' !important;
+  position: absolute !important;
+  left: 4px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 6px !important;
+  height: 6px !important;
+  background-color: #1a73e8 !important;
+  border-radius: 50% !important;
 }
 
-:deep(.fc-day-other .fc-daygrid-day-number) {
-  color: #adb5bd;
+/* 星期標題 */
+:deep(.fc-col-header-cell) {
+  background-color: #fff;
+  border-bottom: 1px solid #f1f3f4;
   font-weight: 500;
+  color: #5f6368;
+  text-transform: uppercase;
+  font-size: 11px;
+  padding: 12px 8px;
 }
 
-/* 事件樣式 - 簡約風格 */
+:deep(.fc-col-header-cell-cushion) {
+  text-decoration: none;
+  color: #5f6368;
+}
+
+/* 事件樣式 */
 :deep(.fc-event) {
-  border-radius: 6px;
-  border: 1px solid rgba(255,255,255,0.2);
-  margin: 2px;
+  border: none;
+  border-radius: 4px;
+  margin: 1px 2px;
   font-size: 12px;
-  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: all 0.2s;
 }
 
 :deep(.fc-event:hover) {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
 :deep(.fc-event-title) {
-  font-weight: 600;
-  line-height: 1.3;
+  font-weight: 500;
+  padding: 2px 6px;
 }
 
-/* 自定義事件內容樣式 */
-:deep(.contract-event-content) {
+/* 事件內容 */
+.contract-event-content {
   padding: 4px 6px;
-  line-height: 1.3;
+  line-height: 1.2;
 }
 
-:deep(.contract-title) {
-  font-weight: 600;
+.contract-title {
+  font-weight: 500;
   font-size: 12px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-bottom: 1px;
 }
 
-:deep(.contract-number) {
+.contract-time {
   font-size: 10px;
-  opacity: 0.85;
-  font-weight: 400;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* 多事件顯示 */
-:deep(.fc-daygrid-event-harness) {
+  opacity: 0.8;
   margin-top: 1px;
-  margin-bottom: 1px;
 }
 
-:deep(.fc-event-main) {
-  padding: 2px 4px;
-}
-
-/* 星期標題 - 簡約風格 */
-:deep(.fc-col-header-cell) {
-  background-color: #fff;
-  font-weight: 400;
-  color: #6c757d;
-  border-color: #f0f0f0;
-  border-bottom: none; /* 移除底線 */
-}
-
-:deep(.fc-col-header-cell-cushion) {
-  padding: 16px 8px;
-  font-size: 14px;
-  color: #6c757d;
-  text-decoration: none; /* 移除文字底線 */
-}
-
-/* 移除星期標題文字的底線 */
-:deep(.fc-col-header-cell a) {
-  text-decoration: none !important;
-  color: #6c757d;
-}
-
-:deep(.fc-col-header-cell-cushion a) {
-  text-decoration: none !important;
-  color: #6c757d;
-}
-
-/* 網格線 - 更輕的邊框 */
-:deep(.fc-daygrid-day-frame) {
-  border-color: #f0f0f0;
-}
-
-:deep(.fc-scrollgrid) {
-  border-color: #f0f0f0;
-  border-radius: 0;
-}
-
-:deep(.fc-scrollgrid-section-body table) {
-  border-color: #f0f0f0;
-}
-
-/* 移除多餘的邊框 */
-:deep(.fc-daygrid-body) {
-  border-color: #f0f0f0;
-}
-
-:deep(.fc-daygrid-day-top) {
-  border-color: #f0f0f0;
-}
-
-/* 工具欄樣式 */
-:deep(.fc-toolbar) {
-  padding: 0 0 20px 0;
-  margin-bottom: 0;
-}
-
-:deep(.fc-toolbar-chunk) {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* 移除預設的 margin */
-:deep(.fc-button-group .fc-button) {
-  margin: 0 2px;
-}
-
-/* 整體容器樣式 */
-:deep(.fc-theme-standard .fc-scrollgrid) {
-  border: 1px solid #f0f0f0;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-/* 響應式設計 */
-@media (max-width: 768px) {
-  :deep(.fc-toolbar) {
-    flex-direction: column;
-    gap: 10px;
-  }
-  
-  :deep(.fc-toolbar-chunk) {
-    display: flex;
-    justify-content: center;
-  }
-  
-  :deep(.fc-daygrid-day) {
-    min-height: 50px;
-  }
-  
-  :deep(.contract-title) {
-    font-size: 10px;
-  }
-  
-  :deep(.contract-number) {
-    font-size: 8px;
-  }
-  
-  :deep(.fc-event) {
-    font-size: 10px;
-    margin: 0.5px 1px;
-  }
-}
-
-@media (max-width: 576px) {
-  :deep(.fc-toolbar-title) {
-    font-size: 1.2rem;
-  }
-  
-  :deep(.fc-button) {
-    font-size: 0.75rem;
-    padding: 0.25rem 0.5rem;
-  }
-  
-  :deep(.fc-daygrid-day) {
-    min-height: 40px;
-  }
-}
-
-/* 日曆容器和側邊欄動畫 */
-.calendar-container {
-  transition: margin-right 0.3s ease;
-  margin-right: 0;
-}
-
-.calendar-container.with-sidebar {
-  margin-right: 400px; /* 380px 側邊欄 + 20px 間距 */
-}
-
-/* 篩選區域也要跟著壓縮 */
-.filter-container {
-  transition: margin-right 0.3s ease;
-  margin-right: 0;
-}
-
-.filter-container.with-sidebar {
-  margin-right: 400px; /* 380px 側邊欄 + 20px 間距 */
-}
-
+/* 側邊欄 */
 .contract-sidebar {
-  position: fixed;
-  top: 0;
-  right: -400px; /* 初始隱藏在右側外 */
-  width: 380px;
-  height: 100vh;
-  z-index: 1050;
-  transition: right 0.3s ease;
-  padding: 20px;
-  overflow-y: auto;
+  width: 400px;
+  border: none;
+  box-shadow: -2px 0 10px rgba(0,0,0,0.1);
 }
 
-.contract-sidebar.sidebar-open {
-  right: 0; /* 推出到可見位置 */
+.contract-sidebar .offcanvas-header {
+  border-bottom: 1px solid #e9ecef;
+  padding: 1.5rem;
 }
 
-/* 側邊欄內容樣式 */
-.hover-bg-light:hover {
-  background-color: #f8f9fa !important;
+.contract-sidebar .offcanvas-body {
+  padding: 1.5rem;
+}
+
+/* 表單元素 */
+.form-label {
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 0.5rem;
+}
+
+.form-control-plaintext {
+  font-size: 14px;
 }
 
 .cursor-pointer {
   cursor: pointer;
 }
 
+.cursor-pointer:hover {
+  background-color: #f8f9fa;
+}
+
+/* 下拉菜單 */
+.dropdown-item.active {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
 /* 響應式設計 */
 @media (max-width: 1200px) {
-  .calendar-container.with-sidebar {
-    margin-right: 0;
+  .search-container {
+    width: 250px;
   }
   
-  .filter-container.with-sidebar {
-    margin-right: 0;
-  }
-  
-  .contract-sidebar {
-    position: fixed;
-    right: -100%;
-    width: 100%;
-    padding: 20px;
-  }
-  
-  .contract-sidebar.sidebar-open {
-    right: 0;
-  }
-  
-  .contract-sidebar .bg-white {
-    max-width: 400px;
-    margin: 0 auto;
+  .current-date {
+    font-size: 1.25rem;
+    min-width: 150px;
   }
 }
 
 @media (max-width: 768px) {
-  .contract-sidebar {
-    padding: 15px;
+  .top-toolbar {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch !important;
   }
   
-  .contract-sidebar .bg-white {
-    max-width: none;
+  .search-container {
+    width: 100%;
+  }
+  
+  .filter-dropdowns {
+    flex-wrap: wrap;
+  }
+  
+  .date-navigation {
+    justify-content: center;
+  }
+  
+  .current-date {
+    font-size: 1.1rem;
+    min-width: auto;
+  }
+  
+  :deep(.fc-daygrid-day) {
+    min-height: 80px;
   }
 }
 </style>

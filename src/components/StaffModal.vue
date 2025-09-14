@@ -167,7 +167,7 @@
                   class="spinner-border spinner-border-sm me-2"
                 ></span>
                 <i v-else class="bi bi-check-lg me-2"></i>
-                {{ loading ? "儲存中..." : "儲存" }}
+                <span style="font-size: 14px;">{{ loading ? "儲存中..." : "儲存" }}</span>
               </button>
             </div>
           </div>

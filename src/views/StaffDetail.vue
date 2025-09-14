@@ -16,7 +16,7 @@
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">載入中...</span>
       </div>
-      <p class="mt-2 text-muted">載入中...</p>
+      <p class="mt-2 text-muted" style="font-size: 14px;">載入中...</p>
     </div>
 
     <!-- 承辦人詳情 -->
@@ -126,8 +126,10 @@
               <button @click="editStaff" class="btn btn-primary">
                 <i class="bi bi-pencil-square me-2"></i>編輯承辦人
               </button>
-              <button @click="deleteStaff" class="btn btn-outline-danger">
-                <i class="bi bi-trash me-2"></i>刪除承辦人
+              <button @click="deleteStaff" class="btn btn-outline-danger" :disabled="deleting">
+                <span v-if="deleting" class="spinner-border spinner-border-sm me-2" role="status"></span>
+                <i v-else class="bi bi-trash me-2"></i>
+                <span style="font-size: 14px;">{{ deleting ? '刪除中...' : '刪除承辦人' }}</span>
               </button>
             </div>
           </div>
@@ -177,6 +179,8 @@ export default {
     return {
       staffMember: null,
       loading: true,
+      deleting: false,
+      saving: false,
       showEditModal: false,
     };
   },
@@ -209,6 +213,7 @@ export default {
       }
 
       try {
+        this.deleting = true;
         await staffService.delete(this.staffMember.id);
         this.showToast("承辦人已刪除", "success");
 
@@ -218,10 +223,13 @@ export default {
       } catch (error) {
         console.error("刪除承辦人失敗:", error);
         this.showToast("刪除承辦人失敗，請稍後再試", "error");
+      } finally {
+        this.deleting = false;
       }
     },
     async saveStaff(staffData) {
       try {
+        this.saving = true;
         await staffService.update(this.staffMember.id, staffData);
         this.showToast("承辦人已更新", "success");
         await this.loadStaff();
@@ -229,6 +237,8 @@ export default {
       } catch (error) {
         console.error("更新承辦人失敗:", error);
         this.showToast("更新承辦人失敗，請稍後再試", "error");
+      } finally {
+        this.saving = false;
       }
     },
     formatDate(date) {

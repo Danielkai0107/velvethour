@@ -6,7 +6,6 @@
       <button
         @click="showAddModal = true"
         class="btn btn-outline-primary"
-        style="font-size: 14px"
       >
         <i class="bi bi-plus-lg me-2"></i>新增禮服
       </button>
@@ -133,7 +132,6 @@
           v-if="hasActiveFilters"
           @click="clearFilters"
           class="btn btn-outline-secondary btn-sm"
-          style="font-size: 13px"
         >
           <i class="bi bi-x-circle me-2"></i>清除篩選
         </button>
@@ -145,7 +143,7 @@
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">載入中...</span>
       </div>
-      <p class="mt-2 text-muted">載入中...</p>
+      <p class="mt-2 text-muted" style="font-size: 14px;">載入中...</p>
     </div>
 
     <!-- 禮服卡片網格 -->
@@ -274,7 +272,7 @@
         >
           <i class="bi bi-plus-lg me-2"></i>新增禮服
         </button>
-        <button v-else @click="clearFilters" class="btn btn-outline-primary" style="font-size: 14px;">
+        <button v-else @click="clearFilters" class="btn btn-outline-primary">
           <i class="bi bi-x-circle me-2"></i>清除篩選
         </button>
       </div>
@@ -285,6 +283,7 @@
       v-if="showAddModal"
       :show="showAddModal"
       :dress="null"
+      :loading="saving"
       @close="closeModal"
       @save="saveDress"
     />
@@ -306,6 +305,7 @@ export default {
     return {
       dresses: [],
       loading: true,
+      saving: false,
       showAddModal: false,
       cartService, // 讓模板可以存取購物車服務
       cartUnsubscribe: null, // 購物車監聽器取消函數
@@ -420,6 +420,7 @@ export default {
     },
     async saveDress(dressData) {
       try {
+        this.saving = true;
         // 只處理新增模式
         await dressService.create(dressData);
         this.showToast("禮服已新增", "success");
@@ -428,6 +429,8 @@ export default {
       } catch (error) {
         console.error("儲存禮服失敗:", error);
         this.showToast("儲存禮服失敗，請稍後再試", "error");
+      } finally {
+        this.saving = false;
       }
     },
     goToDressDetail(dressId) {

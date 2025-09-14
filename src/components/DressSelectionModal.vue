@@ -142,7 +142,6 @@
                 v-if="hasActiveFilters"
                 @click="clearFilters"
                 class="btn btn-outline-secondary btn-sm"
-                style="font-size: 13px"
               >
                 <i class="bi bi-x-circle me-2"></i>清除篩選
               </button>
@@ -154,7 +153,7 @@
             <div class="spinner-border text-primary" role="status">
               <span class="visually-hidden">載入中...</span>
             </div>
-            <p class="mt-2 text-muted">載入中...</p>
+            <p class="mt-2 text-muted" style="font-size: 14px;">載入中...</p>
           </div>
 
           <!-- 禮服卡片網格 -->

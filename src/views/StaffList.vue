@@ -6,7 +6,6 @@
       <button
         @click="showAddModal = true"
         class="btn btn-outline-primary"
-        style="font-size: 14px;"
       >
         <i class="bi bi-plus-lg me-2"></i>新增承辦人
       </button>
@@ -17,7 +16,7 @@
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">載入中...</span>
       </div>
-      <p class="mt-2 text-muted">載入中...</p>
+      <p class="mt-2 text-muted" style="font-size: 14px;">載入中...</p>
     </div>
 
     <!-- 承辦人表格 -->
@@ -27,12 +26,12 @@
           <table class="table mb-0" style="border-collapse: separate; border-spacing: 0; min-width: 900px;">
             <thead>
               <tr class="border-0" style="background-color: #f8f9fa;">
-                <th class="border-0 fw-normal text-muted py-4 px-4" style="font-size: 14px; min-width: 180px; white-space: nowrap;">姓名</th>
-                <th class="border-0 fw-normal text-muted py-4 px-4" style="font-size: 14px; min-width: 120px; white-space: nowrap;">職位</th>
-                <th class="border-0 fw-normal text-muted py-4 px-4" style="font-size: 14px; min-width: 140px; white-space: nowrap;">電話</th>
-                <th class="border-0 fw-normal text-muted py-4 px-4" style="font-size: 14px; min-width: 200px; white-space: nowrap;">Email</th>
-                <th class="border-0 fw-normal text-muted py-4 px-4" style="font-size: 14px; min-width: 100px; white-space: nowrap;">狀態</th>
-                <th class="border-0 fw-normal text-muted py-4 px-4" style="font-size: 14px; min-width: 160px; white-space: nowrap;">加入日期</th>
+                <th class="border-0 fw-normal text-muted py-4 px-4 align-middle" style="font-size: 14px; min-width: 180px; white-space: nowrap; vertical-align: middle;">姓名</th>
+                <th class="border-0 fw-normal text-muted py-4 px-4 align-middle" style="font-size: 14px; min-width: 120px; white-space: nowrap; vertical-align: middle;">職位</th>
+                <th class="border-0 fw-normal text-muted py-4 px-4 align-middle" style="font-size: 14px; min-width: 140px; white-space: nowrap; vertical-align: middle;">電話</th>
+                <th class="border-0 fw-normal text-muted py-4 px-4 align-middle" style="font-size: 14px; min-width: 200px; white-space: nowrap; vertical-align: middle;">Email</th>
+                <th class="border-0 fw-normal text-muted py-4 px-4 align-middle" style="font-size: 14px; min-width: 100px; white-space: nowrap; vertical-align: middle;">狀態</th>
+                <th class="border-0 fw-normal text-muted py-4 px-4 align-middle" style="font-size: 14px; min-width: 160px; white-space: nowrap; vertical-align: middle;">加入日期</th>
               </tr>
             </thead>
             <tbody>
@@ -43,24 +42,24 @@
                 style="cursor: pointer; border-bottom: 1px solid #f0f0f0 !important;"
                 @click="goToStaffDetail(staff.id)"
               >
-                <td class="py-4 px-4 border-0" style="border-bottom: 1px solid #f0f0f0; white-space: nowrap;">
+                <td class="py-4 px-4 border-0 align-middle" style="border-bottom: 1px solid #f0f0f0; white-space: nowrap; vertical-align: middle;">
                   <div class="fw-semibold text-dark" style="font-size: 14px;">{{ staff.姓名 }}</div>
                 </td>
-                <td class="py-4 px-4 border-0" style="border-bottom: 1px solid #f0f0f0; white-space: nowrap;">
+                <td class="py-4 px-4 border-0 align-middle" style="border-bottom: 1px solid #f0f0f0; white-space: nowrap; vertical-align: middle;">
                   <span v-if="staff.職位" class="text-dark" style="font-size: 14px;">{{ staff.職位 }}</span>
                 </td>
-                <td class="py-4 px-4 border-0" style="border-bottom: 1px solid #f0f0f0; white-space: nowrap;">
+                <td class="py-4 px-4 border-0 align-middle" style="border-bottom: 1px solid #f0f0f0; white-space: nowrap; vertical-align: middle;">
                   <span v-if="staff.電話" class="text-dark" style="font-size: 14px;">{{ staff.電話 }}</span>
                 </td>
-                <td class="py-4 px-4 border-0" style="border-bottom: 1px solid #f0f0f0; white-space: nowrap;">
+                <td class="py-4 px-4 border-0 align-middle" style="border-bottom: 1px solid #f0f0f0; white-space: nowrap; vertical-align: middle;">
                   <span v-if="staff.email" class="text-dark" style="font-size: 14px;">{{ staff.email }}</span>
                 </td>
-                <td class="py-4 px-4 border-0" style="border-bottom: 1px solid #f0f0f0; white-space: nowrap;">
+                <td class="py-4 px-4 border-0 align-middle" style="border-bottom: 1px solid #f0f0f0; white-space: nowrap; vertical-align: middle;">
                   <span v-if="staff.狀態" :class="['badge', getStatusBadgeClass(staff.狀態)]" style="font-size: 12px; padding: 6px 12px;">
                     {{ staff.狀態 }}
                   </span>
                 </td>
-                <td class="py-4 px-4 border-0" style="border-bottom: 1px solid #f0f0f0; white-space: nowrap;">
+                <td class="py-4 px-4 border-0 align-middle" style="border-bottom: 1px solid #f0f0f0; white-space: nowrap; vertical-align: middle;">
                   <span v-if="staff.加入日期" class="text-dark" style="font-size: 14px;">{{ formatDate(staff.加入日期) }}</span>
                 </td>
               </tr>
@@ -84,6 +83,7 @@
       v-if="showAddModal"
       :show="showAddModal"
       :staff="null"
+      :loading="saving"
       @close="closeModal"
       @save="saveStaff"
     />
@@ -103,6 +103,7 @@ export default {
     return {
       staff: [],
       loading: true,
+      saving: false,
       showAddModal: false,
     };
   },
@@ -140,6 +141,7 @@ export default {
     },
     async saveStaff(staffData) {
       try {
+        this.saving = true;
         // 只處理新增模式
         await staffService.create(staffData);
         this.showToast("承辦人已新增", "success");
@@ -148,6 +150,8 @@ export default {
       } catch (error) {
         console.error("儲存承辦人失敗:", error);
         this.showToast("儲存承辦人失敗，請稍後再試", "error");
+      } finally {
+        this.saving = false;
       }
     },
     closeModal() {

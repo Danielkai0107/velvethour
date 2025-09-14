@@ -28,8 +28,9 @@
               <button
                 @click="showAddModal('color')"
                 class="btn btn-outline-secondary btn-sm"
+                style="padding: 0.25rem 0.5rem;"
               >
-                <i class="bi bi-plus-lg me-1"></i>新增
+                <i class="bi bi-plus-lg"></i>
               </button>
             </div>
           </div>
@@ -75,8 +76,9 @@
               <button
                 @click="showAddModal('skirt')"
                 class="btn btn-outline-secondary btn-sm"
+                style="padding: 0.25rem 0.5rem;"
               >
-                <i class="bi bi-plus-lg me-1"></i>新增
+                <i class="bi bi-plus-lg"></i>
               </button>
             </div>
           </div>
@@ -114,8 +116,9 @@
               <button
                 @click="showAddModal('sleeve')"
                 class="btn btn-outline-secondary btn-sm"
+                style="padding: 0.25rem 0.5rem;"
               >
-                <i class="bi bi-plus-lg me-1"></i>新增
+                <i class="bi bi-plus-lg"></i>
               </button>
             </div>
           </div>
@@ -153,8 +156,9 @@
               <button
                 @click="showAddModal('neck')"
                 class="btn btn-outline-secondary btn-sm"
+                style="padding: 0.25rem 0.5rem;"
               >
-                <i class="bi bi-plus-lg me-1"></i>新增
+                <i class="bi bi-plus-lg"></i>
               </button>
             </div>
           </div>
@@ -205,8 +209,9 @@
               <button
                 @click="showAddModal('package')"
                 class="btn btn-outline-secondary btn-sm"
+                style="padding: 0.25rem 0.5rem;"
               >
-                <i class="bi bi-plus-lg me-1"></i>新增
+                <i class="bi bi-plus-lg"></i>
               </button>
             </div>
           </div>
@@ -354,8 +359,9 @@
                 >
                   取消
                 </button>
-                <button type="submit" class="btn btn-primary">
-                  新增
+                <button type="submit" class="btn btn-primary" :disabled="saving" style="font-size: 14px;">
+                  <span v-if="saving" class="spinner-border spinner-border-sm me-2" role="status"></span>
+                  {{ saving ? '新增中...' : '新增' }}
                 </button>
               </div>
             </form>
@@ -382,6 +388,8 @@ export default {
       },
       showModal: false,
       modalType: "",
+      saving: false,
+      deleting: false,
       newOption: {
         label: "",
         value: "",
@@ -477,51 +485,60 @@ export default {
       };
       return titles[this.modalType] || "選項";
     },
-    addOption() {
-      // 方案選項需要先驗證必填欄位並生成標籤
-      if (this.modalType === 'package') {
-        if (!this.newOption.category || !this.newOption.packageName || !this.newOption.price) {
-          this.showToast("請填寫所有必填欄位", "warning");
-          return;
-        }
-        // 確保生成最新的標籤和值
-        this.generatePackageLabel();
-      }
-
-      const optionData = {
-        value: this.modalType === 'package' ? this.newOption.value : this.newOption.label,
-        label: this.newOption.label,
-      };
-
-      if (this.modalType === "color") {
-        optionData.color = this.newOption.color;
-        if (this.newOption.color === "#FFFFFF") {
-          optionData.border = "#E5E7EB";
-        }
-      } else if (this.modalType === "package") {
-        optionData.price = this.newOption.price;
-        optionData.category = this.newOption.category;
-      }
-
-      const targetArray = this.getTargetArray();
-      if (targetArray) {
-        // 檢查是否已存在相同的選項
-        const exists = targetArray.some(
-          (item) => item.value === optionData.value || item.label === optionData.label
-        );
-        if (exists) {
-          this.showToast("該選項已存在", "warning");
-          return;
+    async addOption() {
+      try {
+        this.saving = true;
+        
+        // 方案選項需要先驗證必填欄位並生成標籤
+        if (this.modalType === 'package') {
+          if (!this.newOption.category || !this.newOption.packageName || !this.newOption.price) {
+            this.showToast("請填寫所有必填欄位", "warning");
+            return;
+          }
+          // 確保生成最新的標籤和值
+          this.generatePackageLabel();
         }
 
-        const success = optionsService.addOption(this.getTypeKey(), optionData);
-        if (success) {
-          this.showToast("選項已新增", "success");
-          this.loadOptions();
-          this.closeModal();
-        } else {
-          this.showToast("新增失敗", "error");
+        const optionData = {
+          value: this.modalType === 'package' ? this.newOption.value : this.newOption.label,
+          label: this.newOption.label,
+        };
+
+        if (this.modalType === "color") {
+          optionData.color = this.newOption.color;
+          if (this.newOption.color === "#FFFFFF") {
+            optionData.border = "#E5E7EB";
+          }
+        } else if (this.modalType === "package") {
+          optionData.price = this.newOption.price;
+          optionData.category = this.newOption.category;
         }
+
+        const targetArray = this.getTargetArray();
+        if (targetArray) {
+          // 檢查是否已存在相同的選項
+          const exists = targetArray.some(
+            (item) => item.value === optionData.value || item.label === optionData.label
+          );
+          if (exists) {
+            this.showToast("該選項已存在", "warning");
+            return;
+          }
+
+          const success = optionsService.addOption(this.getTypeKey(), optionData);
+          if (success) {
+            this.showToast("選項已新增", "success");
+            this.loadOptions();
+            this.closeModal();
+          } else {
+            this.showToast("新增失敗", "error");
+          }
+        }
+      } catch (error) {
+        console.error("新增選項失敗:", error);
+        this.showToast("新增選項失敗，請稍後再試", "error");
+      } finally {
+        this.saving = false;
       }
     },
     removeOption(type, index) {

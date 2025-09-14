@@ -260,10 +260,10 @@
                 
                 <!-- 儲存取消按鈕 - 固定在右側區域底部 -->
                 <div class="border-top bg-white p-3 flex-shrink-0">
-                  <div class="d-flex gap-2">
+                  <div class="d-flex gap-2 justify-content-end">
                     <button
                       type="button"
-                      class="btn btn-outline-secondary flex-fill"
+                      class="btn btn-outline-secondary"
                       @click="$emit('close')"
                     >
                       <i class="bi bi-x-lg me-2"></i>取消
@@ -272,14 +272,14 @@
                       type="button"
                       @click="handleSubmit"
                       :disabled="loading || uploadingImages.length > 0"
-                      class="btn btn-primary flex-fill"
+                      class="btn btn-primary"
                     >
                       <span
                         v-if="loading"
                         class="spinner-border spinner-border-sm me-2"
                       ></span>
                       <i v-else class="bi bi-check-lg me-2"></i>
-                      {{ loading ? "儲存中..." : "儲存" }}
+                      <span style="font-size: 14px;">{{ loading ? "儲存中..." : "儲存" }}</span>
                     </button>
                   </div>
                 </div>

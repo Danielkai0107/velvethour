@@ -165,12 +165,13 @@ body {
 .btn {
   border-radius: 8px;
   font-weight: 500;
+  font-size: 14px !important;
   transition: all 0.2s ease-in-out;
 }
 
 .btn-sm {
   padding: 0.5rem 1rem;
-  font-size: 0.875rem;
+  font-size: 14px !important;
 }
 
 /* 輸入框樣式 */

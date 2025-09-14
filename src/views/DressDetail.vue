@@ -16,7 +16,7 @@
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">載入中...</span>
       </div>
-      <p class="mt-2 text-muted">載入中...</p>
+      <p class="mt-2 text-muted" style="font-size: 14px;">載入中...</p>
     </div>
 
     <!-- 禮服詳情 -->
@@ -271,7 +271,7 @@
                 >
                   <span class="visually-hidden">載入中...</span>
                 </div>
-                <span class="ms-2 text-muted">載入租用檔期中...</span>
+                <span class="ms-2 text-muted" style="font-size: 14px;">載入租用檔期中...</span>
               </div>
 
               <!-- 租用檔期表格 -->
