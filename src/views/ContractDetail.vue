@@ -183,43 +183,43 @@
             <div class="mb-4">
               <h5 class="card-title mb-3">金額詳情</h5>
 
-              <!-- 禮服項目明細 -->
-              <div class="border rounded p-3 mb-3">
-                <h6 class="fw-semibold mb-3">禮服項目明細</h6>
-                <div class="table-responsive">
-                  <table class="table table-sm mb-0">
-                    <thead>
-                      <tr>
-                        <th>禮服編號</th>
-                        <th>數量</th>
-                        <th>單價</th>
-                        <th>小計</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr
-                        v-for="(item, index) in contract.禮服清單"
-                        :key="index"
-                      >
-                        <td>
-                          {{ getDressById(item.禮服ID)?.編號 || item.禮服ID }}
-                        </td>
-                        <td>{{ item.數量 }}</td>
-                        <td>NT$ {{ item.單價?.toLocaleString() || 0 }}</td>
-                        <td class="fw-semibold">
-                          NT$ {{ item.小計?.toLocaleString() || 0 }}
-                        </td>
-                      </tr>
-                    </tbody>
-                    <tfoot>
-                      <tr class="border-top">
-                        <td colspan="3" class="fw-semibold">合約總金額</td>
-                        <td class="fw-bold text-primary">
-                          NT$ {{ contract.合約總金額?.toLocaleString() || 0 }}
-                        </td>
-                      </tr>
-                    </tfoot>
-                  </table>
+              <div class="bg-white rounded p-3 shadow-sm">
+                <div class="small text-muted">
+                  <!-- 方案價格 (如果有選擇方案) -->
+                  <div v-if="contract.選擇方案" class="d-flex justify-content-between">
+                    <span>方案價格</span>
+                    <span>NT$ {{ getContractPlanPrice().toLocaleString() }}</span>
+                  </div>
+                  
+                  <!-- 禮服小計 -->
+                  <div v-if="!contract.選擇方案" class="d-flex justify-content-between">
+                    <span>禮服小計</span>
+                    <span>NT$ {{ calculateContractDressTotal().toLocaleString() }}</span>
+                  </div>
+                  
+                  <!-- 加價金額 (只在選擇方案時顯示) -->
+                  <div v-if="contract.選擇方案 && getContractExtraAmount() > 0" class="d-flex justify-content-between text-warning">
+                    <span>加價金額</span>
+                    <span>+ NT$ {{ getContractExtraAmount().toLocaleString() }}</span>
+                  </div>
+                  
+                  <!-- 小計 -->
+                  <div class="d-flex justify-content-between">
+                    <span>小計</span>
+                    <span>NT$ {{ calculateContractTotal().toLocaleString() }}</span>
+                  </div>
+                  
+                  <!-- 優惠折扣 -->
+                  <div v-if="contract.折扣比例 && contract.折扣比例 < 1" class="d-flex justify-content-between text-success">
+                    <span>折扣 ({{ Math.round((1 - (contract.折扣比例 || 1)) * 100) }}%)</span>
+                    <span>- NT$ {{ getContractDiscountAmount().toLocaleString() }}</span>
+                  </div>
+                  
+                  <!-- 合約總金額 -->
+                  <div class="d-flex justify-content-between fw-bold text-primary border-top pt-2 mt-2">
+                    <span>合約總金額</span>
+                    <span>NT$ {{ contract.合約總金額?.toLocaleString() || 0 }}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -469,6 +469,58 @@ export default {
         minute: "2-digit",
         hour12: false,
       });
+    },
+
+    // 計算合約方案價格
+    getContractPlanPrice() {
+      if (!this.contract.選擇方案) return 0;
+      // 簡單的價格對照表，可以根據需要擴展
+      const planPrices = {
+        "攝影_一日一晚": 15000,
+        "攝影_一日二晚": 21000,
+        "攝影_二日一晚": 24000,
+        "攝影_二日四晚": 42000,
+        "攝影_二日": 18000,
+        "宴客_一日一晚": 25000,
+        "宴客_一日二晚": 35000,
+      };
+      return planPrices[this.contract.選擇方案] || 0;
+    },
+
+    // 計算合約禮服小計
+    calculateContractDressTotal() {
+      if (!this.contract.禮服清單) return 0;
+      return this.contract.禮服清單.reduce((total, item) => {
+        return total + (item.小計 || 0);
+      }, 0);
+    },
+
+    // 計算合約加價金額
+    getContractExtraAmount() {
+      if (!this.contract.選擇方案 || !this.contract.禮服清單) return 0;
+      return this.contract.禮服清單.reduce((total, item) => {
+        const dress = this.getDressById(item.禮服ID);
+        const extraAmount = dress?.加價金額 || 0;
+        return total + extraAmount;
+      }, 0);
+    },
+
+    // 計算合約總計（未折扣）
+    calculateContractTotal() {
+      if (this.contract.選擇方案) {
+        const planPrice = this.getContractPlanPrice();
+        const extraAmount = this.getContractExtraAmount();
+        return planPrice + extraAmount;
+      } else {
+        return this.calculateContractDressTotal();
+      }
+    },
+
+    // 計算合約折扣金額
+    getContractDiscountAmount() {
+      const originalTotal = this.calculateContractTotal();
+      const discountRate = 1 - (this.contract.折扣比例 || 1);
+      return Math.round(originalTotal * discountRate);
     },
 
     getStatusBadgeClass(status) {

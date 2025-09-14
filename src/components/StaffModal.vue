@@ -7,7 +7,7 @@
     style="background-color: rgba(0, 0, 0, 0.5)"
     @click.self="$emit('close')"
   >
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-dialog modal-fullscreen">
       <div class="modal-content">
         <!-- Modal Header -->
         <div class="modal-header">
@@ -22,17 +22,13 @@
         </div>
 
         <!-- Modal Body -->
-        <div class="modal-body">
-          <form @submit.prevent="handleSubmit">
-            <!-- 基本資訊 -->
-            <div class="mb-4">
-              <h5 class="fw-semibold mb-3">基本資訊
-              </h5>
+        <div class="modal-body p-0 d-flex flex-column" style="height: calc(100vh - 120px);">
+          <div class="flex-grow-1 p-4 custom-scrollbar" style="overflow-y: auto;">
+            <form @submit.prevent="handleSubmit">
               <div class="row g-3">
                 <!-- 姓名 -->
-                <div class="col-md-6">
-                  <label class="form-label fw-semibold">姓名 *
-                  </label>
+                <div class="col-md-4">
+                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">姓名 *</label>
                   <input
                     v-model="formData.姓名"
                     type="text"
@@ -43,23 +39,20 @@
                 </div>
 
                 <!-- 員工編號 -->
-                <div class="col-md-6">
-                  <label class="form-label fw-semibold">員工編號 *
-                  </label>
+                <div class="col-md-4">
+                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">員工編號</label>
                   <input
                     v-model="formData.員工編號"
                     type="text"
                     class="form-control"
-                    required
                     placeholder="例: EMP001"
                   />
                 </div>
 
                 <!-- 職位 -->
-                <div class="col-md-6">
-                  <label class="form-label fw-semibold">職位 *
-                  </label>
-                  <select v-model="formData.職位" class="form-select" required>
+                <div class="col-md-4">
+                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">職位</label>
+                  <select v-model="formData.職位" class="form-select">
                     <option value="">請選擇職位</option>
                     <option value="店長">店長</option>
                     <option value="副店長">副店長</option>
@@ -72,9 +65,8 @@
                 </div>
 
                 <!-- 部門 -->
-                <div class="col-md-6">
-                  <label class="form-label fw-semibold">部門
-                  </label>
+                <div class="col-md-4">
+                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">部門</label>
                   <select v-model="formData.部門" class="form-select">
                     <option value="">請選擇部門</option>
                     <option value="銷售部">銷售部</option>
@@ -86,10 +78,9 @@
                 </div>
 
                 <!-- 狀態 -->
-                <div class="col-md-6">
-                  <label class="form-label fw-semibold">狀態 *
-                  </label>
-                  <select v-model="formData.狀態" class="form-select" required>
+                <div class="col-md-4">
+                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">狀態</label>
+                  <select v-model="formData.狀態" class="form-select">
                     <option value="">請選擇狀態</option>
                     <option value="在職">在職</option>
                     <option value="休假">休假</option>
@@ -98,41 +89,29 @@
                 </div>
 
                 <!-- 加入日期 -->
-                <div class="col-md-6">
-                  <label class="form-label fw-semibold">加入日期 *
-                  </label>
+                <div class="col-md-4">
+                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">加入日期</label>
                   <input
                     v-model="formData.加入日期"
                     type="date"
                     class="form-control"
-                    required
                   />
                 </div>
-              </div>
-            </div>
 
-            <!-- 聯絡資訊 -->
-            <div class="mb-4">
-              <h5 class="fw-semibold mb-3">聯絡資訊
-              </h5>
-              <div class="row g-3">
                 <!-- 電話 -->
-                <div class="col-md-6">
-                  <label class="form-label fw-semibold">電話 *
-                  </label>
+                <div class="col-md-4">
+                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">電話</label>
                   <input
                     v-model="formData.電話"
                     type="tel"
                     class="form-control"
-                    required
                     placeholder="例: 0912-345-678"
                   />
                 </div>
 
                 <!-- Email -->
-                <div class="col-md-6">
-                  <label class="form-label fw-semibold">Email
-                  </label>
+                <div class="col-md-4">
+                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">Email</label>
                   <input
                     v-model="formData.email"
                     type="email"
@@ -140,58 +119,58 @@
                     placeholder="例: staff@company.com"
                   />
                 </div>
+
+                <!-- 備註 -->
+                <div class="col-12">
+                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">備註</label>
+                  <textarea
+                    v-model="formData.備註"
+                    class="form-control"
+                    rows="4"
+                    placeholder="承辦人相關備註或特殊說明..."
+                  ></textarea>
+                </div>
+
+                <!-- 創建時間 (顯示用，不可編輯) -->
+                <div class="col-12" v-if="formData.創建時間">
+                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">建立時間</label>
+                  <input
+                    :value="formatTimestamp(formData.創建時間)"
+                    type="text"
+                    class="form-control"
+                    readonly
+                    disabled
+                  />
+                </div>
               </div>
+            </form>
+          </div>
+          
+          <!-- 儲存取消按鈕 - 靠右下 -->
+          <div class="border-top bg-white p-3 flex-shrink-0">
+            <div class="d-flex justify-content-end gap-2">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                @click="$emit('close')"
+              >
+                <i class="bi bi-x-lg me-2"></i>取消
+              </button>
+              <button
+                type="button"
+                @click="handleSubmit"
+                :disabled="loading"
+                class="btn btn-primary"
+              >
+                <span
+                  v-if="loading"
+                  class="spinner-border spinner-border-sm me-2"
+                ></span>
+                <i v-else class="bi bi-check-lg me-2"></i>
+                {{ loading ? "儲存中..." : "儲存" }}
+              </button>
             </div>
-
-            <!-- 備註 -->
-            <div class="mb-3">
-              <label class="form-label fw-semibold">備註
-              </label>
-              <textarea
-                v-model="formData.備註"
-                class="form-control"
-                rows="3"
-                placeholder="承辦人相關備註或特殊說明..."
-              ></textarea>
-            </div>
-
-            <!-- 創建時間 (顯示用，不可編輯) -->
-            <div class="mb-3" v-if="formData.創建時間">
-              <label class="form-label fw-semibold">建立時間
-              </label>
-              <input
-                :value="formatTimestamp(formData.創建時間)"
-                type="text"
-                class="form-control"
-                readonly
-                disabled
-              />
-            </div>
-          </form>
-        </div>
-
-        <!-- Modal Footer -->
-        <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            @click="$emit('close')"
-          >
-            <i class="bi bi-x-lg me-2"></i>取消
-          </button>
-          <button
-            type="button"
-            @click="handleSubmit"
-            :disabled="loading"
-            class="btn btn-primary"
-          >
-            <span
-              v-if="loading"
-              class="spinner-border spinner-border-sm me-2"
-            ></span>
-            <i v-else class="bi bi-check-lg me-2"></i>
-            {{ loading ? "儲存中..." : "儲存" }}
-          </button>
+          </div>
         </div>
       </div>
     </div>
@@ -273,23 +252,20 @@ export default {
         this.loading = true;
 
         // 驗證必填欄位
-        if (
-          !this.formData.姓名 ||
-          !this.formData.員工編號 ||
-          !this.formData.職位 ||
-          !this.formData.狀態 ||
-          !this.formData.電話 ||
-          !this.formData.加入日期
-        ) {
-          this.showToast("請填寫所有必填欄位", "warning");
+        if (!this.formData.姓名) {
+          this.showToast("請填寫姓名", "warning");
           return;
         }
 
         // 準備提交的資料
         const submitData = { ...this.formData };
 
-        // 轉換日期格式
-        submitData.加入日期 = new Date(this.formData.加入日期);
+        // 轉換日期格式 - 只有當日期不為空時才轉換
+        if (this.formData.加入日期) {
+          submitData.加入日期 = new Date(this.formData.加入日期);
+        } else {
+          submitData.加入日期 = null;
+        }
 
         // 如果是新增模式，添加時間戳
         if (!this.staff || !this.staff.id) {
@@ -385,5 +361,58 @@ export default {
 
 .modal-dialog-scrollable .modal-body {
   max-height: calc(100vh - 200px);
+}
+
+/* 隱藏滾動條但保持滾動功能 */
+.custom-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 0px; /* WebKit */
+  background: transparent; /* Chrome/Safari/Webkit */
+}
+
+/* Placeholder 淺色樣式 */
+.form-control::placeholder,
+.form-select::placeholder,
+textarea::placeholder {
+  color: #C0C0C0 !important;
+  font-size: 14px !important;
+  opacity: 1;
+}
+
+.form-control::-webkit-input-placeholder,
+.form-select::-webkit-input-placeholder,
+textarea::-webkit-input-placeholder {
+  color: #C0C0C0 !important;
+  font-size: 14px !important;
+}
+
+.form-control::-moz-placeholder,
+.form-select::-moz-placeholder,
+textarea::-moz-placeholder {
+  color: #C0C0C0 !important;
+  font-size: 14px !important;
+  opacity: 1;
+}
+
+.form-control:-ms-input-placeholder,
+.form-select:-ms-input-placeholder,
+textarea:-ms-input-placeholder {
+  color: #C0C0C0 !important;
+  font-size: 14px !important;
+}
+
+/* 下拉選單和輸入框文字大小 */
+.form-control,
+.form-select {
+  font-size: 14px !important;
+}
+
+/* 下拉選單選項文字大小 */
+.form-select option {
+  font-size: 14px !important;
 }
 </style>

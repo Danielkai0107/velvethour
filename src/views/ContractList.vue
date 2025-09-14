@@ -83,21 +83,6 @@
           </select>
         </div>
 
-        <!-- 狀態篩選 -->
-        <div class="col-md-3">
-          <h6 class="fw-semibold mb-2" style="font-size: 14px">狀態</h6>
-          <select
-            v-model="filters.處理狀態"
-            class="form-select"
-            style="font-size: 14px"
-            @change="applyFilters"
-          >
-            <option value="">全部狀態</option>
-            <option v-for="status in statusOptions" :key="status" :value="status">
-              {{ status }}
-            </option>
-          </select>
-        </div>
 
         <!-- 開始日期篩選 -->
         <div class="col-md-3">
@@ -147,7 +132,7 @@
     <!-- 合約表格 -->
     <div v-else class="bg-white rounded-4 shadow-sm border-0 overflow-hidden">
       <div class="p-0">
-        <div class="table-responsive" style="overflow-x: auto">
+        <div class="table-responsive custom-scrollbar" style="overflow-x: auto">
           <table
             class="table mb-0"
             style="
@@ -181,12 +166,6 @@
                   style="font-size: 14px; min-width: 200px; white-space: nowrap"
                 >
                   時間資訊
-                </th>
-                <th
-                  class="border-0 fw-normal text-muted py-4 px-4"
-                  style="font-size: 14px; min-width: 100px; white-space: nowrap"
-                >
-                  狀態
                 </th>
                 <th
                   class="border-0 fw-normal text-muted py-4 px-4"
@@ -252,17 +231,6 @@
                   class="py-4 px-4 border-0"
                   style="border-bottom: 1px solid #f0f0f0; white-space: nowrap"
                 >
-                  <span
-                    :class="['badge', getStatusBadgeClass(contract.處理狀態)]"
-                    style="font-size: 12px; padding: 6px 12px"
-                  >
-                    {{ contract.處理狀態 }}
-                  </span>
-                </td>
-                <td
-                  class="py-4 px-4 border-0"
-                  style="border-bottom: 1px solid #f0f0f0; white-space: nowrap"
-                >
                   <div class="fw-semibold text-dark" style="font-size: 15px">
                     NT$ {{ contract.合約總金額?.toLocaleString() || 0 }}
                   </div>
@@ -318,7 +286,6 @@ export default {
       filters: {
         關鍵字: "",
         承辦人: "",
-        處理狀態: "",
         開始日期: "",
         結束日期: "",
       },
@@ -344,12 +311,6 @@ export default {
         );
       }
 
-      // 狀態篩選
-      if (this.filters.處理狀態) {
-        filtered = filtered.filter(contract => 
-          contract.處理狀態 === this.filters.處理狀態
-        );
-      }
 
       // 開始日期篩選
       if (this.filters.開始日期) {
@@ -384,10 +345,6 @@ export default {
         }
       });
       return Array.from(staffSet).sort();
-    },
-    statusOptions() {
-      // 所有可能的狀態選項
-      return ["待確認", "已確認", "進行中", "已完成", "已取消"];
     },
   },
   async mounted() {
@@ -566,20 +523,9 @@ export default {
       this.filters = {
         關鍵字: "",
         承辦人: "",
-        處理狀態: "",
         開始日期: "",
         結束日期: "",
       };
-    },
-    getStatusBadgeClass(status) {
-      const statusClasses = {
-        待確認: "bg-warning text-dark",
-        已確認: "bg-info text-white",
-        進行中: "bg-success text-white",
-        已完成: "bg-secondary text-white",
-        已取消: "bg-danger text-white",
-      };
-      return statusClasses[status] || "bg-secondary text-white";
     },
     showToast(message, type = "info") {
       // 簡單的 toast 通知實現
@@ -612,3 +558,16 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+/* 隱藏滾動條但保持滾動功能 */
+.custom-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 0px; /* WebKit */
+  background: transparent; /* Chrome/Safari/Webkit */
+}
+</style>

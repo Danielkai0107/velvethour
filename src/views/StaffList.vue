@@ -44,25 +44,24 @@
                 @click="goToStaffDetail(staff.id)"
               >
                 <td class="py-4 px-4 border-0" style="border-bottom: 1px solid #f0f0f0; white-space: nowrap;">
-                  <div class="fw-semibold text-dark" style="font-size: 15px;">{{ staff.姓名 }}</div>
-                  <small class="text-muted" style="font-size: 12px;">員工編號: {{ staff.員工編號 }}</small>
+                  <div class="fw-semibold text-dark" style="font-size: 14px;">{{ staff.姓名 }}</div>
                 </td>
                 <td class="py-4 px-4 border-0" style="border-bottom: 1px solid #f0f0f0; white-space: nowrap;">
-                  <span class="text-dark" style="font-size: 15px;">{{ staff.職位 }}</span>
+                  <span v-if="staff.職位" class="text-dark" style="font-size: 14px;">{{ staff.職位 }}</span>
                 </td>
                 <td class="py-4 px-4 border-0" style="border-bottom: 1px solid #f0f0f0; white-space: nowrap;">
-                  <span class="text-dark" style="font-size: 15px;">{{ staff.電話 }}</span>
+                  <span v-if="staff.電話" class="text-dark" style="font-size: 14px;">{{ staff.電話 }}</span>
                 </td>
                 <td class="py-4 px-4 border-0" style="border-bottom: 1px solid #f0f0f0; white-space: nowrap;">
-                  <span class="text-dark" style="font-size: 15px;">{{ staff.email || '未設定' }}</span>
+                  <span v-if="staff.email" class="text-dark" style="font-size: 14px;">{{ staff.email }}</span>
                 </td>
                 <td class="py-4 px-4 border-0" style="border-bottom: 1px solid #f0f0f0; white-space: nowrap;">
-                  <span :class="['badge', getStatusBadgeClass(staff.狀態)]" style="font-size: 12px; padding: 6px 12px;">
+                  <span v-if="staff.狀態" :class="['badge', getStatusBadgeClass(staff.狀態)]" style="font-size: 12px; padding: 6px 12px;">
                     {{ staff.狀態 }}
                   </span>
                 </td>
                 <td class="py-4 px-4 border-0" style="border-bottom: 1px solid #f0f0f0; white-space: nowrap;">
-                  <span class="text-dark" style="font-size: 15px;">{{ formatDate(staff.加入日期) }}</span>
+                  <span v-if="staff.加入日期" class="text-dark" style="font-size: 14px;">{{ formatDate(staff.加入日期) }}</span>
                 </td>
               </tr>
             </tbody>
