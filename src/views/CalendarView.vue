@@ -211,6 +211,7 @@ export default {
       editingNote: false,
       editableTitle: "",
       editableNote: "",
+      currentDate: new Date(),
       calendarOptions: {
         plugins: [dayGridPlugin, interactionPlugin],
         initialView: 'dayGridMonth',
@@ -266,16 +267,10 @@ export default {
       return filtered;
     },
     currentPeriodTitle() {
-      if (this.$refs.fullCalendar) {
-        const calendarApi = this.$refs.fullCalendar.getApi();
-        const currentDate = calendarApi.getDate();
-        
-        return currentDate.toLocaleDateString('zh-TW', { 
-          year: 'numeric', 
-          month: 'long' 
-        });
-      }
-      return new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: 'long' });
+      return this.currentDate.toLocaleDateString('zh-TW', { 
+        year: 'numeric', 
+        month: 'long' 
+      });
     }
   },
   async mounted() {
@@ -353,18 +348,27 @@ export default {
     goToToday() {
       if (this.$refs.fullCalendar) {
         this.$refs.fullCalendar.getApi().today();
+        this.currentDate = new Date();
       }
     },
     
     previousPeriod() {
       if (this.$refs.fullCalendar) {
         this.$refs.fullCalendar.getApi().prev();
+        this.updateCurrentDate();
       }
     },
     
     nextPeriod() {
       if (this.$refs.fullCalendar) {
         this.$refs.fullCalendar.getApi().next();
+        this.updateCurrentDate();
+      }
+    },
+
+    updateCurrentDate() {
+      if (this.$refs.fullCalendar) {
+        this.currentDate = this.$refs.fullCalendar.getApi().getDate();
       }
     },
 
