@@ -263,16 +263,8 @@
       v-if="!loading && filteredDresses.length === 0"
       class="text-center py-5"
     >
-      <i class="bi bi-gem display-1 text-muted"></i>
-      <h3 class="mt-3 text-muted">
+      <p class="mt-3 text-muted" style="font-size: 14px;">
         {{ dresses.length === 0 ? "沒有禮服" : "沒有符合條件的禮服" }}
-      </h3>
-      <p class="mt-1 text-muted">
-        {{
-          dresses.length === 0
-            ? "開始新增您的第一件禮服"
-            : "請調整篩選條件或清除篩選"
-        }}
       </p>
       <div class="mt-4">
         <button
@@ -282,7 +274,7 @@
         >
           <i class="bi bi-plus-lg me-2"></i>新增禮服
         </button>
-        <button v-else @click="clearFilters" class="btn btn-outline-primary">
+        <button v-else @click="clearFilters" class="btn btn-outline-primary" style="font-size: 14px;">
           <i class="bi bi-x-circle me-2"></i>清除篩選
         </button>
       </div>
@@ -302,6 +294,7 @@
 <script>
 import { dressService } from "../services/firestore.js";
 import { cartService } from "../services/cart.js";
+import { optionsService } from "../services/options.js";
 import DressModal from "../components/DressModal.vue";
 
 export default {
@@ -323,48 +316,11 @@ export default {
         袖型: "",
         領型: "",
       },
-      colorOptions: [
-        { value: "白色", label: "白色", color: "#FFFFFF", border: "#E5E7EB" },
-        { value: "黑色", label: "黑色", color: "#000000" },
-        { value: "綠色", label: "綠色", color: "#10B981" },
-        { value: "粉色", label: "粉色", color: "#F472B6" },
-        { value: "紅色", label: "紅色", color: "#EF4444" },
-        { value: "深藍色", label: "深藍色", color: "#1E40AF" },
-        { value: "藍灰色", label: "藍灰色", color: "#64748B" },
-        { value: "紫色", label: "紫色", color: "#8B5CF6" },
-        { value: "金色/香檳色", label: "金色/香檳色", color: "#F59E0B" },
-        { value: "銀色", label: "銀色", color: "#94A3B8" },
-      ],
-      skirtOptions: [
-        { value: "魚尾", label: "魚尾" },
-        { value: "Aline", label: "Aline" },
-        { value: "蓬裙", label: "蓬裙" },
-        { value: "罩衫", label: "罩衫" },
-        { value: "兩件式-上", label: "兩件式-上" },
-        { value: "兩件式-下", label: "兩件式-下" },
-        { value: "配件", label: "配件" },
-        { value: "九分裙/短裙", label: "九分裙/短裙" },
-        { value: "頭紗", label: "頭紗" },
-      ],
-      sleeveOptions: [
-        { value: "短袖", label: "短袖" },
-        { value: "長袖", label: "長袖" },
-        { value: "無袖", label: "無袖" },
-      ],
-      neckOptions: [
-        { value: "v領", label: "v領" },
-        { value: "平口/微笑領", label: "平口/微笑領" },
-        { value: "一字領", label: "一字領" },
-        { value: "高領", label: "高領" },
-        { value: "圓領", label: "圓領" },
-        { value: "削肩/船型領", label: "削肩/船型領" },
-        { value: "桃心領", label: "桃心領" },
-        { value: "單肩", label: "單肩" },
-        { value: "卡肩", label: "卡肩" },
-        { value: "透膚", label: "透膚" },
-        { value: "方形領", label: "方形領" },
-        { value: "羅馬領", label: "羅馬領" },
-      ],
+      colorOptions: [],
+      skirtOptions: [],
+      sleeveOptions: [],
+      neckOptions: [],
+      optionsUnsubscribe: null,
     };
   },
   computed: {
@@ -421,10 +377,16 @@ export default {
   },
   async mounted() {
     await this.loadDresses();
+    this.loadOptions();
 
     // 監聽購物車變化，更新按鈕狀態
     this.cartUnsubscribe = cartService.subscribe(() => {
       this.$forceUpdate();
+    });
+
+    // 監聽選項變化
+    this.optionsUnsubscribe = optionsService.subscribe(() => {
+      this.loadOptions();
     });
   },
   watch: {
@@ -439,6 +401,9 @@ export default {
     // 取消監聽
     if (this.cartUnsubscribe) {
       this.cartUnsubscribe();
+    }
+    if (this.optionsUnsubscribe) {
+      this.optionsUnsubscribe();
     }
   },
   methods: {
@@ -534,6 +499,12 @@ export default {
     },
     closeModal() {
       this.showAddModal = false;
+    },
+    loadOptions() {
+      this.colorOptions = optionsService.getColorOptions();
+      this.skirtOptions = optionsService.getSkirtOptions();
+      this.sleeveOptions = optionsService.getSleeveOptions();
+      this.neckOptions = optionsService.getNeckOptions();
     },
     showToast(message, type = "info") {
       // 簡單的 toast 通知實現

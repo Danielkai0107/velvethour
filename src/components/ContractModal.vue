@@ -7,7 +7,7 @@
     style="background-color: rgba(0, 0, 0, 0.5)"
     @click.self="$emit('close')"
   >
-    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-dialog modal-fullscreen">
       <div class="modal-content">
         <!-- Modal Header -->
         <div class="modal-header">
@@ -22,24 +22,21 @@
         </div>
 
         <!-- Modal Body -->
-        <div class="modal-body">
+        <div class="modal-body p-0">
+          <div class="row g-0 h-100">
+            <!-- 左側主要內容區域 -->
+            <div class="col-lg-8 col-md-7">
+              <div class="p-4 custom-scrollbar" style="height: calc(100vh - 120px); overflow-y: auto;">
           <form @submit.prevent="handleSubmit">
             <!-- 禮服清單 -->
-            <div class="mb-4">
+            <div class="border-bottom" style="border-color: #E0E0E0 !important; margin-bottom: 40px !important; padding-bottom: 40px !important;">
               <div
                 class="d-flex justify-content-between align-items-center mb-3"
               >
-                <h5 class="fw-semibold mb-0">禮服清單
-                </h5>
+      
+                <label class="form-label" style="color: #6A6A6A; font-size: 14px;">禮服清單
+                </label>
                 <div class="d-flex gap-2">
-                  <button
-                    v-if="!contract && cartService.getItemCount() > 0"
-                    @click="loadCartItems"
-                    type="button"
-                    class="btn btn-outline-primary btn-sm"
-                  >
-                    載入購物車 ({{ cartService.getItemCount() }})
-                  </button>
                   <button
                     v-if="hasCartItems"
                     @click="clearCartItems"
@@ -47,7 +44,7 @@
                     class="btn btn-outline-danger btn-sm"
                   >
              
-                    清空購物車
+                    清空
                   </button>
                   <button
                     type="button"
@@ -59,8 +56,16 @@
                 </div>
               </div>
 
+              <!-- 載入狀態 -->
+              <div v-if="loadingDresses" class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">載入中...</span>
+                </div>
+              </div>
+
               <!-- 禮服圖卡展示 -->
               <div
+                v-else
                 class="row g-3 mb-3"
                 style="max-height: 500px; overflow-y: auto; padding: 8px"
               >
@@ -136,38 +141,23 @@
                         {{ getDressById(item.禮服ID)?.領型 }}
                       </p>
 
-                      <!-- 數量和價格控制 -->
-                      <div class="row g-2 mb-2">
-                        <div class="col-6">
-                          <label class="form-label small mb-1">數量</label>
-                          <input
-                            v-model.number="item.數量"
-                            type="number"
-                            class="form-control form-control-sm"
-                            min="1"
-                            @input="updateQuantityAndCalculate(index)"
-                          />
+                      <!-- 金額資訊 -->
+                      <div class="mb-2">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                          <small class="text-muted">租借金額</small>
+                          <span class="fw-bold text-primary">
+                            NT$ {{ (getDressById(item.禮服ID)?.租借金額 || getDressById(item.禮服ID)?.價格 || 0).toLocaleString() }}
+                          </span>
                         </div>
-                        <div class="col-6">
-                          <label class="form-label small mb-1">單價</label>
-                          <input
-                            v-model.number="item.單價"
-                            type="number"
-                            class="form-control form-control-sm"
-                            min="0"
-                            @input="calculateSubtotal(index)"
-                          />
-                        </div>
-                      </div>
-
-                      <!-- 小計 -->
-                      <div
+                        <div 
+                          v-if="formData.選擇方案 && getDressById(item.禮服ID)?.加價金額 && getDressById(item.禮服ID)?.加價金額 > 0"
                         class="d-flex justify-content-between align-items-center"
                       >
-                        <small class="text-muted">小計</small>
-                        <span class="fw-bold text-primary"
-                          >NT$ {{ (item.小計 || 0).toLocaleString() }}</span
-                        >
+                          <small class="text-muted">加價金額</small>
+                          <span class="fw-bold text-warning">
+                            + NT$ {{ getDressById(item.禮服ID)?.加價金額.toLocaleString() }}
+                          </span>
+                        </div>
                       </div>
 
                       <!-- 查看詳情按鈕 -->
@@ -188,42 +178,15 @@
                 </div>
               </div>
 
-              <!-- 總金額顯示 -->
-              <div class="row g-3 mb-4">
-                <div class="col-md-6">
-                  <label class="form-label fw-semibold">計算總金額
-                  </label>
-                  <input
-                    :value="calculateTotal()"
-                    type="number"
-                    class="form-control"
-                    readonly
-                  />
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label fw-semibold">合約總金額 (NT$) *
-                  </label>
-                  <input
-                    v-model.number="formData.合約總金額"
-                    type="number"
-                    class="form-control"
-                    required
-                    min="0"
-                    placeholder="例: 50000"
-                  />
-                  <div class="form-text">可手動調整最終金額</div>
-                </div>
-              </div>
             </div>
 
             <!-- 基本資訊 -->
-            <div class="mb-4">
-              <h5 class="fw-semibold mb-3">客戶資訊
-              </h5>
-              <div class="row g-3">
+            <div class="border-bottom" style="border-color: #E0E0E0 !important; margin-bottom: 40px !important; padding-bottom: 40px !important;">
+          
+              <div class="row g-4">
                 <!-- 客戶姓名 -->
                 <div class="col-md-6">
-                  <label class="form-label fw-semibold">客戶姓名 *
+                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">客戶姓名 *
                   </label>
                   <input
                     v-model="formData.客戶姓名"
@@ -236,7 +199,7 @@
 
                 <!-- 電話 -->
                 <div class="col-md-6">
-                  <label class="form-label fw-semibold">電話 *
+                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">電話 *
                   </label>
                   <input
                     v-model="formData.電話"
@@ -249,7 +212,7 @@
 
                 <!-- Email -->
                 <div class="col-md-6">
-                  <label class="form-label fw-semibold">Email
+                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">Email
                   </label>
                   <input
                     v-model="formData.email"
@@ -261,7 +224,7 @@
 
                 <!-- 三圍 -->
                 <div class="col-md-6">
-                  <label class="form-label fw-semibold">三圍
+                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">三圍
                   </label>
                   <input
                     v-model="formData.三圍"
@@ -273,7 +236,7 @@
 
                 <!-- 承辦人 -->
                 <div class="col-md-6">
-                  <label class="form-label fw-semibold">承辦人 *
+                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">承辦人 *
                   </label>
                   <select
                     v-model="formData.承辦人"
@@ -291,12 +254,11 @@
                       {{ staff.姓名 }} ({{ staff.職位 }})
                     </option>
                   </select>
-                  <div class="form-text">只顯示在職的承辦人</div>
                 </div>
 
                 <!-- 處理狀態 -->
                 <div class="col-md-6">
-                  <label class="form-label fw-semibold">處理狀態 *
+                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">處理狀態 *
                   </label>
                   <select
                     v-model="formData.處理狀態"
@@ -315,13 +277,12 @@
             </div>
 
             <!-- 租用時間 -->
-            <div class="mb-4">
-              <h5 class="fw-semibold mb-3">租用時間
-              </h5>
-              <div class="row g-3">
+            <div class="border-bottom" style="border-color: #E0E0E0 !important; margin-bottom: 40px !important; padding-bottom: 40px !important;">
+     
+              <div class="row g-4">
                 <!-- 租用開始時間 -->
                 <div class="col-md-4">
-                  <label class="form-label fw-semibold">租用開始時間 *
+                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">租用開始時間 *
                   </label>
                   <input
                     v-model="formData.租用開始時間"
@@ -330,12 +291,11 @@
                     required
                     @change="onStartTimeChange"
                   />
-                  <div class="form-text">合約使用的開始時間</div>
                 </div>
 
                 <!-- 租用結束時間 -->
                 <div class="col-md-4">
-                  <label class="form-label fw-semibold">租用結束時間 *
+                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">租用結束時間 *
                   </label>
                   <input
                     v-model="formData.租用結束時間"
@@ -344,12 +304,11 @@
                     required
                     @change="onEndTimeChange"
                   />
-                  <div class="form-text">合約使用的結束時間 (自動+4天)</div>
                 </div>
 
                 <!-- 下次可用時間 -->
                 <div class="col-md-4">
-                  <label class="form-label fw-semibold">下次可用時間 *
+                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">下次可用時間 *
                   </label>
                   <input
                     v-model="formData.下次可用時間"
@@ -358,7 +317,6 @@
                     required
                     @change="onTimeOrDressChange"
                   />
-                  <div class="form-text">禮服可再次租用的時間 (自動+7天)</div>
                 </div>
               </div>
 
@@ -466,8 +424,8 @@
             </div>
 
             <!-- 備註 -->
-            <div class="mb-3">
-              <label class="form-label fw-semibold">備註
+            <div class="mb-3" style="margin-bottom: 40px !important;">
+              <label class="form-label" style="color: #6A6A6A; font-size: 14px;">備註
               </label>
               <textarea
                 v-model="formData.備注"
@@ -479,7 +437,7 @@
 
             <!-- 新增時間戳 (顯示用，不可編輯) -->
             <div class="mb-3" v-if="formData.創建時間">
-              <label class="form-label fw-semibold">建立時間
+              <label class="form-label" style="color: #6A6A6A; font-size: 14px;">建立時間
               </label>
               <input
                 :value="formatTimestamp(formData.創建時間)"
@@ -490,13 +448,129 @@
               />
             </div>
           </form>
+              </div>
         </div>
 
-        <!-- Modal Footer -->
-        <div class="modal-footer">
+            <!-- 右側計算金額區域 -->
+            <div class="col-lg-4 col-md-5 border-start bg-light position-fixed" style="right: 0; top: 0; height: 100vh; width: 33.333333%; z-index: 1;">
+              <div class="d-flex flex-column h-100">
+                <div class="p-4 flex-grow-1 custom-scrollbar mb-4" style="overflow-y: auto;">
+                  <div class="d-flex align-items-center justify-content-end mb-4">
+         
+                    <button
+                      type="button"
+                      class="btn-close"
+                      @click="$emit('close')"
+                      aria-label="關閉"
+                    ></button>
+                  </div>
+
+          
+
+                  <!-- 方案選擇 -->
+                  <div class="mb-4">
+                    <h6 class="fw-semibold mb-3">方案選擇</h6>
+                    <div class="bg-white rounded p-3 shadow-sm">
+                      <div class="mb-0">
+                        <select
+                          v-model="formData.選擇方案"
+                          class="form-select form-select-sm"
+                          @change="onPlanChange"
+                        >
+                          <option value="">不選擇方案（依禮服單價計算）</option>
+                          <optgroup 
+                            v-for="(packages, category) in packagesByCategory" 
+                            :key="category" 
+                            :label="category"
+                          >
+                            <option 
+                              v-for="pkg in packages" 
+                              :key="pkg.value" 
+                              :value="pkg.value"
+                            >
+                              {{ pkg.label }}｜NT$ {{ pkg.price?.toLocaleString() }}
+                            </option>
+                          </optgroup>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 折扣設定 -->
+                  <div class="mb-4">
+                    <h6 class="fw-semibold mb-3">折扣設定</h6>
+                    <div class="bg-white rounded p-3 shadow-sm">
+                      <div class="mb-0">
+                        <select
+                          v-model="formData.折扣比例"
+                          class="form-select form-select-sm"
+                          @change="updateTotalWithDiscount"
+                        >
+                          <option value="1">無折扣 (原價)</option>
+                          <option value="0.9">9 折</option>
+                          <option value="0.85">85 折</option>
+                          <option value="0.8">8 折</option>
+                          <option value="0.75">75 折</option>
+                          <option value="0.7">7 折</option>
+                          <option value="0.65">65 折</option>
+                          <option value="0.6">6 折</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 計算結果 -->
+                  <div class="mb-4">
+                    <h6 class="fw-semibold mb-3">計算結果</h6>
+                    <div class="bg-white rounded p-3 shadow-sm">
+                      <div class="small text-muted">
+                        <!-- 方案價格 (如果有選擇方案) -->
+                        <div v-if="formData.選擇方案" class="d-flex justify-content-between">
+                          <span>方案價格</span>
+                          <span>NT$ {{ (planPrices[formData.選擇方案] || 0).toLocaleString() }}</span>
+                        </div>
+                        
+                        <!-- 禮服小計 -->
+                        <div v-if="!formData.選擇方案" class="d-flex justify-content-between">
+                          <span>禮服小計</span>
+                          <span>NT$ {{ calculateDressTotal().toLocaleString() }}</span>
+                        </div>
+                        
+                        <!-- 加價金額 (只在選擇方案時顯示) -->
+                        <div v-if="formData.選擇方案 && getExtraAmount() > 0" class="d-flex justify-content-between text-warning">
+                          <span>加價金額</span>
+                          <span>+ NT$ {{ getExtraAmount().toLocaleString() }}</span>
+                        </div>
+                        
+                        <!-- 小計 -->
+                        <div class="d-flex justify-content-between">
+                          <span>小計</span>
+                          <span>NT$ {{ calculateTotal().toLocaleString() }}</span>
+                        </div>
+                        
+                        <!-- 優惠折扣 -->
+                        <div class="d-flex justify-content-between text-success">
+                          <span>折扣 ({{ Math.round((1 - (formData.折扣比例 || 1)) * 100) }}%)</span>
+                          <span>- NT$ {{ getDiscountAmount().toLocaleString() }}</span>
+                        </div>
+                        
+                        <!-- 合約總金額 -->
+                        <div class="d-flex justify-content-between fw-bold text-primary border-top pt-2 mt-2">
+                          <span>合約總金額</span>
+                          <span>NT$ {{ getFinalAmount().toLocaleString() }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+                
+                <!-- 儲存取消按鈕 -->
+                <div class="border-top bg-white p-3">
+                  <div class="d-flex gap-2">
           <button
             type="button"
-            class="btn btn-secondary"
+                      class="btn btn-outline-secondary flex-fill"
             @click="$emit('close')"
           >
             <i class="bi bi-x-lg me-2"></i>取消
@@ -505,7 +579,7 @@
             type="button"
             @click="handleSubmit"
             :disabled="loading"
-            class="btn btn-primary"
+                      class="btn btn-primary flex-fill"
           >
             <span
               v-if="loading"
@@ -514,7 +588,13 @@
             <i v-else class="bi bi-check-lg me-2"></i>
             {{ loading ? "儲存中..." : "儲存" }}
           </button>
+                  </div>
+                </div>
         </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -612,7 +692,7 @@
                 <h6 class="fw-semibold mb-3">基本資訊
                 </h6>
 
-                <div class="row g-3">
+                <div class="row g-4">
                   <div class="col-6">
                     <label class="form-label text-muted small">禮服編號</label>
                     <div class="fw-semibold">
@@ -656,7 +736,7 @@
                 <h6 class="fw-semibold mb-3">價格資訊
                 </h6>
 
-                <div class="row g-3">
+                <div class="row g-4">
                   <div class="col-6">
                     <label class="form-label text-muted small">租借金額</label>
                     <div class="fw-semibold text-primary">
@@ -866,6 +946,7 @@
 import { dressService, staffService } from "../services/firestore.js";
 import { cartService } from "../services/cart.js";
 import { settingsService } from "../services/settings.js";
+import { optionsService } from "../services/options.js";
 import DressSelectionModal from "./DressSelectionModal.vue";
 
 export default {
@@ -910,6 +991,7 @@ export default {
   data() {
     return {
       loading: false,
+      loadingDresses: true,
       availableDresses: [],
       availableStaff: [],
       conflictWarnings: [],
@@ -925,6 +1007,8 @@ export default {
         租用結束時間: "",
         下次可用時間: "",
         處理狀態: "",
+        選擇方案: "",
+        折扣比例: 1,
         禮服清單: [
           {
             禮服ID: "",
@@ -937,6 +1021,9 @@ export default {
         備注: "",
         創建時間: null,
       },
+      planPrices: {},
+      packagesByCategory: {},
+      optionsUnsubscribe: null,
       cartService, // 讓模板可以存取購物車服務
       showDressDetailModal: false, // 控制禮服詳情彈出視窗
       selectedDress: null, // 選中的禮服資料
@@ -951,15 +1038,24 @@ export default {
   async mounted() {
     await this.loadDresses();
     await this.loadStaff();
+    this.loadPackageOptions();
 
     // 如果是新增模式且購物車有項目，自動載入
     if (!this.contract && cartService.getItemCount() > 0) {
       this.loadCartItems();
     }
+
+    // 監聽選項變化
+    this.optionsUnsubscribe = optionsService.subscribe(() => {
+      this.loadPackageOptions();
+    });
   },
   beforeUnmount() {
     if (this.conflictCheckTimeout) {
       clearTimeout(this.conflictCheckTimeout);
+    }
+    if (this.optionsUnsubscribe) {
+      this.optionsUnsubscribe();
     }
   },
   watch: {
@@ -977,6 +1073,8 @@ export default {
             租用結束時間: this.formatDateTimeForInput(newContract.租用結束時間),
             下次可用時間: this.formatDateTimeForInput(newContract.下次可用時間),
             處理狀態: newContract.處理狀態 || "",
+            選擇方案: newContract.選擇方案 || "",
+            折扣比例: newContract.折扣比例 || 1,
             禮服清單: newContract.禮服清單
               ? [...newContract.禮服清單]
               : [{ 禮服ID: "", 數量: 1, 單價: 0, 小計: 0 }],
@@ -991,11 +1089,22 @@ export default {
     },
   },
   methods: {
+    loadPackageOptions() {
+      try {
+        this.packagesByCategory = optionsService.getPackagesByCategory();
+        this.planPrices = optionsService.getPackagePrices();
+      } catch (error) {
+        console.error('載入方案選項失敗:', error);
+      }
+    },
     async loadDresses() {
       try {
+        this.loadingDresses = true;
         this.availableDresses = await dressService.getAll();
       } catch (error) {
         console.error("載入禮服清單失敗:", error);
+      } finally {
+        this.loadingDresses = false;
       }
     },
 
@@ -1019,6 +1128,8 @@ export default {
         租用結束時間: "",
         下次可用時間: "",
         處理狀態: "",
+        選擇方案: "",
+        折扣比例: 1,
         禮服清單: [
           {
             禮服ID: "",
@@ -1113,7 +1224,9 @@ export default {
       const item = this.formData.禮服清單[index];
       const dress = this.availableDresses.find((d) => d.id === item.禮服ID);
       if (dress) {
-        item.單價 = dress.租借金額 || dress.價格 || 0;
+        // 只使用基本租借金額，加價金額只在有方案時計算
+        const baseAmount = dress.租借金額 || dress.價格 || 0;
+        item.單價 = baseAmount;
         this.calculateSubtotal(index);
       }
     },
@@ -1194,12 +1307,15 @@ export default {
               (item) => item.禮服ID !== ""
             );
 
+            // 只使用基本租借金額，不包含加價金額
+            const baseAmount = dress.租借金額 || dress.價格 || 0;
+
             // 添加新的禮服項目
             this.formData.禮服清單.push({
               禮服ID: dress.id,
               數量: 1,
-              單價: dress.租借金額 || dress.價格 || 0,
-              小計: dress.租借金額 || dress.價格 || 0,
+              單價: baseAmount, // 只使用基本租借金額
+              小計: baseAmount,
             });
           } else {
             // 如果已存在，可以選擇增加數量或顯示提示
@@ -1533,13 +1649,74 @@ export default {
     },
 
     calculateTotal() {
+      // 如果選擇了方案
+      if (this.formData.選擇方案) {
+        const planPrice = this.planPrices[this.formData.選擇方案] || 0;
+        
+        // 計算所有禮服的加價金額總和
+        const totalExtraAmount = this.formData.禮服清單
+          .filter(item => item.禮服ID)
+          .reduce((total, item) => {
+            const dress = this.getDressById(item.禮服ID);
+            const extraAmount = dress?.加價金額 || 0;
+            return total + extraAmount;
+          }, 0);
+        
+        return planPrice + totalExtraAmount;
+      } else {
+        // 沒有選擇方案，依照禮服單價加總
+      return this.formData.禮服清單.reduce((total, item) => {
+        return total + (item.小計 || 0);
+      }, 0);
+      }
+    },
+
+    updateTotalAmount() {
+      this.formData.合約總金額 = this.getFinalAmount();
+    },
+
+    // 方案改變時的處理
+    onPlanChange() {
+      this.updateTotalAmount();
+    },
+
+    // 取得折扣金額
+    getDiscountAmount() {
+      const originalTotal = this.calculateTotal();
+      const discountRate = this.formData.折扣比例 || 1;
+      return Math.round(originalTotal * (1 - discountRate));
+    },
+
+    // 取得最終金額（含折扣）
+    getFinalAmount() {
+      const originalTotal = this.calculateTotal();
+      const discountRate = this.formData.折扣比例 || 1;
+      return Math.round(originalTotal * discountRate);
+    },
+
+    // 更新總金額（含折扣）
+    updateTotalWithDiscount() {
+      this.formData.合約總金額 = this.getFinalAmount();
+    },
+
+    // 計算純禮服金額（不含方案價格）
+    calculateDressTotal() {
       return this.formData.禮服清單.reduce((total, item) => {
         return total + (item.小計 || 0);
       }, 0);
     },
 
-    updateTotalAmount() {
-      this.formData.合約總金額 = this.calculateTotal();
+    // 取得加價金額總和（只在有方案時計算）
+    getExtraAmount() {
+      if (!this.formData.選擇方案) return 0;
+      
+      return this.formData.禮服清單
+        .filter(item => item.禮服ID)
+        .reduce((total, item) => {
+          const dress = this.getDressById(item.禮服ID);
+          const extraAmount = dress?.加價金額 || 0;
+          return total + extraAmount;
+        }, 0);
     },
 
     // 檢查所有禮服的檔期衝突
@@ -1691,7 +1868,7 @@ export default {
       }
     },
 
-    // 清空購物車項目
+    // 清空項目
     clearCartItems() {
       try {
         cartService.clearCart();
@@ -1707,8 +1884,8 @@ export default {
         this.updateTotalAmount();
         this.showToast("購物車已清空", "success");
       } catch (error) {
-        console.error("清空購物車失敗:", error);
-        this.showToast("清空購物車失敗", "error");
+        console.error("清空失敗:", error);
+        this.showToast("清空失敗", "error");
       }
     },
 
@@ -1809,7 +1986,7 @@ export default {
 
         this.$emit("save", submitData);
 
-        // 如果是新增模式，成功後清空購物車
+        // 如果是新增模式，成功後清空
         if (!this.contract || !this.contract.id) {
           cartService.clearCart();
         }
@@ -1923,6 +2100,37 @@ export default {
       }
     },
 
+    // 套用折扣
+    applyDiscount(discountRate) {
+      const originalTotal = this.calculateTotal();
+      this.formData.合約總金額 = Math.round(originalTotal * discountRate);
+      const discountPercent = Math.round((1 - discountRate) * 100);
+      this.showToast(`已套用 ${discountPercent}% 折扣`, "success");
+    },
+
+    // 格式化租用期間
+    formatRentalPeriod() {
+      if (!this.formData.租用開始時間 || !this.formData.租用結束時間) {
+        return "尚未設定";
+      }
+      
+      const startDate = new Date(this.formData.租用開始時間);
+      const endDate = new Date(this.formData.租用結束時間);
+      
+      const formatOptions = {
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      };
+      
+      const startStr = startDate.toLocaleString("zh-TW", formatOptions);
+      const endStr = endDate.toLocaleString("zh-TW", formatOptions);
+      
+      return `${startStr} - ${endStr}`;
+    },
+
     showToast(message, type = "info") {
       const toastContainer = document.createElement("div");
       toastContainer.className = `alert alert-${
@@ -1963,6 +2171,17 @@ export default {
   max-height: calc(100vh - 200px);
 }
 
+/* 隱藏滾動條但保持滾動功能 */
+.custom-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 0px; /* WebKit */
+  background: transparent; /* Chrome/Safari/Webkit */
+}
+
 /* 禮服卡片hover效果 */
 .card:hover {
   transform: translateY(-2px);
@@ -1986,5 +2205,47 @@ export default {
 .btn-danger:hover {
   transform: scale(1.1);
   transition: transform 0.2s ease-in-out;
+}
+
+/* Placeholder 淺色樣式 */
+.form-control::placeholder,
+.form-select::placeholder,
+textarea::placeholder {
+  color: #C0C0C0 !important;
+  font-size: 14px !important;
+  opacity: 1;
+}
+
+.form-control::-webkit-input-placeholder,
+.form-select::-webkit-input-placeholder,
+textarea::-webkit-input-placeholder {
+  color: #C0C0C0 !important;
+  font-size: 14px !important;
+}
+
+.form-control::-moz-placeholder,
+.form-select::-moz-placeholder,
+textarea::-moz-placeholder {
+  color: #C0C0C0 !important;
+  font-size: 14px !important;
+  opacity: 1;
+}
+
+.form-control:-ms-input-placeholder,
+.form-select:-ms-input-placeholder,
+textarea:-ms-input-placeholder {
+  color: #C0C0C0 !important;
+  font-size: 14px !important;
+}
+
+/* 下拉選單和輸入框文字大小 */
+.form-control,
+.form-select {
+  font-size: 14px !important;
+}
+
+/* 下拉選單選項文字大小 */
+.form-select option {
+  font-size: 14px !important;
 }
 </style>

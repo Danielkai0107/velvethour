@@ -6,7 +6,7 @@ import ContractDetail from "../views/ContractDetail.vue";
 import CalendarView from "../views/CalendarView.vue";
 import StaffList from "../views/StaffList.vue";
 import StaffDetail from "../views/StaffDetail.vue";
-import Settings from "../views/Settings.vue";
+import OptionsManagement from "../views/OptionsManagement.vue";
 
 const routes = [
   {
@@ -48,9 +48,9 @@ const routes = [
     props: true,
   },
   {
-    path: "/settings",
-    name: "Settings",
-    component: Settings,
+    path: "/options",
+    name: "OptionsManagement",
+    component: OptionsManagement,
   },
 ];
 

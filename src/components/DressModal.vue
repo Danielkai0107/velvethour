@@ -7,7 +7,7 @@
     style="background-color: rgba(0, 0, 0, 0.5)"
     @click.self="$emit('close')"
   >
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-dialog modal-fullscreen">
       <div class="modal-content">
         <!-- Modal Header -->
         <div class="modal-header">
@@ -22,270 +22,272 @@
         </div>
 
         <!-- Modal Body -->
-        <div class="modal-body">
-          <form @submit.prevent="handleSubmit">
-            <!-- 圖片上傳區域 -->
-            <div class="mb-4">
-              <label class="form-label fw-semibold"> 禮服圖片 </label>
+        <div class="modal-body p-0 d-flex flex-column" style="height: calc(100vh - 120px);">
+          <form @submit.prevent="handleSubmit" class="flex-grow-1 d-flex">
+            <div class="row g-0 flex-grow-1">
+              <!-- 左側 - 圖片區域 (可滾動) -->
+              <div class="col-md-5 border-end d-flex flex-column">
+                <div class="p-4 flex-grow-1 d-flex flex-column">
+                  <label class="form-label mb-3 flex-shrink-0" style="color: #6A6A6A; font-size: 14px;"> 禮服圖片 </label>
 
-              <!-- 圖片上傳區 -->
-              <div
-                class="border border-2 border-dashed rounded p-4 text-center mb-3"
-                :class="
-                  isDragOver ? 'border-primary bg-light' : 'border-secondary'
-                "
-                @drop="handleDrop"
-                @dragover.prevent="isDragOver = true"
-                @dragleave.prevent="isDragOver = false"
-              >
-                <input
-                  ref="fileInput"
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  @change="handleFileUpload"
-                  class="d-none"
-                />
-
-                <div v-if="uploadingImages.length === 0">
-                  <div class="mt-2">
-                    <button
-                      type="button"
-                      @click="$refs.fileInput.click()"
-                      class="btn btn-outline-primary me-2"
-                    >
-                      選擇檔案
-                    </button>
-                    <span class="text-muted">或拖拽圖片到這裡</span>
-                  </div>
-                  <small class="text-muted d-block mt-2">
-                    支援 JPG, PNG, WebP 格式，最多 5 張圖片，每張最大 5MB
-                  </small>
-                </div>
-
-                <div v-else>
-                  <div class="d-flex justify-content-center">
-                    <div class="spinner-border text-primary" role="status">
-                      <span class="visually-hidden">上傳中...</span>
-                    </div>
-                  </div>
-                  <div class="mt-2 text-muted">正在上傳圖片...</div>
-                </div>
-              </div>
-
-              <!-- 已上傳圖片預覽 -->
-              <div
-                v-if="formData.圖片 && formData.圖片.length > 0"
-                class="row g-3"
-              >
-                <div
-                  v-for="(image, index) in formData.圖片"
-                  :key="index"
-                  class="col-md-4 col-sm-6"
-                >
-                  <div class="position-relative">
-                    <img
-                      :src="image"
-                      :alt="`圖片 ${index + 1}`"
-                      class="w-100 rounded shadow-sm"
-                      style="height: 120px; object-fit: cover"
-                    />
-                    <button
-                      type="button"
-                      @click="removeImage(index)"
-                      class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1 rounded-circle p-1"
-                      style="width: 24px; height: 24px; line-height: 1"
-                    >
-                      <i class="bi bi-x-lg"></i>
-                    </button>
+                  <div class="flex-grow-1 custom-scrollbar" style="overflow-y: auto;">
+                    <!-- 圖片上傳區 -->
                     <div
-                      v-if="index === 0"
-                      class="position-absolute bottom-0 start-0 m-1"
+                      class="border border-dashed rounded p-4 text-center mb-3 custom-dashed-border"
+                      :class="
+                        isDragOver ? 'border-primary bg-light' : ''
+                      "
+                      @drop="handleDrop"
+                      @dragover.prevent="isDragOver = true"
+                      @dragleave.prevent="isDragOver = false"
                     >
-                      <span class="badge bg-primary">主圖</span>
+                      <input
+                        ref="fileInput"
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        @change="handleFileUpload"
+                        class="d-none"
+                      />
+
+                      <div v-if="uploadingImages.length === 0">
+                        <div class="mt-2">
+                          <button
+                            type="button"
+                            @click="$refs.fileInput.click()"
+                            class="btn btn-outline-primary me-2"
+                          >
+                            選擇檔案
+                          </button>
+                          <span class="text-muted">或拖拽圖片到這裡</span>
+                        </div>
+                        <small class="text-muted d-block mt-2">
+                          支援 JPG, PNG, WebP 格式，最多 5 張圖片，每張最大 5MB
+                        </small>
+                      </div>
+
+                      <div v-else>
+                        <div class="d-flex justify-content-center">
+                          <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">上傳中...</span>
+                          </div>
+                        </div>
+                        <div class="mt-2 text-muted">正在上傳圖片...</div>
+                      </div>
+                    </div>
+
+                    <!-- 已上傳圖片預覽 -->
+                    <div
+                      v-if="formData.圖片 && formData.圖片.length > 0"
+                      class="row g-3"
+                    >
+                      <div
+                        v-for="(image, index) in formData.圖片"
+                        :key="index"
+                        class="col-6"
+                      >
+                        <div
+                          class="position-relative d-flex align-items-center justify-content-center bg-light rounded"
+                          style="height: 200px;"
+                        >
+                          <img
+                            :src="image"
+                            :alt="`圖片 ${index + 1}`"
+                            class="rounded shadow-sm"
+                            style="max-width: 100%; max-height: 100%; object-fit: contain;"
+                          />
+                          <button
+                            type="button"
+                            @click="removeImage(index)"
+                            class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1 rounded-circle p-1"
+                            style="width: 24px; height: 24px; line-height: 1"
+                          >
+                            <i class="bi bi-x-lg"></i>
+                          </button>
+                          <div
+                            v-if="index === 0"
+                            class="position-absolute bottom-0 start-0 m-1"
+                          >
+                            <span class="badge bg-primary">主圖</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div class="row g-3">
-              <!-- 左側欄位 -->
-              <div class="col-md-6">
-                <!-- 禮服編號 -->
-                <div class="mb-3">
-                  <label class="form-label fw-semibold"> 禮服編號 * </label>
-                  <input
-                    v-model="formData.編號"
-                    type="text"
-                    class="form-control"
-                    required
-                    placeholder="例: WD001"
-                  />
-                </div>
+              <!-- 右側 - 資料輸入區域 (固定) -->
+              <div class="col-md-7 d-flex flex-column">
+                <div class="flex-grow-1 p-4">
+                  <div class="row g-3">
+                    <!-- 禮服編號 -->
+                    <div class="col-md-6">
+                      <label class="form-label" style="color: #6A6A6A; font-size: 14px;"> 禮服編號 * </label>
+                      <input
+                        v-model="formData.編號"
+                        type="text"
+                        class="form-control"
+                        required
+                        placeholder="例: WD001"
+                      />
+                    </div>
 
-                <!-- 顏色 -->
-                <div class="mb-3">
-                  <label class="form-label fw-semibold"> 顏色 * </label>
-                  <select v-model="formData.顏色" class="form-select" required>
-                    <option value="">請選擇顏色</option>
-                    <option value="白色">白色</option>
-                    <option value="黑色">黑色</option>
-                    <option value="綠色">綠色</option>
-                    <option value="粉色">粉色</option>
-                    <option value="紅色">紅色</option>
-                    <option value="深藍色">深藍色</option>
-                    <option value="藍灰色">藍灰色</option>
-                    <option value="紫色">紫色</option>
-                    <option value="金色/香檳色">金色/香檳色</option>
-                    <option value="銀色">銀色</option>
-                  </select>
-                </div>
+                    <!-- 租借金額 -->
+                    <div class="col-md-6">
+                      <label class="form-label" style="color: #6A6A6A; font-size: 14px;">
+                        租借金額 (NT$) *
+                      </label>
+                      <input
+                        v-model.number="formData.租借金額"
+                        type="number"
+                        class="form-control"
+                        required
+                        min="0"
+                        placeholder="例: 8000"
+                      />
+                    </div>
 
-                <!-- 裙型 -->
-                <div class="mb-3">
-                  <label class="form-label fw-semibold"> 裙型 * </label>
-                  <select v-model="formData.裙型" class="form-select" required>
-                    <option value="">請選擇裙型</option>
-                    <option value="魚尾">魚尾</option>
-                    <option value="Aline">Aline</option>
-                    <option value="蓬裙">蓬裙</option>
-                    <option value="罩衫">罩衫</option>
-                    <option value="兩件式-上">兩件式-上</option>
-                    <option value="兩件式-下">兩件式-下</option>
-                    <option value="配件">配件</option>
-                    <option value="九分裙/短裙">九分裙/短裙</option>
-                    <option value="頭紗">頭紗</option>
-                  </select>
-                </div>
+                    <!-- 顏色 -->
+                    <div class="col-md-6">
+                      <label class="form-label" style="color: #6A6A6A; font-size: 14px;"> 顏色 * </label>
+                    <select v-model="formData.顏色" class="form-select" required>
+                      <option value="">請選擇顏色</option>
+                      <option 
+                        v-for="color in colorOptions" 
+                        :key="color.value" 
+                        :value="color.value"
+                      >
+                        {{ color.label }}
+                      </option>
+                    </select>
+                    </div>
 
-                <!-- 袖型 -->
-                <div class="mb-3">
-                  <label class="form-label fw-semibold"> 袖型 * </label>
-                  <select v-model="formData.袖型" class="form-select" required>
-                    <option value="">請選擇袖型</option>
-                    <option value="短袖">短袖</option>
-                    <option value="長袖">長袖</option>
-                    <option value="無袖">無袖</option>
-                  </select>
-                </div>
+                    <!-- 加價金額 -->
+                    <div class="col-md-6">
+                      <label class="form-label" style="color: #6A6A6A; font-size: 14px;"> 加價金額 (NT$) </label>
+                      <input
+                        v-model.number="formData.加價金額"
+                        type="number"
+                        class="form-control"
+                        min="0"
+                        placeholder="例: 1000"
+                      />
+                    </div>
 
-                <!-- 領型 -->
-                <div class="mb-3">
-                  <label class="form-label fw-semibold"> 領型 * </label>
-                  <select v-model="formData.領型" class="form-select" required>
-                    <option value="">請選擇領型</option>
-                    <option value="v領">v領</option>
-                    <option value="平口/微笑領">平口/微笑領</option>
-                    <option value="一字領">一字領</option>
-                    <option value="高領">高領</option>
-                    <option value="圓領">圓領</option>
-                    <option value="削肩/船型領">削肩/船型領</option>
-                    <option value="桃心領">桃心領</option>
-                    <option value="單肩">單肩</option>
-                    <option value="卡肩">卡肩</option>
-                    <option value="透膚">透膚</option>
-                    <option value="方形領">方形領</option>
-                    <option value="羅馬領">羅馬領</option>
-                  </select>
-                </div>
-              </div>
+                    <!-- 裙型 -->
+                    <div class="col-md-6">
+                      <label class="form-label" style="color: #6A6A6A; font-size: 14px;"> 裙型 * </label>
+                    <select v-model="formData.裙型" class="form-select" required>
+                      <option value="">請選擇裙型</option>
+                      <option 
+                        v-for="skirt in skirtOptions" 
+                        :key="skirt.value" 
+                        :value="skirt.value"
+                      >
+                        {{ skirt.label }}
+                      </option>
+                    </select>
+                    </div>
 
-              <!-- 右側欄位 -->
-              <div class="col-md-6">
-                <!-- 租借金額 -->
-                <div class="mb-3">
-                  <label class="form-label fw-semibold">
-                    租借金額 (NT$) *
-                  </label>
-                  <input
-                    v-model.number="formData.租借金額"
-                    type="number"
-                    class="form-control"
-                    required
-                    min="0"
-                    placeholder="例: 8000"
-                  />
-                </div>
+                    <!-- 庫存數量 -->
+                    <div class="col-md-6">
+                      <label class="form-label" style="color: #6A6A6A; font-size: 14px;"> 庫存數量 * </label>
+                      <input
+                        v-model.number="formData.庫存數量"
+                        type="number"
+                        class="form-control"
+                        required
+                        min="0"
+                        placeholder="例: 1"
+                      />
+                    </div>
 
-                <!-- 加價金額 -->
-                <div class="mb-3">
-                  <label class="form-label fw-semibold"> 加價金額 (NT$) </label>
-                  <input
-                    v-model.number="formData.加價金額"
-                    type="number"
-                    class="form-control"
-                    min="0"
-                    placeholder="例: 1000"
-                  />
-                  <div class="form-text">
-                    額外加價費用（如特殊尺寸、修改等）
+                    <!-- 袖型 -->
+                    <div class="col-md-6">
+                      <label class="form-label" style="color: #6A6A6A; font-size: 14px;"> 袖型 * </label>
+                    <select v-model="formData.袖型" class="form-select" required>
+                      <option value="">請選擇袖型</option>
+                      <option 
+                        v-for="sleeve in sleeveOptions" 
+                        :key="sleeve.value" 
+                        :value="sleeve.value"
+                      >
+                        {{ sleeve.label }}
+                      </option>
+                    </select>
+                    </div>
+
+                    <!-- 領型 -->
+                    <div class="col-md-6">
+                      <label class="form-label" style="color: #6A6A6A; font-size: 14px;"> 領型 * </label>
+                    <select v-model="formData.領型" class="form-select" required>
+                      <option value="">請選擇領型</option>
+                      <option 
+                        v-for="neck in neckOptions" 
+                        :key="neck.value" 
+                        :value="neck.value"
+                      >
+                        {{ neck.label }}
+                      </option>
+                    </select>
+                    </div>
+
+                    <!-- 備註 -->
+                    <div class="col-12">
+                      <label class="form-label" style="color: #6A6A6A; font-size: 14px;"> 備註 </label>
+                      <textarea
+                        v-model="formData.備註"
+                        class="form-control"
+                        rows="4"
+                        placeholder="禮服的詳細描述、注意事項等..."
+                      ></textarea>
+                    </div>
+
+                    <!-- 新增時間戳 (顯示用，不可編輯) -->
+                    <div class="col-12" v-if="formData.新增時間戳">
+                      <label class="form-label" style="color: #6A6A6A; font-size: 14px;"> 新增時間 </label>
+                      <input
+                        :value="formatTimestamp(formData.新增時間戳)"
+                        type="text"
+                        class="form-control"
+                        readonly
+                        disabled
+                      />
+                    </div>
                   </div>
                 </div>
-
-                <!-- 庫存數量 -->
-                <div class="mb-3">
-                  <label class="form-label fw-semibold"> 庫存數量 * </label>
-                  <input
-                    v-model.number="formData.庫存數量"
-                    type="number"
-                    class="form-control"
-                    required
-                    min="0"
-                    placeholder="例: 1"
-                  />
-                </div>
-
-                <!-- 備註 -->
-                <div class="mb-3">
-                  <label class="form-label fw-semibold"> 備註 </label>
-                  <textarea
-                    v-model="formData.備註"
-                    class="form-control"
-                    rows="4"
-                    placeholder="禮服的詳細描述、注意事項等..."
-                  ></textarea>
-                </div>
-
-                <!-- 新增時間戳 (顯示用，不可編輯) -->
-                <div class="mb-3" v-if="formData.新增時間戳">
-                  <label class="form-label fw-semibold"> 新增時間 </label>
-                  <input
-                    :value="formatTimestamp(formData.新增時間戳)"
-                    type="text"
-                    class="form-control"
-                    readonly
-                    disabled
-                  />
+                
+                <!-- 儲存取消按鈕 - 固定在右側區域底部 -->
+                <div class="border-top bg-white p-3 flex-shrink-0">
+                  <div class="d-flex gap-2">
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary flex-fill"
+                      @click="$emit('close')"
+                    >
+                      <i class="bi bi-x-lg me-2"></i>取消
+                    </button>
+                    <button
+                      type="button"
+                      @click="handleSubmit"
+                      :disabled="loading || uploadingImages.length > 0"
+                      class="btn btn-primary flex-fill"
+                    >
+                      <span
+                        v-if="loading"
+                        class="spinner-border spinner-border-sm me-2"
+                      ></span>
+                      <i v-else class="bi bi-check-lg me-2"></i>
+                      {{ loading ? "儲存中..." : "儲存" }}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           </form>
         </div>
 
-        <!-- Modal Footer -->
-        <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            @click="$emit('close')"
-          >
-            <i class="bi bi-x-lg me-2"></i>取消
-          </button>
-          <button
-            type="button"
-            @click="handleSubmit"
-            :disabled="loading || uploadingImages.length > 0"
-            class="btn btn-primary"
-          >
-            <span
-              v-if="loading"
-              class="spinner-border spinner-border-sm me-2"
-            ></span>
-            <i v-else class="bi bi-check-lg me-2"></i>
-            {{ loading ? "儲存中..." : "儲存" }}
-          </button>
-        </div>
       </div>
     </div>
   </div>
@@ -294,6 +296,7 @@
 <script>
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../firebase.js";
+import { optionsService } from "../services/options.js";
 
 export default {
   name: "DressModal",
@@ -326,6 +329,11 @@ export default {
         備註: "",
         新增時間戳: null,
       },
+      colorOptions: [],
+      skirtOptions: [],
+      sleeveOptions: [],
+      neckOptions: [],
+      optionsUnsubscribe: null,
     };
   },
   watch: {
@@ -351,6 +359,19 @@ export default {
         }
       },
     },
+  },
+  mounted() {
+    this.loadOptions();
+    
+    // 監聽選項變化
+    this.optionsUnsubscribe = optionsService.subscribe(() => {
+      this.loadOptions();
+    });
+  },
+  beforeUnmount() {
+    if (this.optionsUnsubscribe) {
+      this.optionsUnsubscribe();
+    }
   },
   methods: {
     resetForm() {
@@ -564,6 +585,13 @@ export default {
         }
       }, 3000);
     },
+
+    loadOptions() {
+      this.colorOptions = optionsService.getColorOptions();
+      this.skirtOptions = optionsService.getSkirtOptions();
+      this.sleeveOptions = optionsService.getSleeveOptions();
+      this.neckOptions = optionsService.getNeckOptions();
+    },
   },
 };
 </script>
@@ -581,7 +609,66 @@ export default {
   border-style: dashed !important;
 }
 
+/* 自定義虛線樣式 */
+.custom-dashed-border {
+  border: 1px dashed #D0D0D0 !important;
+  border-spacing: 8px;
+}
+
 .object-fit-cover {
   object-fit: cover;
+}
+
+/* 隱藏滾動條但保持滾動功能 */
+.custom-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 0px; /* WebKit */
+  background: transparent; /* Chrome/Safari/Webkit */
+}
+
+/* Placeholder 淺色樣式 */
+.form-control::placeholder,
+.form-select::placeholder,
+textarea::placeholder {
+  color: #C0C0C0 !important;
+  font-size: 14px !important;
+  opacity: 1;
+}
+
+.form-control::-webkit-input-placeholder,
+.form-select::-webkit-input-placeholder,
+textarea::-webkit-input-placeholder {
+  color: #C0C0C0 !important;
+  font-size: 14px !important;
+}
+
+.form-control::-moz-placeholder,
+.form-select::-moz-placeholder,
+textarea::-moz-placeholder {
+  color: #C0C0C0 !important;
+  font-size: 14px !important;
+  opacity: 1;
+}
+
+.form-control:-ms-input-placeholder,
+.form-select:-ms-input-placeholder,
+textarea:-ms-input-placeholder {
+  color: #C0C0C0 !important;
+  font-size: 14px !important;
+}
+
+/* 下拉選單和輸入框文字大小 */
+.form-control,
+.form-select {
+  font-size: 14px !important;
+}
+
+/* 下拉選單選項文字大小 */
+.form-select option {
+  font-size: 14px !important;
 }
 </style>

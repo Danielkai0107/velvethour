@@ -201,7 +201,7 @@ export default {
           right: 'today'
         },
         height: 'auto',
-        aspectRatio: 1.35,
+        aspectRatio: 2.5,
         dayMaxEvents: false,
         moreLinkClick: 'popover',
         eventDisplay: 'block',
@@ -729,7 +729,7 @@ export default {
 
 /* 日期格子樣式 - 簡約風格 */
 :deep(.fc-daygrid-day) {
-  min-height: 100px;
+  min-height: 60px;
   background-color: #fff;
 }
 
@@ -915,7 +915,7 @@ export default {
   }
   
   :deep(.fc-daygrid-day) {
-    min-height: 80px;
+    min-height: 50px;
   }
   
   :deep(.contract-title) {
@@ -943,7 +943,7 @@ export default {
   }
   
   :deep(.fc-daygrid-day) {
-    min-height: 60px;
+    min-height: 40px;
   }
 }
 

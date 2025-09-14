@@ -9,6 +9,7 @@
           v-if="cartItemCount > 0"
           @click="clearCart"
           class="btn btn-outline-danger"
+          style="font-size: 14px;"
           :title="`清空購物車中的 ${cartItemCount} 件禮服`"
         >
           <i class="bi bi-trash3 me-2"></i>清空 ({{ cartItemCount }})
@@ -280,15 +281,9 @@
         v-if="!loading && filteredContracts.length === 0"
         class="text-center py-5"
       >
-        <i class="bi bi-file-text display-1 text-muted"></i>
-        <h3 class="mt-3 text-muted">
-          {{ contracts.length === 0 ? "沒有合約" : "沒有符合條件的合約" }}
-        </h3>
-        <p class="mt-1 text-muted">
-          {{
-            contracts.length === 0 ? "開始建立您的第一份合約" : "請調整篩選條件"
-          }}
-        </p>
+        <span class="mt-3 text-muted" style="font-size: 14px;">
+          {{ contracts.length === 0 ? "暫無合約" : "沒有符合條件的合約" }}
+        </span>
       </div>
     </div>
 

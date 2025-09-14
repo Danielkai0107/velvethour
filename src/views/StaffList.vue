@@ -5,7 +5,8 @@
       <h1 class="h3 mb-0 fw-bold">承辦人清單</h1>
       <button
         @click="showAddModal = true"
-        class="btn btn-primary"
+        class="btn btn-outline-primary"
+        style="font-size: 14px;"
       >
         <i class="bi bi-plus-lg me-2"></i>新增承辦人
       </button>
@@ -71,22 +72,11 @@
 
       <!-- 空狀態 -->
       <div v-if="!loading && filteredStaff.length === 0" class="text-center py-5">
-        <i class="bi bi-people display-1 text-muted"></i>
-        <h3 class="mt-3 text-muted">
-          {{ staff.length === 0 ? '沒有承辦人' : '沒有符合條件的承辦人' }}
-        </h3>
-        <p class="mt-1 text-muted">
-          {{ staff.length === 0 ? '開始新增您的第一位承辦人' : '請調整篩選條件' }}
+
+        <p class="mt-3 text-muted" style="font-size: 14px;">
+          {{ staff.length === 0 ? '尚未新增承辦人' : '沒有符合條件的承辦人' }}
         </p>
-        <div class="mt-4">
-          <button
-            v-if="staff.length === 0"
-            @click="showAddModal = true"
-            class="btn btn-primary"
-          >
-            <i class="bi bi-plus-lg me-2"></i>新增承辦人
-          </button>
-        </div>
+
       </div>
     </div>
 

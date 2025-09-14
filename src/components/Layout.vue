@@ -93,7 +93,7 @@ export default {
         { name: "合約清單", href: "/contracts", icon: "bi bi-file-text" },
         { name: "檔期日曆", href: "/calendar", icon: "bi bi-calendar3" },
         { name: "承辦人清單", href: "/staff", icon: "bi bi-people" },
-        { name: "設定", href: "/settings", icon: "bi bi-gear" },
+        { name: "選項管理", href: "/options", icon: "bi bi-sliders" },
       ],
       cartItemCount: 0,
       cartUnsubscribe: null,
@@ -121,7 +121,7 @@ export default {
         "/contracts": "合約清單",
         "/calendar": "檔期日曆",
         "/staff": "承辦人清單",
-        "/settings": "設定",
+        "/options": "選項管理",
       };
 
       if (this.$route.path.startsWith("/dresses/")) {
