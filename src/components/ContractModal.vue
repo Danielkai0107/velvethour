@@ -257,6 +257,30 @@
                   />
                 </div>
 
+                <!-- 身分證號 -->
+                <div class="col-md-6">
+                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">身分證號
+                  </label>
+                  <input
+                    v-model="formData.身分證號"
+                    type="text"
+                    class="form-control"
+                    placeholder="請輸入身分證號"
+                  />
+                </div>
+
+                <!-- 地址 -->
+                <div class="col-md-12">
+                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">地址
+                  </label>
+                  <input
+                    v-model="formData.地址"
+                    type="text"
+                    class="form-control"
+                    placeholder="請輸入地址"
+                  />
+                </div>
+
                 <!-- 承辦人 -->
                 <div class="col-md-6">
                   <label class="form-label" style="color: #6A6A6A; font-size: 14px;">承辦人 *
@@ -1083,6 +1107,7 @@ export default {
             電話: newContract.電話 || "",
             email: newContract.email || "",
             三圍: newContract.三圍 || "",
+            身分證號: newContract.身分證號 || "",
             承辦人: newContract.承辦人 || "",
             租用開始時間: this.formatDateTimeForInput(newContract.租用開始時間),
             租用結束時間: this.formatDateTimeForInput(newContract.租用結束時間),
@@ -1142,6 +1167,8 @@ export default {
         電話: "",
         email: "",
         三圍: "",
+        身分證號: "",
+        地址: "",
         承辦人: "",
         租用開始時間: "",
         租用結束時間: "",
