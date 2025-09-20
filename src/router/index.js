@@ -3,6 +3,7 @@ import DressList from "../views/DressList.vue";
 import DressDetail from "../views/DressDetail.vue";
 import ContractList from "../views/ContractList.vue";
 import ContractDetail from "../views/ContractDetail.vue";
+import ContractTemplate from "../views/ContractTemplate.vue";
 import CalendarView from "../views/CalendarView.vue";
 import StaffList from "../views/StaffList.vue";
 import StaffDetail from "../views/StaffDetail.vue";
@@ -30,6 +31,11 @@ const routes = [
     name: "ContractDetail",
     component: ContractDetail,
     props: true,
+  },
+  {
+    path: "/contract-template",
+    name: "ContractTemplate",
+    component: ContractTemplate,
   },
   {
     path: "/calendar",

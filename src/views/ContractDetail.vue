@@ -110,36 +110,108 @@
 
             <!-- 3. 客戶資訊 -->
             <div class="mb-4">
-              <h5 class="card-title mb-3">客戶資訊</h5>
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title mb-0">客戶資訊</h5>
+                <button @click="toggleEditMode" class="btn btn-sm btn-outline-primary">
+                  <i :class="editMode ? 'bi bi-check-circle' : 'bi bi-pencil-square'" class="me-1"></i>
+                  {{ editMode ? '儲存' : '編輯' }}
+                </button>
+              </div>
               <div class="row g-3">
                 <div class="col-md-3 col-sm-6">
                   <div class="border rounded p-3 h-100">
                     <small class="text-muted d-block">客戶姓名</small>
-                    <strong class="text-dark">{{ contract.客戶姓名 }}</strong>
+                    <input 
+                      v-if="editMode" 
+                      v-model="editableContract.客戶姓名" 
+                      type="text" 
+                      class="form-control form-control-sm mt-1"
+                      placeholder="請輸入客戶姓名"
+                    />
+                    <strong v-else class="text-dark">{{ contract.客戶姓名 || '未設定' }}</strong>
                   </div>
                 </div>
                 <div class="col-md-3 col-sm-6">
                   <div class="border rounded p-3 h-100">
                     <small class="text-muted d-block">電話</small>
-                    <strong class="text-dark">{{ contract.電話 }}</strong>
+                    <input 
+                      v-if="editMode" 
+                      v-model="editableContract.電話" 
+                      type="tel" 
+                      class="form-control form-control-sm mt-1"
+                      placeholder="請輸入電話號碼"
+                    />
+                    <strong v-else class="text-dark">{{ contract.電話 || '未設定' }}</strong>
                   </div>
                 </div>
-                <div class="col-md-3 col-sm-6" v-if="contract.email">
+                <div class="col-md-3 col-sm-6">
                   <div class="border rounded p-3 h-100">
                     <small class="text-muted d-block">Email</small>
-                    <strong class="text-dark">{{ contract.email }}</strong>
+                    <input 
+                      v-if="editMode" 
+                      v-model="editableContract.email" 
+                      type="email" 
+                      class="form-control form-control-sm mt-1"
+                      placeholder="請輸入Email"
+                    />
+                    <strong v-else class="text-dark">{{ contract.email || '未設定' }}</strong>
                   </div>
                 </div>
-                <div class="col-md-3 col-sm-6" v-if="contract.三圍">
+                <div class="col-md-3 col-sm-6">
+                  <div class="border rounded p-3 h-100">
+                    <small class="text-muted d-block">身分證號</small>
+                    <input 
+                      v-if="editMode" 
+                      v-model="editableContract.身分證號" 
+                      type="text" 
+                      class="form-control form-control-sm mt-1"
+                      placeholder="請輸入身分證號"
+                    />
+                    <strong v-else class="text-dark">{{ contract.身分證號 || '未設定' }}</strong>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="border rounded p-3 h-100">
+                    <small class="text-muted d-block">地址</small>
+                    <textarea 
+                      v-if="editMode" 
+                      v-model="editableContract.地址" 
+                      class="form-control form-control-sm mt-1"
+                      rows="2"
+                      placeholder="請輸入地址"
+                    ></textarea>
+                    <strong v-else class="text-dark">{{ contract.地址 || '未設定' }}</strong>
+                  </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
                   <div class="border rounded p-3 h-100">
                     <small class="text-muted d-block">三圍</small>
-                    <strong class="text-dark">{{ contract.三圍 }}</strong>
+                    <input 
+                      v-if="editMode" 
+                      v-model="editableContract.三圍" 
+                      type="text" 
+                      class="form-control form-control-sm mt-1"
+                      placeholder="例：32B/25/35"
+                    />
+                    <strong v-else class="text-dark">{{ contract.三圍 || '未設定' }}</strong>
                   </div>
                 </div>
                 <div class="col-md-3 col-sm-6">
                   <div class="border rounded p-3 h-100">
                     <small class="text-muted d-block">承辦人</small>
-                    <strong class="text-dark">{{ contract.承辦人 }}</strong>
+                    <select 
+                      v-if="editMode" 
+                      v-model="editableContract.承辦人" 
+                      class="form-select form-select-sm mt-1"
+                    >
+                      <option value="">請選擇承辦人</option>
+                      <option value="Abby">Abby</option>
+                      <option value="Jenny">Jenny</option>
+                      <option value="Alice">Alice</option>
+                      <option value="Cindy">Cindy</option>
+                      <option value="Emma">Emma</option>
+                    </select>
+                    <strong v-else class="text-dark">{{ contract.承辦人 || '未設定' }}</strong>
                   </div>
                 </div>
               </div>
@@ -250,6 +322,9 @@
 
             <!-- 操作按鈕 -->
             <div class="d-flex gap-3 justify-content-end mt-4 pt-3 border-top">
+              <button @click="showTemplatePreview" class="btn btn-info">
+                <i class="bi bi-eye me-2"></i>預覽模板
+              </button>
               <button @click="exportToPDF" class="btn btn-success" :disabled="exportingPDF">
                 <span v-if="exportingPDF" class="spinner-border spinner-border-sm me-2" role="status"></span>
                 <i v-else class="bi bi-file-earmark-pdf me-2"></i>
@@ -297,6 +372,35 @@
       :dress="selectedDress"
       @close="closeDressDetail"
     />
+
+    <!-- 合約模板預覽模態框 -->
+    <div v-if="showTemplateModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">合約模板預覽</h5>
+            <button type="button" class="btn-close" @click="closeTemplatePreview"></button>
+          </div>
+          <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+            <ContractTemplate
+              v-if="contract"
+              :contractData="contract"
+              :dressData="availableDresses"
+              :isEditable="true"
+              @update-contract="handleContractUpdate"
+            />
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="closeTemplatePreview">關閉</button>
+            <button type="button" class="btn btn-success" @click="exportToPDFFromPreview" :disabled="exportingPDF">
+              <span v-if="exportingPDF" class="spinner-border spinner-border-sm me-2" role="status"></span>
+              <i v-else class="bi bi-file-earmark-pdf me-2"></i>
+              {{ exportingPDF ? '匯出中...' : '匯出PDF' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -304,12 +408,15 @@
 import { contractService, dressService } from "../services/firestore.js";
 import ContractModal from "../components/ContractModal.vue";
 import DressDetailModal from "../components/DressDetailModal.vue";
+import ContractTemplate from "../components/Template.vue";
+import html2pdf from "html2pdf.js";
 
 export default {
   name: "ContractDetail",
   components: {
     ContractModal,
     DressDetailModal,
+    ContractTemplate,
   },
   props: {
     id: {
@@ -326,8 +433,11 @@ export default {
       exportingPDF: false,
       showEditModal: false,
       showDressDetailModal: false,
+      showTemplateModal: false,
       selectedDress: null,
       availableDresses: [], // 用於顯示禮服資訊
+      editMode: false,
+      editableContract: {},
     };
   },
   computed: {
@@ -529,27 +639,55 @@ export default {
       try {
         this.exportingPDF = true;
         
-        // 創建一個新的窗口來顯示可列印的合約
-        const printWindow = window.open('', '_blank');
+        // 創建一個隱藏的容器來渲染合約模板
+        const tempContainer = document.createElement('div');
+        tempContainer.style.position = 'absolute';
+        tempContainer.style.left = '-9999px';
+        tempContainer.style.top = '-9999px';
+        tempContainer.style.width = '210mm'; // A4寬度
+        tempContainer.style.fontFamily = 'Microsoft JhengHei, PingFang TC, sans-serif';
+        document.body.appendChild(tempContainer);
+
+        // 使用Vue的createApp來渲染模板組件
+        const { createApp } = await import('vue');
+        const templateApp = createApp(ContractTemplate, {
+          contractData: this.contract,
+          dressData: this.availableDresses,
+          isEditable: false
+        });
         
-        // 生成HTML內容
-        const htmlContent = this.generateContractHTML();
+        templateApp.mount(tempContainer);
         
-        printWindow.document.write(htmlContent);
-        printWindow.document.close();
+        // 等待組件渲染完成
+        await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // 等待內容載入完成
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // 觸發列印對話框
-        printWindow.print();
-        
-        // 列印完成後關閉窗口
-        printWindow.onafterprint = () => {
-          printWindow.close();
+        // PDF生成選項
+        const opt = {
+          margin: [10, 10, 10, 10],
+          filename: `合約_${this.contract.合約單號}_${this.contract.客戶姓名}.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { 
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            letterRendering: true
+          },
+          jsPDF: { 
+            unit: 'mm', 
+            format: 'a4', 
+            orientation: 'portrait',
+            compress: true
+          }
         };
+
+        // 生成PDF
+        await html2pdf().set(opt).from(tempContainer).save();
         
-        this.showToast("PDF列印視窗已開啟", "success");
+        // 清理臨時容器
+        templateApp.unmount();
+        document.body.removeChild(tempContainer);
+        
+        this.showToast("PDF已下載", "success");
         
       } catch (error) {
         console.error("PDF匯出失敗:", error);
@@ -559,309 +697,75 @@ export default {
       }
     },
 
-    generateContractHTML() {
-      return `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="UTF-8">
-          <title>婚紗及配件租借合約書</title>
-          <style>
-            @page {
-              size: A4;
-              margin: 20mm;
-            }
-            body {
-              font-family: 'Microsoft JhengHei', 'PingFang TC', 'Helvetica Neue', Arial, sans-serif;
-              line-height: 1.6;
-              color: #000;
-              margin: 0;
-              padding: 0;
-            }
-            .contract-header {
-              text-align: center;
-              margin-bottom: 30px;
-            }
-            .contract-title {
-              font-size: 24px;
-              font-weight: bold;
-              margin-bottom: 20px;
-            }
-            .contract-info {
-              margin-bottom: 20px;
-            }
-            .contract-info div {
-              margin-bottom: 8px;
-            }
-            .clause-section {
-              margin-bottom: 25px;
-              page-break-inside: avoid;
-            }
-            .clause-title {
-              font-size: 16px;
-              font-weight: bold;
-              margin-bottom: 15px;
-            }
-            .red-text {
-              color: #d32f2f;
-              font-weight: bold;
-            }
-            .payment-table {
-              width: 100%;
-              border-collapse: collapse;
-              margin: 20px 0;
-            }
-            .payment-table th,
-            .payment-table td {
-              border: 1px solid #000;
-              padding: 8px;
-              text-align: center;
-            }
-            .payment-table th {
-              background-color: #f5f5f5;
-              font-weight: bold;
-            }
-            .signature-section {
-              display: flex;
-              justify-content: space-between;
-              margin-top: 40px;
-              page-break-inside: avoid;
-            }
-            .signature-column {
-              width: 45%;
-            }
-            .signature-column div {
-              margin-bottom: 8px;
-            }
-            .date-section {
-              text-align: center;
-              margin-top: 30px;
-              font-weight: bold;
-            }
-            hr {
-              border: 1px solid #000;
-              margin: 20px 0;
-            }
-            @media print {
-              body { 
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-              }
-            }
-          </style>
-        </head>
-        <body>
-          <div class="contract-header">
-            <h1 class="contract-title">婚紗及配件租借合約書</h1>
-          </div>
-
-          <div class="contract-info">
-            <div><strong>單號：${this.contract.合約單號 || 'V250902'}</strong></div>
-            <div><strong>出租人：</strong>雲云智略股份有限公司　　<strong>以下簡稱甲方</strong></div>
-            <div><strong>承租人：</strong>${this.contract.客戶姓名 || '_______________'}　　<strong>以下簡稱乙方</strong></div>
-          </div>
-
-          <div style="margin-bottom: 25px; font-size: 14px;">
-            <p>本契約條款甲方出租人應於簽約前，將契約內容充分向承租人說明，雙方確認訂書面契約後，始得同意之其他適當方式表示同意，以憑信守。本契約內容之新台幣金額皆為含稅金額。</p>
-          </div>
-
-          <hr />
-
-          <div class="clause-section">
-            <h3 class="clause-title">第一條 租借物件與租賃期間</h3>
-            
-            <div style="margin-bottom: 15px;">
-              <strong>租借物件：</strong>
-            </div>
-            
-            <div style="margin-left: 20px; margin-bottom: 15px;">
-              <span>☑婚紗</span>
-            </div>
-            
-            <div style="margin-bottom: 15px;">
-              <strong>租借方案：</strong>
-            </div>
-            
-            <div style="margin-left: 20px; margin-bottom: 15px;" class="red-text">
-              ${this.getDressPackageInfo()}
-            </div>
-            
-            <div style="margin-bottom: 10px;">
-              <strong>款式：</strong>
-            </div>
-            
-            <div style="margin-bottom: 10px;">
-              <strong>配件：</strong><span class="red-text">可任選頭紗款式</span>
-            </div>
-            
-            <div style="margin-bottom: 20px;">
-              <strong>圖片：</strong>
-            </div>
-
-            <div style="margin-top: 30px;">
-              <div class="red-text" style="margin-bottom: 10px;">
-                <strong>總金額新台幣$${(this.contract.合約總金額 || 21000).toLocaleString()}元整租借期間：</strong>
-              </div>
-              
-              <div style="margin-bottom: 8px;">
-                <strong>取件時間：中華民國 ${this.formatDateForPDF(this.contract.租用開始時間, 'date')} 日</strong>
-              </div>
-              
-              <div style="margin-bottom: 8px;">
-                <strong>歸還時間：中華民國 ${this.formatDateForPDF(this.contract.租用結束時間, 'date')} 日</strong>
-              </div>
-              
-              <div style="margin-bottom: 20px;">
-                <strong>總計共 ${this.calculateRentalDays()} 檔期</strong>
-              </div>
-
-              <div style="font-size: 12px;">
-                <p>*租借四天為一檔期，每增加一日，每件婚紗加收台幣1,000元，配件每件加收台幣300元。</p>
-                <p>*取件與歸還應於週一至週五18:30前，遇休假日可提前或順延一日不予加價（特別預約日者除外）。</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- 付款記錄表 -->
-          <table class="payment-table">
-            <thead>
-              <tr>
-                <th>付款別</th>
-                <th>金額</th>
-                <th>接待人員</th>
-                <th>客戶簽名</th>
-                <th>付款日期</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>拍攝定金</td>
-                <td class="red-text">$4200</td>
-                <td>${this.contract.承辦人 || 'Abby'}</td>
-                <td>${this.contract.客戶姓名 || ''}</td>
-                <td class="red-text">${this.formatDateForPDF(this.contract.創建時間, 'date')}</td>
-              </tr>
-              <tr>
-                <td>拍攝尾款</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-              </tr>
-              <tr>
-                <td>宴客定金</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-              </tr>
-              <tr>
-                <td>宴客尾款</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-              </tr>
-            </tbody>
-          </table>
-
-          <!-- 其他條款 -->
-          <div class="clause-section">
-            <h3 class="clause-title">第二條 租金/定金/押金</h3>
-            <div style="margin-left: 20px; font-size: 14px;">
-              <p><strong>• 租金</strong><br/>
-              總計共新台幣<span class="red-text">$${(this.contract.合約總金額 || 21000).toLocaleString()}</span>元整（含稅），甲方需開立統一發票，乙方應於取件時將已付之定金金額扣支付。</p>
-              
-              <p><strong>• 定金</strong><br/>
-              總計共新台幣<span class="red-text">$4200</span>元整，以現款支付。</p>
-              
-              <p><strong>• 押金</strong><br/>
-              總計共新台幣<span class="red-text">$0</span>元整，以現金支付。</p>
-            </div>
-          </div>
-
-          <!-- 立契約書人 -->
-          <div style="page-break-before: auto; margin-top: 40px;">
-            <h3 style="font-size: 16px; font-weight: bold; text-align: center; margin-bottom: 30px;">立契約書人</h3>
-            
-            <div class="signature-section">
-              <div class="signature-column">
-                <div><strong>出租人：雲云智略股份有限公司</strong></div>
-                <div><strong>統一編號：52888231</strong></div>
-                <div><strong>地址：台北市中山區中山北路二段16巷14號2樓</strong></div>
-                <div><strong>聯絡電話：02-27196817</strong></div>
-                <div style="margin-top: 30px;"><strong>簽章：</strong></div>
-              </div>
-              
-              <div class="signature-column">
-                <div><strong>承租人：${this.contract.客戶姓名 || ''}</strong></div>
-                <div><strong>身分證字號：${this.contract.身分證號 || ''}</strong></div>
-                <div><strong>地址：${this.contract.地址 || ''}</strong></div>
-                <div><strong>聯絡電話：${this.contract.電話 || ''}</strong></div>
-                <div style="margin-top: 30px;"><strong>簽章：${this.contract.客戶姓名 || ''}</strong></div>
-              </div>
-            </div>
-            
-            <div class="date-section">
-              <p><strong>中華民國 ${this.formatDateForPDF(this.contract.創建時間, 'full')}</strong></p>
-            </div>
-          </div>
-        </body>
-        </html>
-      `;
+    // 顯示模板預覽
+    showTemplatePreview() {
+      this.showTemplateModal = true;
     },
 
-    getDressPackageInfo() {
-      if (!this.contract.禮服清單 || this.contract.禮服清單.length === 0) {
-        return '蘇菲攝影套約1白2晚 $21000 - 2025.12.04拍攝使用';
+    // 關閉模板預覽
+    closeTemplatePreview() {
+      this.showTemplateModal = false;
+    },
+
+    // 處理合約更新（從模板組件來的更新）
+    async handleContractUpdate(updateData) {
+      try {
+        await contractService.update(this.contract.id, updateData);
+        this.contract = { ...this.contract, ...updateData };
+        this.showToast("合約已更新", "success");
+      } catch (error) {
+        console.error("更新合約失敗:", error);
+        this.showToast("更新合約失敗，請稍後再試", "error");
       }
-      
-      const totalAmount = this.contract.合約總金額 || 21000;
-      const packageInfo = this.contract.選擇方案 || '蘇菲攝影套約1白2晚';
-      const shootDate = this.formatDateForPDF(this.contract.租用開始時間, 'dateOnly');
-      
-      return `${packageInfo} $${totalAmount.toLocaleString()} - ${shootDate}拍攝使用`;
     },
 
-    calculateRentalDays() {
-      if (!this.contract.租用開始時間 || !this.contract.租用結束時間) {
-        return '1';
-      }
-      
-      const startDate = new Date(this.contract.租用開始時間);
-      const endDate = new Date(this.contract.租用結束時間);
-      const diffTime = Math.abs(endDate - startDate);
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      
-      return Math.max(1, diffDays).toString();
+    // 從預覽模式匯出PDF
+    async exportToPDFFromPreview() {
+      await this.exportToPDF();
     },
 
-    formatDateForPDF(date, format = 'date') {
-      if (!date) return '';
-      
-      let dateObj;
-      if (date.toDate && typeof date.toDate === 'function') {
-        dateObj = date.toDate();
-      } else if (date instanceof Date) {
-        dateObj = date;
+    // 切換編輯模式
+    async toggleEditMode() {
+      if (this.editMode) {
+        // 儲存模式
+        await this.saveEditableContract();
       } else {
-        dateObj = new Date(date);
+        // 進入編輯模式
+        this.editableContract = { ...this.contract };
+        this.editMode = true;
       }
-      
-      const year = dateObj.getFullYear() - 1911; // 民國年
-      const month = dateObj.getMonth() + 1;
-      const day = dateObj.getDate();
-      
-      switch (format) {
-        case 'full':
-          return `${year} 年 ${month.toString().padStart(2, '0')} 月 ${day.toString().padStart(2, '0')} 日`;
-        case 'date':
-          return `${year} 年 ${month} 月 ${day.toString().padStart(2, '0')}`;
-        case 'dateOnly':
-          return `${dateObj.getFullYear()}.${month.toString().padStart(2, '0')}.${day.toString().padStart(2, '0')}`;
-        default:
-          return `${year} 年 ${month} 月 ${day} 日`;
+    },
+
+    // 儲存可編輯的合約資料
+    async saveEditableContract() {
+      try {
+        this.saving = true;
+        
+        // 過濾掉空值
+        const updateData = {};
+        Object.keys(this.editableContract).forEach(key => {
+          if (this.editableContract[key] !== null && this.editableContract[key] !== '') {
+            updateData[key] = this.editableContract[key];
+          }
+        });
+        
+        await contractService.update(this.contract.id, updateData);
+        this.contract = { ...this.contract, ...updateData };
+        this.editMode = false;
+        this.showToast("客戶資訊已更新", "success");
+        
+      } catch (error) {
+        console.error("更新客戶資訊失敗:", error);
+        this.showToast("更新客戶資訊失敗，請稍後再試", "error");
+      } finally {
+        this.saving = false;
       }
+    },
+
+    // 取消編輯模式
+    cancelEdit() {
+      this.editMode = false;
+      this.editableContract = {};
     },
 
     showToast(message, type = "info") {
