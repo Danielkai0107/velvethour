@@ -34,12 +34,14 @@
                     <!-- 圖片上傳區 -->
                     <div
                       class="border border-dashed rounded p-4 text-center mb-3 custom-dashed-border"
-                      :class="
-                        isDragOver ? 'border-primary bg-light' : ''
-                      "
+                      :class="[
+                        isDragOver ? 'border-primary bg-light' : '',
+                        { 'border-danger bg-danger-subtle': validationErrors.圖片 }
+                      ]"
                       @drop="handleDrop"
                       @dragover.prevent="isDragOver = true"
                       @dragleave.prevent="isDragOver = false"
+                      @click="clearValidationError('圖片')"
                     >
                       <input
                         ref="fileInput"
@@ -127,9 +129,10 @@
                       <input
                         v-model="formData.編號"
                         type="text"
-                        class="form-control"
+                        :class="['form-control', { 'is-invalid': validationErrors.編號 }]"
                         required
                         placeholder="例: WD001"
+                        @focus="clearValidationError('編號')"
                       />
                     </div>
 
@@ -141,17 +144,18 @@
                       <input
                         v-model.number="formData.租借金額"
                         type="number"
-                        class="form-control"
+                        :class="['form-control', { 'is-invalid': validationErrors.租借金額 }]"
                         required
                         min="0"
                         placeholder="例: 8000"
+                        @focus="clearValidationError('租借金額')"
                       />
                     </div>
 
                     <!-- 顏色 -->
                     <div class="col-md-6">
                       <label class="form-label" style="color: #6A6A6A; font-size: 14px;"> 顏色 * </label>
-                    <select v-model="formData.顏色" class="form-select" required>
+                    <select v-model="formData.顏色" :class="['form-select', { 'is-invalid': validationErrors.顏色 }]" required @focus="clearValidationError('顏色')">
                       <option value="">請選擇顏色</option>
                       <option 
                         v-for="color in colorOptions" 
@@ -178,7 +182,7 @@
                     <!-- 裙型 -->
                     <div class="col-md-6">
                       <label class="form-label" style="color: #6A6A6A; font-size: 14px;"> 裙型 * </label>
-                    <select v-model="formData.裙型" class="form-select" required>
+                    <select v-model="formData.裙型" :class="['form-select', { 'is-invalid': validationErrors.裙型 }]" required @focus="clearValidationError('裙型')">
                       <option value="">請選擇裙型</option>
                       <option 
                         v-for="skirt in skirtOptions" 
@@ -206,7 +210,7 @@
                     <!-- 袖型 -->
                     <div class="col-md-6">
                       <label class="form-label" style="color: #6A6A6A; font-size: 14px;"> 袖型 * </label>
-                    <select v-model="formData.袖型" class="form-select" required>
+                    <select v-model="formData.袖型" :class="['form-select', { 'is-invalid': validationErrors.袖型 }]" required @focus="clearValidationError('袖型')">
                       <option value="">請選擇袖型</option>
                       <option 
                         v-for="sleeve in sleeveOptions" 
@@ -221,7 +225,7 @@
                     <!-- 領型 -->
                     <div class="col-md-6">
                       <label class="form-label" style="color: #6A6A6A; font-size: 14px;"> 領型 * </label>
-                    <select v-model="formData.領型" class="form-select" required>
+                    <select v-model="formData.領型" :class="['form-select', { 'is-invalid': validationErrors.領型 }]" required @focus="clearValidationError('領型')">
                       <option value="">請選擇領型</option>
                       <option 
                         v-for="neck in neckOptions" 
@@ -334,6 +338,7 @@ export default {
       sleeveOptions: [],
       neckOptions: [],
       optionsUnsubscribe: null,
+      validationErrors: {}, // 驗證錯誤狀態
     };
   },
   watch: {
@@ -491,26 +496,51 @@ export default {
       this.formData.圖片.splice(index, 1);
     },
 
+    // 清除特定欄位的驗證錯誤
+    clearValidationError(field) {
+      if (this.validationErrors[field]) {
+        delete this.validationErrors[field];
+      }
+    },
+
+    // 清除所有驗證錯誤
+    clearAllValidationErrors() {
+      this.validationErrors = {};
+    },
+
     async handleSubmit() {
       try {
         this.loading = true;
 
+        // 清除之前的驗證錯誤
+        this.validationErrors = {};
+
         // 驗證必填欄位
-        if (
-          !this.formData.編號 ||
-          !this.formData.顏色 ||
-          !this.formData.裙型 ||
-          !this.formData.袖型 ||
-          !this.formData.領型 ||
-          !this.formData.租借金額
-        ) {
-          this.showToast("請填寫所有必填欄位", "warning");
-          return;
-        }
+        const requiredFields = {
+          編號: this.formData.編號,
+          顏色: this.formData.顏色,
+          裙型: this.formData.裙型,
+          袖型: this.formData.袖型,
+          領型: this.formData.領型,
+          租借金額: this.formData.租借金額
+        };
+
+        // 檢查必填欄位
+        let hasValidationError = false;
+        Object.keys(requiredFields).forEach(field => {
+          if (!requiredFields[field] || (field === '租借金額' && requiredFields[field] <= 0)) {
+            this.validationErrors[field] = true;
+            hasValidationError = true;
+          }
+        });
 
         // 等待所有圖片上傳完成
         if (this.uploadingImages.length > 0) {
-          this.showToast("請等待圖片上傳完成", "warning");
+          this.validationErrors.圖片 = true;
+          hasValidationError = true;
+        }
+
+        if (hasValidationError) {
           return;
         }
 

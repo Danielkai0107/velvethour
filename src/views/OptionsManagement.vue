@@ -198,8 +198,84 @@
     </div>
 
     <div class="row g-4">
+      <!-- 配件選項 -->
+      <div class="col-lg-6">
+        <div class="card h-100 shadow-sm border-0 rounded-4">
+          <div class="card-header bg-white border-0 pb-0">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="card-title mb-0 fw-semibold">
+                配件選項
+              </h5>
+              <button
+                @click="showAddModal('accessory')"
+                class="btn btn-outline-secondary btn-sm"
+                style="padding: 0.25rem 0.5rem;"
+              >
+                <i class="bi bi-plus-lg"></i>
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div v-if="options.accessories.length === 0" class="text-center text-muted py-3">
+              <i class="bi bi-gem display-6"></i>
+              <p class="mt-2 mb-0">尚未新增任何配件選項</p>
+            </div>
+            <div v-else class="d-flex flex-column gap-4">
+              <!-- 按分類分組顯示 -->
+              <div 
+                v-for="(categoryAccessories, category) in groupedAccessories" 
+                :key="category"
+              >
+                <h6 class="fw-semibold text-muted mb-3" style="font-size: 14px;">
+                  {{ category }}
+                </h6>
+                <div class="d-flex flex-column gap-2">
+                  <div
+                    v-for="accessory in categoryAccessories"
+                    :key="accessory.originalIndex"
+                    class="d-flex justify-content-between align-items-center p-3 bg-light rounded border"
+                  >
+                    <div class="flex-grow-1">
+                      <div class="fw-semibold">{{ accessory.label }}</div>
+                      <div v-if="accessory.accessoryPrice && accessory.accessoryPrice > 0" class="text-success small mt-1">
+                        NT$ {{ accessory.accessoryPrice.toLocaleString() }}
+                      </div>
+                      <div v-else class="text-muted small mt-1">
+                        贈送
+                      </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                      <button
+                        @click="editAccessory(accessory.originalIndex)"
+                        class="btn btn-outline-primary btn-sm"
+                        title="編輯配件"
+                      >
+                        <i class="bi bi-pencil"></i>
+                      </button>
+                      <button
+                        @click="removeOption('accessories', accessory.originalIndex)"
+                        class="btn btn-outline-danger btn-sm"
+                        title="刪除配件"
+                      >
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="border-top pt-3 mt-3">
+              <p class="text-muted small mb-0">
+                <i class="bi bi-info-circle me-1"></i>
+                目前共 {{ options.accessories.length }} 個配件選項
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- 方案選項 -->
-      <div class="col-12">
+      <div class="col-lg-6">
         <div class="card h-100 shadow-sm border-0 rounded-4">
           <div class="card-header bg-white border-0 pb-0">
             <div class="d-flex justify-content-between align-items-center">
@@ -235,14 +311,28 @@
                     :key="pkg.originalIndex"
                     class="d-flex justify-content-between align-items-center p-3 bg-light rounded border"
                   >
-                    <div class="fw-semibold">{{ pkg.label }}</div>
-                    <button
-                      @click="removeOption('packages', pkg.originalIndex)"
-                      class="btn btn-outline-danger btn-sm"
-                      title="刪除方案"
-                    >
-                      <i class="bi bi-trash"></i>
-                    </button>
+                    <div class="flex-grow-1">
+                      <div class="fw-semibold">{{ pkg.label }}</div>
+                      <div v-if="pkg.content" class="text-muted small mt-1" style="max-width: 400px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        {{ pkg.content }}
+                      </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                      <button
+                        @click="editPackage(pkg.originalIndex)"
+                        class="btn btn-outline-primary btn-sm"
+                        title="編輯方案"
+                      >
+                        <i class="bi bi-pencil"></i>
+                      </button>
+                      <button
+                        @click="removeOption('packages', pkg.originalIndex)"
+                        class="btn btn-outline-danger btn-sm"
+                        title="刪除方案"
+                      >
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -270,7 +360,7 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">新增{{ getModalTitle() }}</h5>
+            <h5 class="modal-title">{{ editingIndex !== null ? '編輯' : '新增' }}{{ getModalTitle() }}</h5>
             <button
               type="button"
               class="btn-close"
@@ -292,6 +382,49 @@
                 />
               </div>
               
+              <!-- 配件選項的特殊欄位 -->
+              <div v-if="modalType === 'accessory'">
+                <!-- 1. 分類 -->
+                <div class="mb-3">
+                  <label class="form-label">配件分類 *</label>
+                  <select v-model="newOption.category" class="form-select" required @change="generateAccessoryLabel">
+                    <option value="">請選擇分類</option>
+                    <option value="頭紗">頭紗</option>
+                    <option value="首飾">首飾</option>
+                    <option value="鞋子">鞋子</option>
+                    <option value="包包">包包</option>
+                    <option value="其他">其他</option>
+                  </select>
+                </div>
+                
+                <!-- 2. 配件名稱 -->
+                <div class="mb-3">
+                  <label class="form-label">配件名稱 *</label>
+                  <input
+                    v-model="newOption.accessoryName"
+                    type="text"
+                    class="form-control"
+                    required
+                    placeholder="例: 任選任何款式"
+                    @input="generateAccessoryLabel"
+                  />
+                </div>
+
+                <!-- 3. 配件金額 -->
+                <div class="mb-3">
+                  <label class="form-label">配件金額 (NT$)</label>
+                  <input
+                    v-model.number="newOption.accessoryPrice"
+                    type="number"
+                    class="form-control"
+                    min="0"
+                    placeholder="例: 1000"
+                    @input="generateAccessoryLabel"
+                  />
+                  <small class="text-muted">配件額外費用，可留空表示贈送</small>
+                </div>
+              </div>
+
               <!-- 方案選項的特殊欄位 -->
               <div v-if="modalType === 'package'">
                 <!-- 1. 分類 -->
@@ -331,6 +464,19 @@
                     @input="generatePackageLabel"
                   />
                 </div>
+
+                <!-- 4. 方案內容 -->
+                <div class="mb-3">
+                  <label class="form-label">方案內容 *</label>
+                  <textarea
+                    v-model="newOption.content"
+                    class="form-control"
+                    rows="3"
+                    required
+                    placeholder="例: 白紗可挑至$16800以內，晚禮服可挑至$12000以內，總金額可挑至$40800，超過則補差額"
+                  ></textarea>
+                  <small class="text-muted">此內容會顯示在合約中的方案說明</small>
+                </div>
               </div>
               
               <!-- 顏色選項的特殊欄位 -->
@@ -361,7 +507,7 @@
                 </button>
                 <button type="submit" class="btn btn-primary" :disabled="saving" style="font-size: 14px;">
                   <span v-if="saving" class="spinner-border spinner-border-sm me-2" role="status"></span>
-                  {{ saving ? '新增中...' : '新增' }}
+                  {{ saving ? (editingIndex !== null ? '更新中...' : '新增中...') : (editingIndex !== null ? '更新' : '新增') }}
                 </button>
               </div>
             </form>
@@ -384,12 +530,14 @@ export default {
         skirts: [],
         sleeves: [],
         necks: [],
+        accessories: [],
         packages: [],
       },
       showModal: false,
       modalType: "",
       saving: false,
       deleting: false,
+      editingIndex: null,
       newOption: {
         label: "",
         value: "",
@@ -397,6 +545,9 @@ export default {
         price: 0,
         category: "",
         packageName: "",
+        accessoryName: "",
+        accessoryPrice: 0,
+        content: "",
       },
     };
   },
@@ -433,10 +584,44 @@ export default {
       
       return sortedGrouped;
     },
+
+    groupedAccessories() {
+      const grouped = {};
+      this.options.accessories.forEach((accessory, index) => {
+        const category = accessory.category || '其他';
+        if (!grouped[category]) {
+          grouped[category] = [];
+        }
+        grouped[category].push({
+          ...accessory,
+          originalIndex: index
+        });
+      });
+      
+      // 按分類名稱排序
+      const sortedGrouped = {};
+      const categoryOrder = ['頭紗', '首飾', '鞋子', '包包', '其他'];
+      
+      categoryOrder.forEach(category => {
+        if (grouped[category]) {
+          sortedGrouped[category] = grouped[category];
+        }
+      });
+      
+      // 添加其他未定義的分類
+      Object.keys(grouped).forEach(category => {
+        if (!categoryOrder.includes(category)) {
+          sortedGrouped[category] = grouped[category];
+        }
+      });
+      
+      return sortedGrouped;
+    },
   },
   methods: {
     showAddModal(type) {
       this.modalType = type;
+      this.editingIndex = null;
       this.showModal = true;
       this.newOption = {
         label: "",
@@ -445,11 +630,56 @@ export default {
         price: 0,
         category: "",
         packageName: "",
+        accessoryName: "",
+        accessoryPrice: 0,
+        content: "",
+      };
+    },
+
+    // 編輯配件
+    editAccessory(index) {
+      const accessory = this.options.accessories[index];
+      this.modalType = 'accessory';
+      this.editingIndex = index;
+      this.showModal = true;
+      
+      // 填入現有資料
+      this.newOption = {
+        label: accessory.label,
+        value: accessory.value,
+        color: "#FFFFFF",
+        price: 0,
+        category: accessory.category || "",
+        packageName: "",
+        accessoryName: accessory.accessoryName || "",
+        accessoryPrice: accessory.accessoryPrice || 0,
+        content: "",
+      };
+    },
+
+    // 編輯方案
+    editPackage(index) {
+      const pkg = this.options.packages[index];
+      this.modalType = 'package';
+      this.editingIndex = index;
+      this.showModal = true;
+      
+      // 填入現有資料
+      this.newOption = {
+        label: pkg.label,
+        value: pkg.value,
+        color: "#FFFFFF",
+        price: pkg.price || 0,
+        category: pkg.category || "",
+        packageName: pkg.packageName || "",
+        accessoryName: "",
+        content: pkg.content || "",
       };
     },
     closeModal() {
       this.showModal = false;
       this.modalType = "";
+      this.editingIndex = null;
       this.newOption = {
         label: "",
         value: "",
@@ -457,6 +687,9 @@ export default {
         price: 0,
         category: "",
         packageName: "",
+        accessoryName: "",
+        accessoryPrice: 0,
+        content: "",
       };
     },
     onLabelChange() {
@@ -465,6 +698,21 @@ export default {
         this.newOption.value = this.newOption.label;
       }
     },
+    generateAccessoryLabel() {
+      // 自動生成配件選項名稱：分類｜配件名稱｜金額（如果有）
+      if (this.modalType === 'accessory' && this.newOption.category && this.newOption.accessoryName) {
+        // 自動生成顯示標籤
+        if (this.newOption.accessoryPrice && this.newOption.accessoryPrice > 0) {
+          this.newOption.label = `${this.newOption.category}｜${this.newOption.accessoryName}｜NT$ ${this.newOption.accessoryPrice.toLocaleString()}`;
+        } else {
+          this.newOption.label = `${this.newOption.category}｜${this.newOption.accessoryName}｜贈送`;
+        }
+        
+        // 自動生成選項值（內部識別用）
+        this.newOption.value = `${this.newOption.category}_${this.newOption.accessoryName}`;
+      }
+    },
+
     generatePackageLabel() {
       // 自動生成方案選項名稱：分類｜方案名稱｜方案價格
       if (this.modalType === 'package' && this.newOption.category && this.newOption.packageName && this.newOption.price) {
@@ -481,6 +729,7 @@ export default {
         skirt: "裙型選項",
         sleeve: "袖型選項",
         neck: "領型選項",
+        accessory: "配件選項",
         package: "方案選項",
       };
       return titles[this.modalType] || "選項";
@@ -489,9 +738,19 @@ export default {
       try {
         this.saving = true;
         
+        // 配件選項需要先驗證必填欄位並生成標籤
+        if (this.modalType === 'accessory') {
+          if (!this.newOption.category || !this.newOption.accessoryName) {
+            this.showToast("請填寫所有必填欄位", "warning");
+            return;
+          }
+          // 確保生成最新的標籤和值
+          this.generateAccessoryLabel();
+        }
+        
         // 方案選項需要先驗證必填欄位並生成標籤
         if (this.modalType === 'package') {
-          if (!this.newOption.category || !this.newOption.packageName || !this.newOption.price) {
+          if (!this.newOption.category || !this.newOption.packageName || !this.newOption.price || !this.newOption.content) {
             this.showToast("請填寫所有必填欄位", "warning");
             return;
           }
@@ -509,34 +768,55 @@ export default {
           if (this.newOption.color === "#FFFFFF") {
             optionData.border = "#E5E7EB";
           }
+        } else if (this.modalType === "accessory") {
+          optionData.category = this.newOption.category;
+          optionData.accessoryName = this.newOption.accessoryName;
+          optionData.accessoryPrice = this.newOption.accessoryPrice || 0;
         } else if (this.modalType === "package") {
           optionData.price = this.newOption.price;
           optionData.category = this.newOption.category;
+          optionData.content = this.newOption.content;
+          optionData.packageName = this.newOption.packageName;
         }
 
         const targetArray = this.getTargetArray();
         if (targetArray) {
-          // 檢查是否已存在相同的選項
-          const exists = targetArray.some(
-            (item) => item.value === optionData.value || item.label === optionData.label
-          );
-          if (exists) {
-            this.showToast("該選項已存在", "warning");
-            return;
+          let success = false;
+          
+          if (this.editingIndex !== null) {
+            // 編輯模式：更新現有選項
+            success = optionsService.updateOption(this.getTypeKey(), this.editingIndex, optionData);
+            if (success) {
+              this.showToast("選項已更新", "success");
+            } else {
+              this.showToast("更新失敗", "error");
+            }
+          } else {
+            // 新增模式：檢查重複並新增
+            const exists = targetArray.some(
+              (item) => item.value === optionData.value || item.label === optionData.label
+            );
+            if (exists) {
+              this.showToast("該選項已存在", "warning");
+              return;
+            }
+
+            success = optionsService.addOption(this.getTypeKey(), optionData);
+            if (success) {
+              this.showToast("選項已新增", "success");
+            } else {
+              this.showToast("新增失敗", "error");
+            }
           }
 
-          const success = optionsService.addOption(this.getTypeKey(), optionData);
           if (success) {
-            this.showToast("選項已新增", "success");
             this.loadOptions();
             this.closeModal();
-          } else {
-            this.showToast("新增失敗", "error");
           }
         }
       } catch (error) {
-        console.error("新增選項失敗:", error);
-        this.showToast("新增選項失敗，請稍後再試", "error");
+        console.error("處理選項失敗:", error);
+        this.showToast("處理選項失敗，請稍後再試", "error");
       } finally {
         this.saving = false;
       }
@@ -562,6 +842,7 @@ export default {
         skirt: "skirts",
         sleeve: "sleeves",
         neck: "necks",
+        accessory: "accessories",
         package: "packages",
       };
       return typeMap[this.modalType];

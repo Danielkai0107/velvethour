@@ -5,7 +5,7 @@
         
         <div class="contract-header">
           <p><strong>單 號：</strong><span class="variable">{{ contractData.合約單號 || 'V250902' }}</span></p>
-          <p><strong>出租人：</strong><span class="variable">{{ contractData.出租人 || '裳云智略股份有限公司' }}</span> 以下簡稱甲方</p>
+          <p><strong>出租人：</strong><span class="variable">{{ getTemplateSettings().出租人 || contractData.出租人 || '裳云智略股份有限公司' }}</span> 以下簡稱甲方</p>
           <p><strong>承租人：</strong><span class="variable">{{ contractData.客戶姓名 || lesseeName }}</span> 以下簡稱乙方</p>
           <p class="disclaimer">
             本契約條款甲方出租人應於簽約前，將契約內容充分向承租人說明，雙方謹簽訂書面契約或以雙方同意之其他適當方式表示同意，以憑信守。本契約內容之新台幣金額皆為含稅金額。
@@ -20,19 +20,20 @@
             <p>☑婚紗</p>
             
             <h3>租借方案:</h3>
-            <p><span class="variable">{{ contractData.選擇方案 || rentalPlan }}</span> $<span class="variable">{{ contractData.合約總金額 || totalAmount }}</span> -<span class="variable">{{ formatShootingDate() }}</span>拍攝使用</p>
-            <p><span class="variable">{{ contractData.備注 || planDetails }}</span></p>
+            <p style="white-space: pre-line;"><span class="variable">{{ contractData.備注 || getDefaultPlanContent() }}</span></p>
             
             <h3>款式 :</h3>
             <p><span class="variable">{{ getDressStyles() }}</span></p>
             
             <h3>配件:</h3>
-            <p><span class="variable">{{ contractData.配件 || accessories }}</span></p>
+            <p><span class="variable">{{ getAccessoriesFullInfo() }}</span></p>
             
             <h3>圖片：</h3>
             <div class="dress-images">
               <div v-if="getDressImages().length > 0" class="image-grid">
-                <img v-for="(image, index) in getDressImages()" :key="index" :src="image" :alt="`禮服圖片${index + 1}`" class="dress-image" />
+                <div v-for="(image, index) in getDressImages()" :key="index" class="image-container">
+                  <img :src="image" :alt="`禮服圖片${index + 1}`" class="dress-image" />
+                </div>
               </div>
               <p v-else><span class="variable">{{ images }}</span></p>
             </div>
@@ -65,7 +66,7 @@
           </ul>
           
           <h3>● 押金</h3>
-          <p>總計共新台幣$<span class="variable">{{ contractData.押金 || securityDeposit }}</span>元整，以現金支付。</p>
+          <p>總計共新台幣$<span class="variable">{{ (contractData.押金 || securityDeposit).toLocaleString() }}</span>元整，以現金支付。</p>
           <ul>
             <li>乙方於取件時需檢查租借物件之狀況，確認並支付押金後即視同同意物件無誤。</li>
             <li>乙方需於歸還期限返還承租物件。如物件由乙方寄還，須以紙箱包裝完整避免物件遭刮傷或破損。</li>
@@ -90,7 +91,15 @@
                   <td>{{ payment.type }}</td>
                   <td class="variable">${{ payment.amount }}</td>
                   <td class="variable">{{ payment.staff }}</td>
-                  <td class="variable">{{ payment.signature }}</td>
+                  <td class="variable signature-cell">
+                    <img 
+                      v-if="contractData.客戶簽名 && payment.signature" 
+                      :src="contractData.客戶簽名" 
+                      alt="客戶簽名" 
+                      class="template-signature-image"
+                    />
+                    <span v-else>{{ payment.signature }}</span>
+                  </td>
                   <td class="variable">{{ payment.date }}</td>
                 </tr>
               </tbody>
@@ -102,7 +111,7 @@
           <h2>第三條 使用規則與限制</h2>
           <ul>
             <li>請愛惜使用並妥善保管。保管義務租借方應盡善良管理人之義務保管及維護租借物件，不得轉借給第三人使用，亦禁止轉租、出賣、設質、抵押、讓與、擔保、典當出租物件、汙損物品及衣物等行為。</li>
-            <li>租借期間租借物件之所有權仍歸屬 <span class="variable">{{ contractData.出租人 || companyName }}</span>，乙方僅在約定期間使用租借物件，並不取得其他任何權利。</li>
+            <li>租借期間租借物件之所有權仍歸屬 <span class="variable">{{ getTemplateSettings().出租人 || contractData.出租人 || companyName }}</span>，乙方僅在約定期間使用租借物件，並不取得其他任何權利。</li>
             <li>如有須寄送之來回運費，若非甲方之疏失，運費及其他衍生費用均需由乙方負擔。</li>
             <li>經客製化修改尺寸之物件，需由乙方到場試穿取件。如需寄送服務，運費由乙方負擔。</li>
           </ul>
@@ -148,42 +157,40 @@
         </div>
   
         <div class="signature-section">
-          <p class="signature-section-title"><strong>立契約書人</strong></p>
+          <p class="signature-section-title">立契約書人</p>
           <div class="signature-container">
             <div class="lessor-info">
-              <p class="signature-title"><strong>出租人：</strong><span class="variable">{{ contractData.出租人 || lessorCompany }}</span></p>
-              <p><strong>統一編號：</strong><span class="variable">{{ contractData.統一編號 || lessorTaxId }}</span></p>
-              <p><strong>地址：</strong><span class="variable">{{ contractData.出租人地址 || lessorAddress }}</span></p>
-              <p><strong>聯絡電話：</strong><span class="variable">{{ contractData.出租人電話 || lessorPhone }}</span></p>
+              <p class="signature-title">出租人：{{ getTemplateSettings().出租人 || contractData.出租人 || lessorCompany }}</p>
+              <p>統一編號：{{ getTemplateSettings().統一編號 || contractData.統一編號 || lessorTaxId }}</p>
+              <div class="address-field">
+                地址：{{ getTemplateSettings().出租人地址 || contractData.出租人地址 || lessorAddress }}
+              </div>
+              <p>聯絡電話：{{ getTemplateSettings().出租人電話 || contractData.出租人電話 || lessorPhone }}</p>
               <div class="signature-area">
-                <p><strong>簽章：</strong></p>
+                <p>簽章：</p>
                 <div class="signature-upload">
-                  <img v-if="lessorSignature" :src="lessorSignature" alt="出租人簽章" class="signature-image">
-                  <input 
-                    type="file" 
-                    @change="handleLessorSignatureUpload" 
-                    accept="image/*"
-                    class="signature-input"
-                  >
+                  <img v-if="getTemplateSettings().出租人簽名" :src="getTemplateSettings().出租人簽名" alt="出租人簽章" class="signature-image">
+                  <div v-else class="signature-placeholder">
+                    <span class="text-muted">出租人簽章</span>
+                  </div>
                 </div>
               </div>
             </div>
   
             <div class="lessee-info">
-              <p class="signature-title"><strong>承租人：</strong><span class="variable">{{ contractData.客戶姓名 || lesseeName }}</span></p>
-              <p><strong>身分證字號：</strong><span class="variable">{{ contractData.身分證號 || lesseeIdNumber }}</span></p>
-              <p><strong>地址：</strong><span class="variable">{{ contractData.地址 || lesseeAddress }}</span></p>
-              <p><strong>聯絡電話：</strong><span class="variable">{{ contractData.電話 || lesseePhone }}</span></p>
+              <p class="signature-title">承租人：{{ contractData.客戶姓名 || lesseeName }}</p>
+              <p>身分證字號：{{ contractData.身分證號 || lesseeIdNumber }}</p>
+              <div class="address-field">
+                地址：{{ contractData.地址 || lesseeAddress }}
+              </div>
+              <p>聯絡電話：{{ contractData.電話 || lesseePhone }}</p>
               <div class="signature-area">
-                <p><strong>簽章：</strong></p>
+                <p>簽章：</p>
                 <div class="signature-upload">
-                  <img v-if="lesseeSignature" :src="lesseeSignature" alt="承租人簽章" class="signature-image">
-                  <input 
-                    type="file" 
-                    @change="handleLesseeSignatureUpload" 
-                    accept="image/*"
-                    class="signature-input"
-                  >
+                  <img v-if="contractData.客戶簽名" :src="contractData.客戶簽名" alt="承租人簽章" class="signature-image">
+                  <div v-else class="signature-placeholder">
+                    <span class="text-muted">客戶簽名</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -219,6 +226,10 @@ export default {
     dressData: {
       type: Array,
       default: () => []
+    },
+    templateSettings: {
+      type: Object,
+      default: () => ({})
     },
     isEditable: {
       type: Boolean,
@@ -272,29 +283,6 @@ export default {
     }
   },
   methods: {
-    handleLessorSignatureUpload(event) {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          this.lessorSignature = e.target.result;
-          this.$emit('update-contract', { 出租人簽名: e.target.result });
-        };
-        reader.readAsDataURL(file);
-      }
-    },
-    
-    handleLesseeSignatureUpload(event) {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          this.lesseeSignature = e.target.result;
-          this.$emit('update-contract', { 承租人簽名: e.target.result });
-        };
-        reader.readAsDataURL(file);
-      }
-    },
     
     // 格式化拍攝日期
     formatShootingDate() {
@@ -381,9 +369,121 @@ export default {
       }
       return [];
     },
+
+    // 獲取配件資訊
+    getAccessoriesInfo() {
+      // 優先使用合約資料中選擇的配件
+      if (this.contractData.選擇配件) {
+        // 從配件選項中找到對應的配件名稱
+        try {
+          const optionsService = this.getOptionsService();
+          const accessories = optionsService.getAccessoryOptions();
+          const selectedAccessory = accessories.find(acc => acc.value === this.contractData.選擇配件);
+          if (selectedAccessory) {
+            return selectedAccessory.accessoryName;
+          }
+        } catch (error) {
+          console.error('載入配件選項失敗:', error);
+        }
+      }
+      
+      // 其次使用合約資料中的配件資訊
+      if (this.contractData.配件) {
+        return this.contractData.配件;
+      }
+      
+      // 使用預設值
+      return this.accessories;
+    },
+
+    // 獲取配件完整資訊
+    getAccessoriesFullInfo() {
+      // 優先使用合約資料中選擇的配件
+      if (this.contractData.選擇配件) {
+        try {
+          const optionsService = this.getOptionsService();
+          const accessories = optionsService.getAccessoryOptions();
+          const selectedAccessory = accessories.find(acc => acc.value === this.contractData.選擇配件);
+          
+          if (selectedAccessory) {
+            // 直接使用已經格式化好的 label，因為它已經包含了完整的資訊
+            return selectedAccessory.label || selectedAccessory.accessoryName || '';
+          }
+        } catch (error) {
+          console.error('載入配件選項失敗:', error);
+        }
+      }
+      
+      // 其次使用合約資料中的配件資訊
+      if (this.contractData.配件) {
+        return this.contractData.配件;
+      }
+      
+      // 使用預設值
+      return this.accessories;
+    },
+
+    // 獲取選項服務
+    getOptionsService() {
+      // 動態載入選項服務
+      return {
+        getAccessoryOptions: () => {
+          try {
+            const saved = localStorage.getItem('velvethour_options');
+            if (saved) {
+              const options = JSON.parse(saved);
+              return options.accessories || [];
+            }
+          } catch (error) {
+            console.error('載入配件選項失敗:', error);
+          }
+          return [];
+        }
+      };
+    },
+
+    // 獲取配件價格
+    getAccessoryPrice() {
+      if (this.contractData.選擇配件) {
+        try {
+          const optionsService = this.getOptionsService();
+          const accessories = optionsService.getAccessoryOptions();
+          const selectedAccessory = accessories.find(acc => acc.value === this.contractData.選擇配件);
+          return selectedAccessory?.accessoryPrice || 0;
+        } catch (error) {
+          console.error('載入配件價格失敗:', error);
+        }
+      }
+      return 0;
+    },
+
+    // 獲取預設方案內容
+    getDefaultPlanContent() {
+      // 如果沒有備註，生成預設的方案內容
+      const planName = this.contractData.選擇方案 || this.rentalPlan;
+      const totalAmount = this.contractData.合約總金額 || this.totalAmount;
+      const shootingDate = this.formatShootingDate();
+      const defaultDetails = this.planDetails;
+
+      return `${planName} $${totalAmount.toLocaleString()}
+${shootingDate}拍攝使用
+${defaultDetails}`;
+    },
     
     // 獲取付款記錄
     getPaymentRecords() {
+      // 如果有輸入的付款記錄，優先使用
+      if (this.contractData.付款記錄 && this.contractData.付款記錄.length > 0) {
+        return this.contractData.付款記錄.map(payment => ({
+          type: payment.付款別,
+          amount: payment.金額 ? payment.金額.toLocaleString() : '',
+          staff: payment.接待人員,
+          signature: this.contractData.客戶姓名 || '', // 使用客戶姓名作為標記，實際顯示簽名圖片
+          date: this.formatPaymentDate(payment.付款日期)
+        }));
+      }
+      
+      // 如果沒有輸入付款記錄，使用預設值
       const totalAmount = this.contractData.合約總金額 || this.totalAmount;
       const deposit = this.calculateDeposit();
       const staffName = this.contractData.承辦人 || 'Abby';
@@ -402,6 +502,18 @@ export default {
         { type: '宴客定金', amount: '', staff: '', signature: '', date: '' },
         { type: '宴客尾款', amount: '', staff: '', signature: '', date: '' }
       ];
+    },
+
+    // 格式化付款日期
+    formatPaymentDate(dateStr) {
+      if (!dateStr) return '';
+      
+      try {
+        const date = new Date(dateStr);
+        return `${date.getFullYear()}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date.getDate().toString().padStart(2, '0')}`;
+      } catch (error) {
+        return dateStr;
+      }
     },
     
     // 格式化合約日期
@@ -459,6 +571,23 @@ export default {
       } else {
         return new Date(dateValue);
       }
+    },
+
+    // 獲取模板設定
+    getTemplateSettings() {
+      // 優先使用傳入的 templateSettings
+      if (this.templateSettings && Object.keys(this.templateSettings).length > 0) {
+        return this.templateSettings;
+      }
+      
+      // 否則從 localStorage 讀取
+      try {
+        const saved = localStorage.getItem('contractTemplateSettings');
+        return saved ? JSON.parse(saved) : {};
+      } catch (error) {
+        console.error('載入模板設定失敗:', error);
+        return {};
+      }
     }
   }
   }
@@ -470,18 +599,20 @@ export default {
     margin: 0 auto;
     padding: 20px;
     font-family: 'Microsoft JhengHei', sans-serif;
-    line-height: 1.6;
+    line-height: 1.4;
+    font-weight: bold;
+    font-size: 14px;
+    color: #000;
   }
   
   .contract-content {
     background: white;
     padding: 40px;
-    border: 1px solid #ddd;
   }
   
   .contract-title {
     text-align: center;
-    font-size: 24px;
+    font-size: 18px;
     font-weight: bold;
     margin-bottom: 30px;
   }
@@ -492,18 +623,19 @@ export default {
   
   .contract-header p {
     margin: 10px 0;
+    font-size: 14px;
   }
   
   .disclaimer {
     font-size: 14px;
-    color: #666;
+    color: #000;
     margin: 20px 0;
   }
   
   hr {
     border: none;
     border-top: 1px solid #000;
-    margin: 20px 0;
+    margin: 25px 0;
   }
   
   .article {
@@ -511,13 +643,13 @@ export default {
   }
   
   .article h2 {
-    font-size: 18px;
+    font-size: 14px;
     font-weight: bold;
     margin-bottom: 15px;
   }
   
   .article h3 {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: bold;
     margin: 15px 0 10px 0;
   }
@@ -528,13 +660,14 @@ export default {
   
   .note {
     font-size: 14px;
-    color: #666;
+    color: #000;
     margin: 10px 0;
   }
   
   .variable {
     color: #d32f2f;
     font-weight: bold;
+    text-decoration: underline;
   }
   
   .payment-table {
@@ -552,11 +685,23 @@ export default {
     border: 1px solid #ddd;
     padding: 8px;
     text-align: left;
+    font-size: 14px;
   }
   
   .payment-table th {
     background-color: #f5f5f5;
     font-weight: bold;
+  }
+
+  .signature-cell {
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  .template-signature-image {
+    max-width: 100px;
+    max-height: 40px;
+    object-fit: contain;
   }
   
   .signature-section {
@@ -583,10 +728,10 @@ export default {
   }
   
   .signature-image {
-    max-width: 200px;
-    max-height: 100px;
-    border: 1px solid #ddd;
+    width: 250px;
+    height: 120px;
     margin-bottom: 10px;
+    object-fit: contain;
   }
   
   .signature-input {
@@ -595,11 +740,48 @@ export default {
     border: 1px solid #ddd;
     border-radius: 4px;
   }
+
+  .signature-placeholder {
+    width: 250px;
+    height: 120px;
+    border: 2px dashed #ccc;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .address-field {
+    height: 2.8em; /* 固定為兩行字高 (1.4 * 2) */
+    line-height: 1.4;
+    margin: 12px 0;
+    display: flex;
+    align-items: flex-start;
+    font-size: 14px;
+    overflow: hidden; /* 防止內容溢出 */
+  }
+
+  .address-field strong {
+    white-space: nowrap;
+    margin-right: 5px;
+  }
+
+  .address-field .variable {
+    flex: 1;
+    word-wrap: break-word;
+    line-height: 1.4;
+  }
+
+  .lessor-info p,
+  .lessee-info p {
+    margin: 12px 0;
+    font-size: 14px;
+  }
   
   .contract-date {
     text-align: center;
     margin-top: 30px;
-    font-size: 18px;
+    font-size: 14px;
     font-weight: bold;
   }
   
@@ -609,19 +791,19 @@ export default {
     max-width: 400px;
     margin: 0 auto;
     span {
-        font-size: 12px;
+        font-size: 14px;
     }
   }
   
   .signature-title {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: bold;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
   }
   
   .signature-section-title {
     text-align: left;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: bold;
     margin-bottom: 20px;
   }
@@ -632,6 +814,7 @@ export default {
   
   li {
     margin-bottom: 10px;
+    font-size: 14px;
   }
   
   .dress-images {
@@ -640,17 +823,23 @@ export default {
   
   .image-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
     max-width: 100%;
+  }
+  
+  .image-container {
+    width: 100%;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: 8px;
+    border: 1px solid #ddd;
   }
   
   .dress-image {
     width: 100%;
-    height: 120px;
-    object-fit: cover;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    height: 100%;
+    object-fit: contain;
   }
   
   @media print {

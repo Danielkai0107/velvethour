@@ -49,6 +49,29 @@ class OptionsService {
         { value: "方形領", label: "方形領" },
         { value: "羅馬領", label: "羅馬領" },
       ],
+      accessories: [
+        { 
+          value: "頭紗_任選任何款式", 
+          label: "頭紗｜任選任何款式｜贈送", 
+          category: "頭紗",
+          accessoryName: "任選任何款式",
+          accessoryPrice: 0
+        },
+        { 
+          value: "首飾_項鍊耳環", 
+          label: "首飾｜項鍊耳環｜NT$ 500", 
+          category: "首飾",
+          accessoryName: "項鍊耳環",
+          accessoryPrice: 500
+        },
+        { 
+          value: "鞋子_白色高跟鞋", 
+          label: "鞋子｜白色高跟鞋｜NT$ 800", 
+          category: "鞋子",
+          accessoryName: "白色高跟鞋",
+          accessoryPrice: 800
+        },
+      ],
       packages: [
         { 
           value: "攝影_一日一晚", 
@@ -114,6 +137,7 @@ class OptionsService {
           skirts: options.skirts || this.defaultOptions.skirts,
           sleeves: options.sleeves || this.defaultOptions.sleeves,
           necks: options.necks || this.defaultOptions.necks,
+          accessories: options.accessories || this.defaultOptions.accessories,
           packages: options.packages || this.defaultOptions.packages,
         };
       }
@@ -149,6 +173,11 @@ class OptionsService {
   // 獲取領型選項
   getNeckOptions() {
     return this.getOptions('necks');
+  }
+
+  // 獲取配件選項
+  getAccessoryOptions() {
+    return this.getOptions('accessories');
   }
 
   // 獲取方案選項
@@ -211,6 +240,16 @@ class OptionsService {
 
     options[type].push(option);
     return this.saveOptions(options);
+  }
+
+  // 更新選項
+  updateOption(type, index, newOption) {
+    const options = this.getAllOptions();
+    if (options[type] && options[type][index]) {
+      options[type][index] = newOption;
+      return this.saveOptions(options);
+    }
+    return false;
   }
 
   // 移除選項

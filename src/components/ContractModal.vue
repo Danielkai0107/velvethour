@@ -28,13 +28,47 @@
             <div class="col-lg-8 col-md-7">
               <div class="p-4 custom-scrollbar" style="height: calc(100vh - 120px); overflow-y: auto;">
           <form @submit.prevent="handleSubmit">
+            <!-- 合約單號 -->
+            <div class="border-bottom" style="border-color: #E0E0E0 !important; margin-bottom: 40px !important; padding-bottom: 40px !important;">
+              <div class="col-md-8">
+                <label class="form-label" style="color: #6A6A6A; font-size: 14px;">合約單號 *</label>
+                <div class="input-group">
+                  <input
+                    v-model="formData.合約單號"
+                    type="text"
+                    :class="['form-control', { 'is-invalid': validationErrors.合約單號 }]"
+                    required
+                    placeholder="自動產生合約單號"
+                    @blur="checkContractNumberUnique"
+                    @input="onContractNumberInput"
+                    @focus="clearValidationError('合約單號')"
+                  />
+                  <button
+                    type="button"
+                    @click="generateNewContractNumber"
+                    class="btn btn-outline-secondary"
+                    title="重新產生合約單號"
+                  >
+                    <i class="bi bi-arrow-clockwise"></i>
+                  </button>
+                </div>
+                <div v-if="contractNumberStatus" :class="['small', 'mt-1', contractNumberStatus.type === 'error' ? 'text-danger' : 'text-success']">
+                  <i :class="contractNumberStatus.type === 'error' ? 'bi bi-exclamation-triangle' : 'bi bi-check-circle'" class="me-1"></i>
+                  {{ contractNumberStatus.message }}
+                  <span v-if="contractNumberStatus.type === 'success'" class="text-muted ms-2">
+                    格式：V + 年份後兩位 + 月日 + 序號
+                  </span>
+                </div>
+              </div>
+            </div>
+
             <!-- 禮服清單 -->
             <div class="border-bottom" style="border-color: #E0E0E0 !important; margin-bottom: 40px !important; padding-bottom: 40px !important;">
               <div
                 class="d-flex justify-content-between align-items-center mb-3"
               >
       
-                <label class="form-label" style="color: #6A6A6A; font-size: 14px;">禮服清單
+                <label class="form-label" :class="{ 'text-danger': validationErrors.禮服清單 }" style="color: #6A6A6A; font-size: 14px;">禮服清單
                 </label>
                 <div class="d-flex gap-2">
                   <button
@@ -66,8 +100,9 @@
               <!-- 禮服圖卡展示 -->
               <div
                 v-else
-                class="row g-3 mb-3"
+                :class="['row g-3 mb-3', { 'dress-list-error': validationErrors.禮服清單 }]"
                 style="max-height: 500px; overflow-y: auto; padding: 8px"
+                @click="clearValidationError('禮服清單')"
               >
                 <div
                   v-for="(item, index) in formData.禮服清單"
@@ -203,110 +238,8 @@
 
             </div>
 
-            <!-- 基本資訊 -->
-            <div class="border-bottom" style="border-color: #E0E0E0 !important; margin-bottom: 40px !important; padding-bottom: 40px !important;">
-          
-              <div class="row g-4">
-                <!-- 客戶姓名 -->
-                <div class="col-md-6">
-                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">客戶姓名 *
-                  </label>
-                  <input
-                    v-model="formData.客戶姓名"
-                    type="text"
-                    class="form-control"
-                    required
-                    placeholder="例: 張小姐"
-                  />
-                </div>
-
-                <!-- 電話 -->
-                <div class="col-md-6">
-                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">電話 *
-                  </label>
-                  <input
-                    v-model="formData.電話"
-                    type="tel"
-                    class="form-control"
-                    required
-                    placeholder="例: 0912-345-678"
-                  />
-                </div>
-
-                <!-- Email -->
-                <div class="col-md-6">
-                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">Email
-                  </label>
-                  <input
-                    v-model="formData.email"
-                    type="email"
-                    class="form-control"
-                    placeholder="例: customer@example.com"
-                  />
-                </div>
-
-                <!-- 三圍 -->
-                <div class="col-md-6">
-                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">三圍
-                  </label>
-                  <input
-                    v-model="formData.三圍"
-                    type="text"
-                    class="form-control"
-                    placeholder="例: 32B-24-35"
-                  />
-                </div>
-
-                <!-- 身分證號 -->
-                <div class="col-md-6">
-                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">身分證號
-                  </label>
-                  <input
-                    v-model="formData.身分證號"
-                    type="text"
-                    class="form-control"
-                    placeholder="請輸入身分證號"
-                  />
-                </div>
-
-                <!-- 地址 -->
-                <div class="col-md-12">
-                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">地址
-                  </label>
-                  <input
-                    v-model="formData.地址"
-                    type="text"
-                    class="form-control"
-                    placeholder="請輸入地址"
-                  />
-                </div>
-
-                <!-- 承辦人 -->
-                <div class="col-md-6">
-                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">承辦人 *
-                  </label>
-                  <select
-                    v-model="formData.承辦人"
-                    class="form-select"
-                    required
-                  >
-                    <option value="">請選擇承辦人</option>
-                    <option
-                      v-for="staff in filteredStaff"
-                      :key="staff.id"
-                      :value="staff.姓名"
-                    >
-                      {{ staff.姓名 }}{{ staff.職位 ? ` (${staff.職位})` : '' }}
-                    </option>
-                  </select>
-                </div>
-
-              </div>
-            </div>
-
             <!-- 租用時間 -->
             <div class="border-bottom" style="border-color: #E0E0E0 !important; margin-bottom: 40px !important; padding-bottom: 40px !important;">
-     
               <div class="row g-4">
                 <!-- 租用開始時間 -->
                 <div class="col-md-4">
@@ -315,9 +248,10 @@
                   <input
                     v-model="formData.租用開始時間"
                     type="datetime-local"
-                    class="form-control"
+                    :class="['form-control', { 'is-invalid': validationErrors.租用開始時間 }]"
                     required
                     @change="onStartTimeChange"
+                    @focus="clearValidationError('租用開始時間')"
                   />
                 </div>
 
@@ -328,9 +262,10 @@
                   <input
                     v-model="formData.租用結束時間"
                     type="datetime-local"
-                    class="form-control"
+                    :class="['form-control', { 'is-invalid': validationErrors.租用結束時間 }]"
                     required
                     @change="onEndTimeChange"
+                    @focus="clearValidationError('租用結束時間')"
                   />
                 </div>
 
@@ -341,13 +276,13 @@
                   <input
                     v-model="formData.下次可用時間"
                     type="datetime-local"
-                    class="form-control"
+                    :class="['form-control', { 'is-invalid': validationErrors.下次可用時間 }]"
                     required
                     @change="onTimeOrDressChange"
+                    @focus="clearValidationError('下次可用時間')"
                   />
                 </div>
               </div>
-
 
               <!-- 檔期衝突狀態 -->
               <div v-if="checkingConflicts" class="alert alert-info mb-3 mt-3">
@@ -444,6 +379,269 @@
               </div>
             </div>
 
+            <!-- 基本資訊 -->
+            <div class="border-bottom" style="border-color: #E0E0E0 !important; margin-bottom: 40px !important; padding-bottom: 40px !important;">
+              <div class="row g-4">
+                <!-- 客戶姓名 -->
+                <div class="col-md-6">
+                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">客戶姓名 *
+                  </label>
+                  <input
+                    v-model="formData.客戶姓名"
+                    type="text"
+                    :class="['form-control', { 'is-invalid': validationErrors.客戶姓名 }]"
+                    required
+                    placeholder="例: 張小姐"
+                    @focus="clearValidationError('客戶姓名')"
+                  />
+                </div>
+
+                <!-- 電話 -->
+                <div class="col-md-6">
+                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">電話 *
+                  </label>
+                  <input
+                    v-model="formData.電話"
+                    type="tel"
+                    :class="['form-control', { 'is-invalid': validationErrors.電話 }]"
+                    required
+                    placeholder="例: 0912-345-678"
+                    @focus="clearValidationError('電話')"
+                  />
+                </div>
+
+                <!-- Email -->
+                <div class="col-md-6">
+                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">Email
+                  </label>
+                  <input
+                    v-model="formData.email"
+                    type="email"
+                    class="form-control"
+                    placeholder="例: customer@example.com"
+                  />
+                </div>
+
+                <!-- 三圍 -->
+                <div class="col-md-6">
+                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">三圍
+                  </label>
+                  <input
+                    v-model="formData.三圍"
+                    type="text"
+                    class="form-control"
+                    placeholder="例: 32B-24-35"
+                  />
+                </div>
+
+                <!-- 身分證號 -->
+                <div class="col-md-6">
+                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">身分證號
+                  </label>
+                  <input
+                    v-model="formData.身分證號"
+                    type="text"
+                    class="form-control"
+                    placeholder="請輸入身分證號"
+                  />
+                </div>
+
+                <!-- 地址 -->
+                <div class="col-md-12">
+                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">地址
+                  </label>
+                  <input
+                    v-model="formData.地址"
+                    type="text"
+                    class="form-control"
+                    placeholder="請輸入地址"
+                  />
+                </div>
+
+                <!-- 客戶簽名圖片上傳 -->
+                <div class="col-md-12">
+                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">客戶簽名圖片
+                  </label>
+                  <div class="signature-upload-area">
+                    <div v-if="formData.客戶簽名" class="signature-preview mb-2">
+                      <img :src="formData.客戶簽名" alt="客戶簽名" class="signature-image" />
+                      <button 
+                        type="button" 
+                        @click="removeSignature" 
+                        class="btn btn-sm btn-outline-danger ms-2"
+                      >
+                        移除簽名
+                      </button>
+                    </div>
+                    <input
+                      type="file"
+                      @change="handleSignatureUpload"
+                      accept="image/*"
+                      class="form-control"
+                      :class="{ 'd-none': formData.客戶簽名 }"
+                    />
+                    <small class="text-muted">支援格式：JPG、PNG、GIF，建議尺寸：300x100px</small>
+                  </div>
+                </div>
+
+                <!-- 接待人員與押金 -->
+                <!-- 分隔線 -->
+                <div class="col-12">
+                  <div style="border-bottom: 1px solid #E0E0E0; margin: 20px 0;"></div>
+                </div>
+
+                <!-- 接待人員 -->
+                <div class="col-md-6">
+                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">接待人員 *
+                  </label>
+                  <select
+                    v-model="formData.承辦人"
+                    :class="['form-select', { 'is-invalid': validationErrors.承辦人 }]"
+                    required
+                    @focus="clearValidationError('承辦人')"
+                  >
+                    <option value="">請選擇承辦人</option>
+                    <option
+                      v-for="staff in filteredStaff"
+                      :key="staff.id"
+                      :value="staff.姓名"
+                    >
+                      {{ staff.姓名 }}{{ staff.職位 ? ` (${staff.職位})` : '' }}
+                    </option>
+                  </select>
+                </div>
+
+                <!-- 押金金額 -->
+                <div class="col-md-6">
+                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">押金金額
+                  </label>
+                  <div class="input-group">
+                    <span class="input-group-text">NT$</span>
+                    <input
+                      v-model.number="formData.押金"
+                      type="number"
+                      class="form-control"
+                      placeholder="0"
+                      min="0"
+                    />
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+
+            <!-- 付款記錄表格 -->
+            <div class="border-bottom" style="border-color: #E0E0E0 !important; margin-bottom: 40px !important; padding-bottom: 40px !important;">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <label class="form-label" style="color: #6A6A6A; font-size: 14px;">付款記錄表格</label>
+                <button
+                  type="button"
+                  @click="addPaymentRow"
+                  class="btn btn-outline-primary btn-sm"
+                >
+                  <i class="bi bi-plus-lg me-1"></i>新增付款記錄
+                </button>
+              </div>
+              
+              <div class="payment-table">
+                <div class="table-responsive">
+                  <table class="table table-bordered">
+                    <thead class="table-light">
+                      <tr>
+                        <th style="width: 20%;">付款別</th>
+                        <th style="width: 20%;">金額</th>
+                        <th style="width: 20%;">接待人員</th>
+                        <th style="width: 20%;">客戶簽名</th>
+                        <th style="width: 15%;">付款日期</th>
+                        <th style="width: 5%;">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="(payment, index) in formData.付款記錄" :key="index">
+                        <td>
+                          <select
+                            v-model="payment.付款別"
+                            class="form-select form-select-sm"
+                          >
+                            <option value="">請選擇</option>
+                            <option value="拍攝定金">拍攝定金</option>
+                            <option value="拍攝尾款">拍攝尾款</option>
+                            <option value="宴客定金">宴客定金</option>
+                            <option value="宴客尾款">宴客尾款</option>
+                            <option value="其他">其他</option>
+                          </select>
+                        </td>
+                        <td>
+                          <div class="payment-amount-column">
+                            <select
+                              v-model="payment.金額百分比"
+                              @change="calculatePaymentAmount(index)"
+                              class="form-select form-select-sm mb-2"
+                            >
+                              <option value="">選擇%</option>
+                              <option v-for="percent in [10,20,30,40,50,60,70,80,90,100]" :key="percent" :value="percent">
+                                {{ percent }}%
+                              </option>
+                            </select>
+                            <div class="input-group">
+                              <span class="input-group-text">$</span>
+                              <input
+                                v-model.number="payment.金額"
+                                type="number"
+                                class="form-control form-control-sm"
+                                placeholder="0"
+                                min="0"
+                                readonly
+                              />
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <div class="staff-display text-center">
+                            <span class="badge bg-info">{{ payment.接待人員 || formData.承辦人 || '-' }}</span>
+                            <div class="text-muted small mt-1">承辦人</div>
+                          </div>
+                        </td>
+                        <td>
+                          <div class="signature-display">
+                            <div v-if="formData.客戶簽名" class="payment-signature-preview">
+                              <img :src="formData.客戶簽名" alt="客戶簽名" class="payment-signature-image" />
+                            </div>
+                            <div v-else class="text-muted small">
+                              <i class="bi bi-pen me-1"></i>請先上傳客戶簽名
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <input
+                            v-model="payment.付款日期"
+                            type="date"
+                            class="form-control form-control-sm"
+                          />
+                        </td>
+                        <td>
+                          <button
+                            type="button"
+                            @click="removePaymentRow(index)"
+                            class="btn btn-sm btn-outline-danger"
+                            :title="'移除第' + (index + 1) + '個付款記錄'"
+                          >
+                            <i class="bi bi-trash"></i>
+                          </button>
+                        </td>
+                      </tr>
+                      <tr v-if="formData.付款記錄.length === 0">
+                        <td colspan="6" class="text-center text-muted py-3">
+                          <i class="bi bi-credit-card me-2"></i>尚未新增付款記錄
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
             <!-- 備註 -->
             <div class="mb-3" style="margin-bottom: 40px !important;">
               <label class="form-label" style="color: #6A6A6A; font-size: 14px;">備註
@@ -517,6 +715,35 @@
                     </div>
                   </div>
 
+                  <!-- 配件選擇 -->
+                  <div class="mb-4">
+                    <h6 class="fw-semibold mb-3">配件選擇</h6>
+                    <div class="bg-white rounded p-3 shadow-sm">
+                      <div class="mb-0">
+                        <select
+                          v-model="formData.選擇配件"
+                          class="form-select form-select-sm"
+                          @change="onAccessoryChange"
+                        >
+                          <option value="">請選擇配件</option>
+                          <optgroup 
+                            v-for="(accessories, category) in accessoriesByCategory" 
+                            :key="category" 
+                            :label="category"
+                          >
+                            <option 
+                              v-for="accessory in accessories" 
+                              :key="accessory.value" 
+                              :value="accessory.value"
+                            >
+                              {{ accessory.category }}｜{{ accessory.accessoryName }}{{ accessory.accessoryPrice && accessory.accessoryPrice > 0 ? '｜NT$ ' + accessory.accessoryPrice.toLocaleString() : '｜贈送' }}
+                            </option>
+                          </optgroup>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
                   <!-- 折扣設定 -->
                   <div class="mb-4">
                     <h6 class="fw-semibold mb-3">折扣設定</h6>
@@ -573,6 +800,18 @@
                         <div class="d-flex justify-content-between text-success">
                           <span>折扣 ({{ Math.round((1 - (formData.折扣比例 || 1)) * 100) }}%)</span>
                           <span>- NT$ {{ getDiscountAmount().toLocaleString() }}</span>
+                        </div>
+                        
+                        <!-- 折扣後小計 -->
+                        <div class="d-flex justify-content-between border-top pt-2 mt-2">
+                          <span>折扣後小計</span>
+                          <span>NT$ {{ (calculateTotal() * (formData.折扣比例 || 1)).toLocaleString() }}</span>
+                        </div>
+                        
+                        <!-- 配件金額 (折扣後加入) -->
+                        <div v-if="getAccessoryAmount() > 0" class="d-flex justify-content-between text-info">
+                          <span>配件金額</span>
+                          <span>+ NT$ {{ getAccessoryAmount().toLocaleString() }}</span>
                         </div>
                         
                         <!-- 合約總金額 -->
@@ -1028,15 +1267,21 @@ export default {
       checkingConflicts: false,
       conflictCheckTimeout: null,
       formData: {
+        合約單號: "",
         客戶姓名: "",
         電話: "",
         email: "",
         三圍: "",
+        身分證號: "",
+        地址: "",
+        客戶簽名: "",
         承辦人: "",
+        押金: 0,
         租用開始時間: "",
         租用結束時間: "",
         下次可用時間: "",
         選擇方案: "",
+        選擇配件: "",
         折扣比例: 1,
         禮服清單: [
           {
@@ -1046,12 +1291,14 @@ export default {
             小計: 0,
           },
         ],
+        付款記錄: [],
         合約總金額: 0,
         備注: "",
         創建時間: null,
       },
       planPrices: {},
       packagesByCategory: {},
+      accessoriesByCategory: {},
       optionsUnsubscribe: null,
       cartService, // 讓模板可以存取購物車服務
       showDressDetailModal: false, // 控制禮服詳情彈出視窗
@@ -1064,6 +1311,10 @@ export default {
       dressConflictCheckResult: null, // 禮服詳情popup中的衝突檢查結果
       hasCheckedConflicts: false, // 是否已執行過衝突檢查
       priceChanges: {}, // 追蹤價格變更 {禮服ID: {原價格, 新價格, 原加價, 新加價}}
+      contractNumberStatus: null, // 合約單號檢查狀態
+      checkingContractNumber: false, // 是否正在檢查合約單號
+      contractNumberCheckTimeout: null, // 合約單號檢查計時器
+      validationErrors: {}, // 驗證錯誤狀態
     };
   },
   computed: {
@@ -1079,9 +1330,14 @@ export default {
     await this.loadStaff();
     this.loadPackageOptions();
 
-    // 如果是新增模式且購物車有項目，自動載入
-    if (!this.contract && cartService.getItemCount() > 0) {
-      this.loadCartItems();
+    // 如果是新增模式，自動產生合約單號
+    if (!this.contract) {
+      await this.generateNewContractNumber();
+      
+      // 如果購物車有項目，自動載入
+      if (cartService.getItemCount() > 0) {
+        this.loadCartItems();
+      }
     }
 
     // 監聽選項變化
@@ -1093,6 +1349,9 @@ export default {
     if (this.conflictCheckTimeout) {
       clearTimeout(this.conflictCheckTimeout);
     }
+    if (this.contractNumberCheckTimeout) {
+      clearTimeout(this.contractNumberCheckTimeout);
+    }
     if (this.optionsUnsubscribe) {
       this.optionsUnsubscribe();
     }
@@ -1103,20 +1362,26 @@ export default {
       handler(newContract) {
         if (newContract) {
           this.formData = {
+            合約單號: newContract.合約單號 || "",
             客戶姓名: newContract.客戶姓名 || "",
             電話: newContract.電話 || "",
             email: newContract.email || "",
             三圍: newContract.三圍 || "",
             身分證號: newContract.身分證號 || "",
+            地址: newContract.地址 || "",
+            客戶簽名: newContract.客戶簽名 || "",
             承辦人: newContract.承辦人 || "",
+            押金: newContract.押金 || 0,
             租用開始時間: this.formatDateTimeForInput(newContract.租用開始時間),
             租用結束時間: this.formatDateTimeForInput(newContract.租用結束時間),
             下次可用時間: this.formatDateTimeForInput(newContract.下次可用時間),
             選擇方案: newContract.選擇方案 || "",
+            選擇配件: newContract.選擇配件 || "",
             折扣比例: newContract.折扣比例 || 1,
             禮服清單: newContract.禮服清單
               ? [...newContract.禮服清單]
               : [{ 禮服ID: "", 數量: 1, 單價: 0, 小計: 0 }],
+            付款記錄: newContract.付款記錄 ? [...newContract.付款記錄] : [],
             合約總金額: newContract.合約總金額 || 0,
             備注: newContract.備注 || "",
             創建時間: newContract.創建時間 || null,
@@ -1132,8 +1397,25 @@ export default {
       try {
         this.packagesByCategory = optionsService.getPackagesByCategory();
         this.planPrices = optionsService.getPackagePrices();
+        this.loadAccessoryOptions();
       } catch (error) {
         console.error('載入方案選項失敗:', error);
+      }
+    },
+
+    loadAccessoryOptions() {
+      try {
+        const accessories = optionsService.getAccessoryOptions();
+        const categorized = {};
+        accessories.forEach(accessory => {
+          if (!categorized[accessory.category]) {
+            categorized[accessory.category] = [];
+          }
+          categorized[accessory.category].push(accessory);
+        });
+        this.accessoriesByCategory = categorized;
+      } catch (error) {
+        console.error('載入配件選項失敗:', error);
       }
     },
     async loadDresses() {
@@ -1163,17 +1445,21 @@ export default {
 
     resetForm() {
       this.formData = {
+        合約單號: "",
         客戶姓名: "",
         電話: "",
         email: "",
         三圍: "",
         身分證號: "",
         地址: "",
+        客戶簽名: "",
         承辦人: "",
+        押金: 0,
         租用開始時間: "",
         租用結束時間: "",
         下次可用時間: "",
         選擇方案: "",
+        選擇配件: "",
         折扣比例: 1,
         禮服清單: [
           {
@@ -1183,6 +1469,7 @@ export default {
             小計: 0,
           },
         ],
+        付款記錄: [],
         合約總金額: 0,
         備注: "",
         創建時間: null,
@@ -1756,6 +2043,8 @@ export default {
     },
 
     calculateTotal() {
+      let total = 0;
+      
       // 如果選擇了方案
       if (this.formData.選擇方案) {
         const planPrice = this.planPrices[this.formData.選擇方案] || 0;
@@ -1769,22 +2058,101 @@ export default {
             return total + extraAmount;
           }, 0);
         
-        return planPrice + totalExtraAmount;
+        total = planPrice + totalExtraAmount;
       } else {
         // 沒有選擇方案，依照禮服單價加總
-      return this.formData.禮服清單.reduce((total, item) => {
-        return total + (item.小計 || 0);
-      }, 0);
+        total = this.formData.禮服清單.reduce((total, item) => {
+          return total + (item.小計 || 0);
+        }, 0);
       }
+      
+      // 配件金額不在這裡加入，會在折扣後加入
+      return total;
     },
 
     updateTotalAmount() {
       this.formData.合約總金額 = this.getFinalAmount();
+      // 當總金額改變時，重新計算所有付款記錄的金額
+      this.recalculateAllPaymentAmounts();
+      // 重新生成備註內容（如果有選擇方案）
+      if (this.formData.選擇方案) {
+        this.generatePlanNotes();
+      }
+    },
+
+    // 重新計算所有付款記錄的金額
+    recalculateAllPaymentAmounts() {
+      this.formData.付款記錄.forEach((payment, index) => {
+        if (payment.金額百分比) {
+          this.calculatePaymentAmount(index);
+        }
+      });
+      
+      // 強制更新視圖
+      this.$nextTick(() => {
+        this.$forceUpdate();
+      });
     },
 
     // 方案改變時的處理
     onPlanChange() {
       this.updateTotalAmount();
+      this.generatePlanNotes();
+    },
+
+    // 配件改變時的處理
+    onAccessoryChange() {
+      // 配件選擇會影響金額計算
+      this.updateTotalAmount();
+      console.log('配件選擇變更:', this.formData.選擇配件);
+    },
+
+    // 獲取配件金額
+    getAccessoryAmount() {
+      if (!this.formData.選擇配件) return 0;
+      
+      // 從所有配件選項中找到選中的配件
+      const allAccessories = Object.values(this.accessoriesByCategory).flat();
+      const selectedAccessory = allAccessories.find(acc => acc.value === this.formData.選擇配件);
+      
+      return selectedAccessory?.accessoryPrice || 0;
+    },
+
+    // 生成方案備註內容
+    generatePlanNotes() {
+      if (!this.formData.選擇方案) {
+        this.formData.備注 = '';
+        return;
+      }
+
+      // 從 packagesByCategory 中找到選中的方案
+      let selectedPackage = null;
+      Object.values(this.packagesByCategory).forEach(packages => {
+        const found = packages.find(pkg => pkg.value === this.formData.選擇方案);
+        if (found) {
+          selectedPackage = found;
+        }
+      });
+
+      if (selectedPackage && selectedPackage.content) {
+        // 格式化租用開始日期
+        let formattedDate = '';
+        if (this.formData.租用開始時間) {
+          const date = new Date(this.formData.租用開始時間);
+          formattedDate = `${date.getFullYear()}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date.getDate().toString().padStart(2, '0')}`;
+        }
+
+        // 計算方案金額：總額扣除配件金額
+        const accessoryAmount = this.getAccessoryAmount();
+        const planAmountInNote = this.formData.合約總金額 - accessoryAmount;
+        
+        // 組合備註內容
+        const noteContent = `${selectedPackage.packageName || selectedPackage.label} $${planAmountInNote.toLocaleString()}
+${formattedDate}${selectedPackage.category}使用
+${selectedPackage.content}`;
+
+        this.formData.備注 = noteContent;
+      }
     },
 
     // 取得折扣金額
@@ -1794,16 +2162,27 @@ export default {
       return Math.round(originalTotal * (1 - discountRate));
     },
 
-    // 取得最終金額（含折扣）
+    // 取得最終金額（含折扣和配件）
     getFinalAmount() {
       const originalTotal = this.calculateTotal();
       const discountRate = this.formData.折扣比例 || 1;
-      return Math.round(originalTotal * discountRate);
+      const discountedTotal = Math.round(originalTotal * discountRate);
+      
+      // 折扣後加上配件金額
+      const accessoryAmount = this.getAccessoryAmount();
+      
+      return discountedTotal + accessoryAmount;
     },
 
     // 更新總金額（含折扣）
     updateTotalWithDiscount() {
       this.formData.合約總金額 = this.getFinalAmount();
+      // 當總金額改變時，重新計算所有付款記錄的金額
+      this.recalculateAllPaymentAmounts();
+      // 重新生成備註內容（如果有選擇方案）
+      if (this.formData.選擇方案) {
+        this.generatePlanNotes();
+      }
     },
 
     // 計算純禮服金額（不含方案價格）
@@ -1939,6 +2318,11 @@ export default {
 
       // 觸發檔期檢查
       this.onTimeOrDressChange();
+      
+      // 重新生成備註內容（如果有選擇方案）
+      if (this.formData.選擇方案) {
+        this.generatePlanNotes();
+      }
     },
 
     // 當結束時間改變時自動調整下次可用時間
@@ -2019,16 +2403,36 @@ export default {
       try {
         this.loading = true;
 
+        // 清除之前的驗證錯誤
+        this.validationErrors = {};
+
         // 驗證必填欄位
-        if (
-          !this.formData.客戶姓名 ||
-          !this.formData.電話 ||
-          !this.formData.承辦人 ||
-          !this.formData.租用開始時間 ||
-          !this.formData.租用結束時間 ||
-          !this.formData.下次可用時間
-        ) {
-          this.showToast("請填寫所有必填欄位", "warning");
+        const requiredFields = {
+          合約單號: this.formData.合約單號,
+          客戶姓名: this.formData.客戶姓名,
+          電話: this.formData.電話,
+          承辦人: this.formData.承辦人,
+          租用開始時間: this.formData.租用開始時間,
+          租用結束時間: this.formData.租用結束時間,
+          下次可用時間: this.formData.下次可用時間
+        };
+
+        // 檢查必填欄位
+        let hasValidationError = false;
+        Object.keys(requiredFields).forEach(field => {
+          if (!requiredFields[field]) {
+            this.validationErrors[field] = true;
+            hasValidationError = true;
+          }
+        });
+
+        // 檢查合約單號是否重複
+        if (this.contractNumberStatus?.type === 'error') {
+          this.validationErrors.合約單號 = true;
+          hasValidationError = true;
+        }
+
+        if (hasValidationError) {
           return;
         }
 
@@ -2038,12 +2442,12 @@ export default {
         const nextAvailableTime = new Date(this.formData.下次可用時間);
         
         if (startTime >= endTime) {
-          this.showToast("租用結束時間必須晚於開始時間", "warning");
+          this.validationErrors.租用結束時間 = true;
           return;
         }
         
         if (endTime > nextAvailableTime) {
-          this.showToast("下次可用時間不能早於租用結束時間", "warning");
+          this.validationErrors.下次可用時間 = true;
           return;
         }
 
@@ -2052,7 +2456,7 @@ export default {
           (item) => item.禮服ID && item.數量 > 0
         );
         if (validDressItems.length === 0) {
-          this.showToast("請至少選擇一件禮服", "warning");
+          this.validationErrors.禮服清單 = true;
           return;
         }
 
@@ -2079,34 +2483,9 @@ export default {
         // 過濾有效的禮服項目
         submitData.禮服清單 = validDressItems;
 
-        // 如果是新增模式，生成合約單號和時間戳
+        // 如果是新增模式，設定時間戳
         if (!this.contract || !this.contract.id) {
           const now = new Date();
-
-          // 生成合約單號：V + 年份後兩位 + 月日 + 今天第幾單
-          const year = now.getFullYear().toString().slice(-2); // 年份後兩位
-          const month = (now.getMonth() + 1).toString().padStart(2, "0"); // 月份
-          const day = now.getDate().toString().padStart(2, "0"); // 日期
-          const dateStr = `${month}${day}`; // 月日格式：0908
-
-          // 查詢今天已有的合約數量來生成序號
-          const todayContractNumber = await this.getTodayContractCount(now);
-          const serialNumber = (todayContractNumber + 1)
-            .toString()
-            .padStart(3, "0");
-
-          const generatedContractNumber = `V${year}${dateStr}${serialNumber}`;
-          console.log("生成的合約單號:", {
-            year,
-            month,
-            day,
-            dateStr,
-            todayContractNumber,
-            serialNumber,
-            generatedContractNumber,
-          });
-
-          submitData.合約單號 = generatedContractNumber;
           submitData.合約建立日期時間 = now;
           submitData.創建時間 = now;
           submitData.更新時間 = now;
@@ -2272,6 +2651,195 @@ export default {
       return `${startStr} - ${endStr}`;
     },
 
+    // 處理客戶簽名圖片上傳
+    handleSignatureUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        // 檢查文件大小 (限制為 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          this.showToast("圖片檔案不能超過 5MB", "warning");
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.formData.客戶簽名 = e.target.result;
+          this.showToast("客戶簽名已上傳", "success");
+        };
+        reader.readAsDataURL(file);
+      }
+    },
+
+    // 移除客戶簽名
+    removeSignature() {
+      this.formData.客戶簽名 = "";
+      this.showToast("已移除客戶簽名", "info");
+    },
+
+    // 新增付款記錄列
+    addPaymentRow() {
+      // 獲取今天的日期（YYYY-MM-DD格式）
+      const today = new Date().toISOString().split('T')[0];
+      
+      this.formData.付款記錄.push({
+        付款別: "",
+        金額: 0,
+        金額百分比: "",
+        接待人員: this.formData.承辦人 || "",
+        付款日期: today
+      });
+    },
+
+    // 計算付款金額（根據百分比）
+    calculatePaymentAmount(index) {
+      const payment = this.formData.付款記錄[index];
+      if (payment.金額百分比 && this.formData.合約總金額) {
+        payment.金額 = Math.round((this.formData.合約總金額 * payment.金額百分比) / 100);
+      } else if (!payment.金額百分比) {
+        payment.金額 = 0;
+      }
+    },
+
+    // 移除付款記錄列
+    removePaymentRow(index) {
+      this.formData.付款記錄.splice(index, 1);
+      this.showToast("已移除付款記錄", "info");
+    },
+
+    // 產生新的合約單號
+    async generateNewContractNumber() {
+      try {
+        const now = new Date();
+        const year = now.getFullYear().toString().slice(-2); // 年份後兩位
+        const month = (now.getMonth() + 1).toString().padStart(2, "0"); // 月份
+        const day = now.getDate().toString().padStart(2, "0"); // 日期
+        const dateStr = `${month}${day}`; // 月日格式：0908
+
+        // 查詢今天已有的合約數量來生成序號
+        const todayContractNumber = await this.getTodayContractCount(now);
+        const serialNumber = (todayContractNumber + 1).toString().padStart(3, "0");
+
+        const generatedContractNumber = `V${year}${dateStr}${serialNumber}`;
+        
+        // 檢查是否重複
+        const isUnique = await this.checkContractNumberExists(generatedContractNumber);
+        if (!isUnique) {
+          // 如果重複，遞增序號直到找到唯一的
+          let counter = todayContractNumber + 2;
+          let uniqueNumber;
+          do {
+            const newSerial = counter.toString().padStart(3, "0");
+            uniqueNumber = `V${year}${dateStr}${newSerial}`;
+            counter++;
+          } while (!(await this.checkContractNumberExists(uniqueNumber)) && counter < 999);
+          
+          this.formData.合約單號 = uniqueNumber;
+        } else {
+          this.formData.合約單號 = generatedContractNumber;
+        }
+
+        console.log("生成的合約單號:", this.formData.合約單號);
+        
+        // 檢查唯一性
+        await this.checkContractNumberUnique();
+        
+      } catch (error) {
+        console.error("產生合約單號失敗:", error);
+        this.showToast("產生合約單號失敗", "error");
+      }
+    },
+
+    // 檢查合約單號是否存在（返回true表示唯一，false表示重複）
+    async checkContractNumberExists(contractNumber) {
+      try {
+        const { contractService } = await import("../services/firestore.js");
+        const allContracts = await contractService.getAll();
+        
+        // 檢查是否有相同的合約單號
+        const exists = allContracts.some(contract => contract.合約單號 === contractNumber);
+        return !exists; // 返回true表示唯一（不存在），false表示重複（已存在）
+      } catch (error) {
+        console.error("檢查合約單號失敗:", error);
+        return true; // 檢查失敗時假設唯一
+      }
+    },
+
+    // 檢查合約單號唯一性
+    async checkContractNumberUnique() {
+      if (!this.formData.合約單號) {
+        this.contractNumberStatus = null;
+        return;
+      }
+
+      try {
+        this.checkingContractNumber = true;
+        this.contractNumberStatus = null;
+
+        const isUnique = await this.checkContractNumberExists(this.formData.合約單號);
+        
+        if (isUnique) {
+          this.contractNumberStatus = {
+            type: 'success',
+            message: '合約單號可用'
+          };
+        } else {
+          this.contractNumberStatus = {
+            type: 'error',
+            message: '合約單號已存在，請修改或重新產生'
+          };
+        }
+      } catch (error) {
+        console.error("檢查合約單號唯一性失敗:", error);
+        this.contractNumberStatus = {
+          type: 'error',
+          message: '檢查失敗，請稍後再試'
+        };
+      } finally {
+        this.checkingContractNumber = false;
+      }
+    },
+
+    // 合約單號輸入時的處理
+    onContractNumberInput() {
+      // 清除之前的檢查狀態
+      this.contractNumberStatus = null;
+      this.clearValidationError('合約單號');
+      
+      // 延遲檢查，避免頻繁調用
+      clearTimeout(this.contractNumberCheckTimeout);
+      this.contractNumberCheckTimeout = setTimeout(() => {
+        this.checkContractNumberUnique();
+      }, 800);
+    },
+
+    // 清除特定欄位的驗證錯誤
+    clearValidationError(field) {
+      if (this.validationErrors[field]) {
+        delete this.validationErrors[field];
+      }
+    },
+
+    // 清除所有驗證錯誤
+    clearAllValidationErrors() {
+      this.validationErrors = {};
+    },
+
+    // 格式化付款日期
+    formatPaymentDate(dateStr) {
+      if (!dateStr) return "";
+      
+      try {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString("zh-TW", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit"
+        });
+      } catch (error) {
+        return dateStr;
+      }
+    },
+
     showToast(message, type = "info") {
       const toastContainer = document.createElement("div");
       toastContainer.className = `alert alert-${
@@ -2388,5 +2956,96 @@ textarea:-ms-input-placeholder {
 /* 下拉選單選項文字大小 */
 .form-select option {
   font-size: 14px !important;
+}
+
+/* 簽名圖片上傳相關樣式 */
+.signature-upload-area {
+  border: 2px dashed #dee2e6;
+  border-radius: 8px;
+  padding: 15px;
+  text-align: center;
+  transition: border-color 0.3s ease;
+}
+
+.signature-upload-area:hover {
+  border-color: #0d6efd;
+}
+
+.signature-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.signature-image {
+  width: 300px;
+  height: 100px;
+  object-fit: contain;
+}
+
+/* 付款記錄表格相關樣式 */
+.payment-table {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 15px;
+}
+
+.payment-table .input-group-text {
+  font-size: 14px;
+  background-color: #e9ecef;
+  border-color: #ced4da;
+}
+
+.signature-display {
+  text-align: center;
+  padding: 5px;
+}
+
+.payment-signature-preview {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.payment-signature-image {
+  max-width: 120px;
+  max-height: 60px;
+  object-fit: contain;
+}
+
+.payment-amount-column {
+  min-width: 120px;
+}
+
+.staff-display {
+  padding: 5px;
+}
+
+.table th {
+  font-size: 14px;
+  font-weight: 600;
+  color: #495057;
+  background-color: #f8f9fa !important;
+  border-color: #dee2e6;
+}
+
+.table td {
+  font-size: 14px;
+  vertical-align: middle;
+  border-color: #dee2e6;
+}
+
+.table-responsive {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* 驗證錯誤樣式 */
+.dress-list-error {
+  border: 2px solid #dc3545 !important;
+  border-radius: 8px;
+  background-color: rgba(220, 53, 69, 0.05);
 }
 </style>

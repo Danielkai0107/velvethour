@@ -7,10 +7,10 @@
         <button @click="resetTemplate" class="btn btn-outline-secondary">
           <i class="bi bi-arrow-clockwise me-2"></i>重置模板
         </button>
-        <button @click="saveTemplate" class="btn btn-primary" :disabled="saving">
+        <button @click="saveTemplate" class="btn btn-outline-primary" :disabled="saving">
           <span v-if="saving" class="spinner-border spinner-border-sm me-2" role="status"></span>
           <i v-else class="bi bi-floppy me-2"></i>
-          {{ saving ? '儲存中...' : '儲存模板' }}
+          {{ saving ? '手動儲存中...' : '手動儲存' }}
         </button>
       </div>
     </div>
@@ -30,6 +30,7 @@
               <ContractTemplate
                 :contractData="sampleContractData"
                 :dressData="sampleDressData"
+                :templateSettings="templateSettings"
                 :isEditable="true"
                 @update-contract="handleTemplateUpdate"
               />
@@ -54,6 +55,7 @@
                 <label class="form-label">公司名稱</label>
                 <input
                   v-model="templateSettings.出租人"
+                  @input="autoSaveTemplate"
                   type="text"
                   class="form-control"
                   placeholder="請輸入公司名稱"
@@ -63,6 +65,7 @@
                 <label class="form-label">統一編號</label>
                 <input
                   v-model="templateSettings.統一編號"
+                  @input="autoSaveTemplate"
                   type="text"
                   class="form-control"
                   placeholder="請輸入統一編號"
@@ -72,6 +75,7 @@
                 <label class="form-label">公司地址</label>
                 <textarea
                   v-model="templateSettings.出租人地址"
+                  @input="autoSaveTemplate"
                   class="form-control"
                   rows="2"
                   placeholder="請輸入公司地址"
@@ -81,6 +85,7 @@
                 <label class="form-label">聯絡電話</label>
                 <input
                   v-model="templateSettings.出租人電話"
+                  @input="autoSaveTemplate"
                   type="text"
                   class="form-control"
                   placeholder="請輸入聯絡電話"
@@ -88,26 +93,31 @@
               </div>
             </div>
 
-            <!-- 預設條款設定 -->
+            <!-- 簽名設定 -->
             <div class="mb-4">
-              <h6 class="fw-bold mb-3">預設條款</h6>
+              <h6 class="fw-bold mb-3">出租人簽名</h6>
               <div class="mb-3">
-                <label class="form-label">預設配件</label>
-                <input
-                  v-model="templateSettings.配件"
-                  type="text"
-                  class="form-control"
-                  placeholder="例：可任選頭紗款式"
-                />
-              </div>
-              <div class="mb-3">
-                <label class="form-label">預設押金</label>
-                <input
-                  v-model.number="templateSettings.押金"
-                  type="number"
-                  class="form-control"
-                  placeholder="請輸入預設押金金額"
-                />
+                <label class="form-label">出租人簽章圖片</label>
+                <div class="signature-upload-area">
+                  <div v-if="templateSettings.出租人簽名" class="signature-preview mb-2">
+                    <img :src="templateSettings.出租人簽名" alt="出租人簽名" class="signature-image" />
+                    <button 
+                      type="button" 
+                      @click="removeCompanySignature" 
+                      class="btn btn-sm btn-outline-danger ms-2"
+                    >
+                      移除簽名
+                    </button>
+                  </div>
+                  <input
+                    type="file"
+                    @change="handleCompanySignatureUpload"
+                    accept="image/*"
+                    class="form-control"
+                    :class="{ 'd-none': templateSettings.出租人簽名 }"
+                  />
+                  <small class="text-muted">支援格式：JPG、PNG、GIF，建議尺寸：250x120px</small>
+                </div>
               </div>
             </div>
 
@@ -118,6 +128,7 @@
                 <div class="form-check">
                   <input
                     v-model="templateSettings.顯示圖片"
+                    @change="autoSaveTemplate"
                     class="form-check-input"
                     type="checkbox"
                     id="showImages"
@@ -127,63 +138,10 @@
                   </label>
                 </div>
               </div>
-              <div class="mb-3">
-                <label class="form-label">圖片數量限制</label>
-                <select v-model.number="templateSettings.圖片數量限制" class="form-select">
-                  <option value="3">最多3張</option>
-                  <option value="6">最多6張</option>
-                  <option value="9">最多9張</option>
-                </select>
-              </div>
             </div>
           </div>
         </div>
 
-        <!-- 測試資料設定 -->
-        <div class="card shadow-sm border-0">
-          <div class="card-header bg-warning text-dark">
-            <h5 class="mb-0">
-              <i class="bi bi-database me-2"></i>測試資料
-            </h5>
-          </div>
-          <div class="card-body">
-            <div class="mb-3">
-              <label class="form-label">客戶姓名</label>
-              <input
-                v-model="sampleContractData.客戶姓名"
-                type="text"
-                class="form-control"
-              />
-            </div>
-            <div class="mb-3">
-              <label class="form-label">合約單號</label>
-              <input
-                v-model="sampleContractData.合約單號"
-                type="text"
-                class="form-control"
-              />
-            </div>
-            <div class="mb-3">
-              <label class="form-label">合約總金額</label>
-              <input
-                v-model.number="sampleContractData.合約總金額"
-                type="number"
-                class="form-control"
-              />
-            </div>
-            <div class="mb-3">
-              <label class="form-label">承辦人</label>
-              <input
-                v-model="sampleContractData.承辦人"
-                type="text"
-                class="form-control"
-              />
-            </div>
-            <button @click="generateSampleData" class="btn btn-outline-primary btn-sm w-100">
-              <i class="bi bi-shuffle me-2"></i>產生範例資料
-            </button>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -191,7 +149,15 @@
     <div v-if="showSaveSuccess" class="alert alert-success position-fixed top-0 start-50 translate-middle-x mt-3" style="z-index: 9999;">
       <div class="d-flex align-items-center">
         <i class="bi bi-check-circle me-2"></i>
-        模板設定已儲存
+        模板設定已手動儲存
+      </div>
+    </div>
+
+    <!-- 自動儲存提示 -->
+    <div v-if="showAutoSaved" class="alert alert-info position-fixed top-0 end-0 mt-3 me-3" style="z-index: 9999; width: auto;">
+      <div class="d-flex align-items-center">
+        <i class="bi bi-cloud-check me-2"></i>
+        已自動儲存
       </div>
     </div>
   </div>
@@ -209,6 +175,8 @@ export default {
     return {
       saving: false,
       showSaveSuccess: false,
+      showAutoSaved: false,
+      autoSaveTimeout: null,
       
       // 模板設定
       templateSettings: {
@@ -216,10 +184,8 @@ export default {
         統一編號: "52888231",
         出租人地址: "台北市中山區中山北路二段16巷14號2樓",
         出租人電話: "02-27196817",
-        配件: "可任選頭紗款式",
-        押金: 0,
+        出租人簽名: "",
         顯示圖片: true,
-        圖片數量限制: 6,
       },
       
       // 範例合約資料
@@ -275,6 +241,13 @@ export default {
   mounted() {
     this.loadTemplateSettings();
   },
+
+  beforeUnmount() {
+    // 清理自動儲存計時器
+    if (this.autoSaveTimeout) {
+      clearTimeout(this.autoSaveTimeout);
+    }
+  },
   
   methods: {
     // 載入模板設定
@@ -321,10 +294,8 @@ export default {
           統一編號: "52888231",
           出租人地址: "台北市中山區中山北路二段16巷14號2樓",
           出租人電話: "02-27196817",
-          配件: "可任選頭紗款式",
-          押金: 0,
+          出租人簽名: "",
           顯示圖片: true,
-          圖片數量限制: 6,
         };
         
         localStorage.removeItem('contractTemplateSettings');
@@ -337,29 +308,61 @@ export default {
       this.sampleContractData = { ...this.sampleContractData, ...updateData };
     },
     
-    // 產生範例資料
-    generateSampleData() {
-      const sampleNames = ["王小明", "李小華", "張美麗", "陳志強", "林雅婷"];
-      const sampleStaff = ["Abby", "Jenny", "Alice", "Cindy", "Emma"];
-      const samplePlans = ["蘇鳥攝影簽約1白2晚", "宴客攝影套裝", "婚紗攝影專案", "完整婚禮套裝"];
-      
-      const randomName = sampleNames[Math.floor(Math.random() * sampleNames.length)];
-      const randomStaff = sampleStaff[Math.floor(Math.random() * sampleStaff.length)];
-      const randomPlan = samplePlans[Math.floor(Math.random() * samplePlans.length)];
-      const randomAmount = [18000, 21000, 25000, 30000][Math.floor(Math.random() * 4)];
-      const contractNumber = `V${new Date().getFullYear()}${(Math.random() * 1000).toString().padStart(3, '0')}`;
-      
-      this.sampleContractData = {
-        ...this.sampleContractData,
-        合約單號: contractNumber,
-        客戶姓名: randomName,
-        承辦人: randomStaff,
-        選擇方案: randomPlan,
-        合約總金額: randomAmount,
-        創建時間: new Date(),
-      };
-      
-      this.showToast('已產生新的範例資料', 'success');
+    // 自動儲存模板設定
+    autoSaveTemplate() {
+      // 使用防抖，避免頻繁儲存
+      clearTimeout(this.autoSaveTimeout);
+      this.autoSaveTimeout = setTimeout(() => {
+        this.saveTemplateQuietly();
+      }, 800); // 800ms 後自動儲存
+    },
+
+    // 靜默儲存（不顯示成功訊息）
+    async saveTemplateQuietly() {
+      try {
+        localStorage.setItem('contractTemplateSettings', JSON.stringify(this.templateSettings));
+        
+        // 顯示簡短的自動儲存提示
+        this.showAutoSaveIndicator();
+      } catch (error) {
+        console.error('自動儲存模板設定失敗:', error);
+        this.showToast('自動儲存失敗，請手動儲存', 'warning');
+      }
+    },
+
+    // 顯示自動儲存指示器
+    showAutoSaveIndicator() {
+      this.showAutoSaved = true;
+      setTimeout(() => {
+        this.showAutoSaved = false;
+      }, 2000);
+    },
+
+    // 處理出租人簽名上傳
+    handleCompanySignatureUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        // 檢查文件大小 (限制為 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          this.showToast("圖片檔案不能超過 5MB", "warning");
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.templateSettings.出租人簽名 = e.target.result;
+          this.showToast("出租人簽名已上傳", "success");
+          this.autoSaveTemplate(); // 觸發自動儲存
+        };
+        reader.readAsDataURL(file);
+      }
+    },
+
+    // 移除出租人簽名
+    removeCompanySignature() {
+      this.templateSettings.出租人簽名 = "";
+      this.showToast("已移除出租人簽名", "info");
+      this.autoSaveTemplate(); // 觸發自動儲存
     },
     
     showToast(message, type = "info") {
@@ -409,9 +412,51 @@ export default {
   font-size: 16px;
 }
 
+/* 簽名圖片上傳相關樣式 */
+.signature-upload-area {
+  border: 2px dashed #dee2e6;
+  border-radius: 8px;
+  padding: 15px;
+  text-align: center;
+  transition: border-color 0.3s ease;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.signature-upload-area:hover {
+  border-color: #0d6efd;
+}
+
+.signature-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 100%;
+}
+
+.signature-image {
+  width: 250px;
+  height: 120px;
+  object-fit: contain;
+}
+
 @media (max-width: 991px) {
   .col-lg-4 {
     margin-top: 2rem;
+  }
+  
+  .signature-image {
+    max-width: 200px;
+    max-height: 100px;
+  }
+  
+  .signature-upload-area {
+    min-height: 100px;
   }
 }
 </style>
