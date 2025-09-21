@@ -39,8 +39,10 @@
               <span
                 v-for="(color, index) in options.colors"
                 :key="index"
-                class="badge bg-light text-dark border d-flex align-items-center"
-                style="font-size: 13px; padding: 8px 12px;"
+                class="badge bg-light text-dark border d-flex align-items-center position-relative"
+                style="font-size: 13px; padding: 8px 12px; cursor: pointer;"
+                @click="editOption('color', index)"
+                title="點擊編輯"
               >
                 <span
                   class="rounded-circle me-2"
@@ -52,9 +54,10 @@
                 ></span>
                 {{ color.label }}
                 <button
-                  @click="removeOption('colors', index)"
+                  @click.stop="removeOption('colors', index)"
                   class="btn-close btn-close-sm ms-2"
                   style="font-size: 8px;"
+                  title="刪除"
                 ></button>
               </span>
             </div>
@@ -88,13 +91,16 @@
                 v-for="(skirt, index) in options.skirts"
                 :key="index"
                 class="badge bg-light text-dark border d-flex align-items-center"
-                style="font-size: 13px; padding: 8px 12px;"
+                style="font-size: 13px; padding: 8px 12px; cursor: pointer;"
+                @click="editOption('skirt', index)"
+                title="點擊編輯"
               >
                 {{ skirt.label }}
                 <button
-                  @click="removeOption('skirts', index)"
+                  @click.stop="removeOption('skirts', index)"
                   class="btn-close btn-close-sm ms-2"
                   style="font-size: 8px;"
+                  title="刪除"
                 ></button>
               </span>
             </div>
@@ -128,13 +134,16 @@
                 v-for="(sleeve, index) in options.sleeves"
                 :key="index"
                 class="badge bg-light text-dark border d-flex align-items-center"
-                style="font-size: 13px; padding: 8px 12px;"
+                style="font-size: 13px; padding: 8px 12px; cursor: pointer;"
+                @click="editOption('sleeve', index)"
+                title="點擊編輯"
               >
                 {{ sleeve.label }}
                 <button
-                  @click="removeOption('sleeves', index)"
+                  @click.stop="removeOption('sleeves', index)"
                   class="btn-close btn-close-sm ms-2"
                   style="font-size: 8px;"
+                  title="刪除"
                 ></button>
               </span>
             </div>
@@ -168,13 +177,16 @@
                 v-for="(neck, index) in options.necks"
                 :key="index"
                 class="badge bg-light text-dark border d-flex align-items-center"
-                style="font-size: 13px; padding: 8px 12px;"
+                style="font-size: 13px; padding: 8px 12px; cursor: pointer;"
+                @click="editOption('neck', index)"
+                title="點擊編輯"
               >
                 {{ neck.label }}
                 <button
-                  @click="removeOption('necks', index)"
+                  @click.stop="removeOption('necks', index)"
                   class="btn-close btn-close-sm ms-2"
                   style="font-size: 8px;"
+                  title="刪除"
                 ></button>
               </span>
             </div>
@@ -199,8 +211,8 @@
 
     <div class="row g-4">
       <!-- 配件選項 -->
-      <div class="col-lg-6">
-        <div class="card h-100 shadow-sm border-0 rounded-4">
+      <div class="col-12">
+        <div class="card shadow-sm border-0 rounded-4">
           <div class="card-header bg-white border-0 pb-0">
             <div class="d-flex justify-content-between align-items-center">
               <h5 class="card-title mb-0 fw-semibold">
@@ -233,32 +245,64 @@
                   <div
                     v-for="accessory in categoryAccessories"
                     :key="accessory.originalIndex"
-                    class="d-flex justify-content-between align-items-center p-3 bg-light rounded border"
+                    class="p-3 bg-light rounded border"
                   >
-                    <div class="flex-grow-1">
-                      <div class="fw-semibold">{{ accessory.label }}</div>
-                      <div v-if="accessory.accessoryPrice && accessory.accessoryPrice > 0" class="text-success small mt-1">
-                        NT$ {{ accessory.accessoryPrice.toLocaleString() }}
+                    <!-- 桌面版佈局 -->
+                    <div class="d-none d-md-flex justify-content-between align-items-center">
+                      <div class="flex-grow-1">
+                        <div class="fw-semibold">{{ accessory.label }}</div>
+                        <div v-if="accessory.accessoryPrice && accessory.accessoryPrice > 0" class="text-success small mt-1">
+                          NT$ {{ accessory.accessoryPrice.toLocaleString() }}
+                        </div>
+                        <div v-else class="text-muted small mt-1">
+                          贈送
+                        </div>
                       </div>
-                      <div v-else class="text-muted small mt-1">
-                        贈送
+                      <div class="d-flex gap-2 ms-3">
+                        <button
+                          @click="editAccessory(accessory.originalIndex)"
+                          class="btn btn-outline-primary btn-sm"
+                          title="編輯配件"
+                        >
+                          <i class="bi bi-pencil"></i>
+                        </button>
+                        <button
+                          @click="removeOption('accessories', accessory.originalIndex)"
+                          class="btn btn-outline-danger btn-sm"
+                          title="刪除配件"
+                        >
+                          <i class="bi bi-trash"></i>
+                        </button>
                       </div>
                     </div>
-                    <div class="d-flex gap-2">
-                      <button
-                        @click="editAccessory(accessory.originalIndex)"
-                        class="btn btn-outline-primary btn-sm"
-                        title="編輯配件"
-                      >
-                        <i class="bi bi-pencil"></i>
-                      </button>
-                      <button
-                        @click="removeOption('accessories', accessory.originalIndex)"
-                        class="btn btn-outline-danger btn-sm"
-                        title="刪除配件"
-                      >
-                        <i class="bi bi-trash"></i>
-                      </button>
+
+                    <!-- 手機版佈局 -->
+                    <div class="d-md-none">
+                      <div class="fw-semibold mb-2">{{ accessory.label }}</div>
+                      <div class="mb-3">
+                        <span v-if="accessory.accessoryPrice && accessory.accessoryPrice > 0" class="badge bg-success">
+                          NT$ {{ accessory.accessoryPrice.toLocaleString() }}
+                        </span>
+                        <span v-else class="badge bg-secondary">
+                          贈送
+                        </span>
+                      </div>
+                      <div class="d-flex gap-2 justify-content-end">
+                        <button
+                          @click="editAccessory(accessory.originalIndex)"
+                          class="btn btn-outline-primary btn-sm"
+                          title="編輯配件"
+                        >
+                          <i class="bi bi-pencil me-1"></i>編輯
+                        </button>
+                        <button
+                          @click="removeOption('accessories', accessory.originalIndex)"
+                          class="btn btn-outline-danger btn-sm"
+                          title="刪除配件"
+                        >
+                          <i class="bi bi-trash me-1"></i>刪除
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -275,8 +319,8 @@
       </div>
 
       <!-- 方案選項 -->
-      <div class="col-lg-6">
-        <div class="card h-100 shadow-sm border-0 rounded-4">
+      <div class="col-12">
+        <div class="card shadow-sm border-0 rounded-4">
           <div class="card-header bg-white border-0 pb-0">
             <div class="d-flex justify-content-between align-items-center">
               <h5 class="card-title mb-0 fw-semibold">
@@ -309,29 +353,56 @@
                   <div
                     v-for="pkg in categoryPackages"
                     :key="pkg.originalIndex"
-                    class="d-flex justify-content-between align-items-center p-3 bg-light rounded border"
+                    class="p-3 bg-light rounded border"
                   >
-                    <div class="flex-grow-1">
-                      <div class="fw-semibold">{{ pkg.label }}</div>
-                      <div v-if="pkg.content" class="text-muted small mt-1" style="max-width: 400px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                        {{ pkg.content }}
+                    <!-- 桌面版佈局 -->
+                    <div class="d-none d-md-flex justify-content-between align-items-center">
+                      <div class="flex-grow-1">
+                        <div class="fw-semibold">{{ pkg.label }}</div>
+                        <div v-if="pkg.content" class="text-muted small mt-1" style="max-width: 400px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                          {{ pkg.content }}
+                        </div>
+                      </div>
+                      <div class="d-flex gap-2 ms-3">
+                        <button
+                          @click="editPackage(pkg.originalIndex)"
+                          class="btn btn-outline-primary btn-sm"
+                          title="編輯方案"
+                        >
+                          <i class="bi bi-pencil"></i>
+                        </button>
+                        <button
+                          @click="removeOption('packages', pkg.originalIndex)"
+                          class="btn btn-outline-danger btn-sm"
+                          title="刪除方案"
+                        >
+                          <i class="bi bi-trash"></i>
+                        </button>
                       </div>
                     </div>
-                    <div class="d-flex gap-2">
-                      <button
-                        @click="editPackage(pkg.originalIndex)"
-                        class="btn btn-outline-primary btn-sm"
-                        title="編輯方案"
-                      >
-                        <i class="bi bi-pencil"></i>
-                      </button>
-                      <button
-                        @click="removeOption('packages', pkg.originalIndex)"
-                        class="btn btn-outline-danger btn-sm"
-                        title="刪除方案"
-                      >
-                        <i class="bi bi-trash"></i>
-                      </button>
+
+                    <!-- 手機版佈局 -->
+                    <div class="d-md-none">
+                      <div class="fw-semibold mb-2">{{ pkg.label }}</div>
+                      <div v-if="pkg.content" class="text-muted small mb-3" style="line-height: 1.4; word-break: break-word;">
+                        {{ pkg.content }}
+                      </div>
+                      <div class="d-flex gap-2 justify-content-end">
+                        <button
+                          @click="editPackage(pkg.originalIndex)"
+                          class="btn btn-outline-primary btn-sm"
+                          title="編輯方案"
+                        >
+                          <i class="bi bi-pencil me-1"></i>編輯
+                        </button>
+                        <button
+                          @click="removeOption('packages', pkg.originalIndex)"
+                          class="btn btn-outline-danger btn-sm"
+                          title="刪除方案"
+                        >
+                          <i class="bi bi-trash me-1"></i>刪除
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -627,6 +698,39 @@ export default {
         label: "",
         value: "",
         color: "#FFFFFF",
+        price: 0,
+        category: "",
+        packageName: "",
+        accessoryName: "",
+        accessoryPrice: 0,
+        content: "",
+      };
+    },
+
+    // 編輯禮服分類選項（顏色、裙型、袖型、領型）
+    editOption(type, index) {
+      const typeMap = {
+        color: "colors",
+        skirt: "skirts",
+        sleeve: "sleeves",
+        neck: "necks",
+      };
+      
+      const arrayKey = typeMap[type];
+      if (!arrayKey || !this.options[arrayKey] || !this.options[arrayKey][index]) {
+        return;
+      }
+      
+      const option = this.options[arrayKey][index];
+      this.modalType = type;
+      this.editingIndex = index;
+      this.showModal = true;
+      
+      // 填入現有資料
+      this.newOption = {
+        label: option.label || "",
+        value: option.value || "",
+        color: option.color || "#FFFFFF",
         price: 0,
         category: "",
         packageName: "",

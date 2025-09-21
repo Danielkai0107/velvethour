@@ -29,47 +29,53 @@
               <div class="p-4 custom-scrollbar" style="height: calc(100vh - 120px); overflow-y: auto;">
           <form @submit.prevent="handleSubmit">
             <!-- 合約單號 -->
-            <div class="border-bottom" style="border-color: #E0E0E0 !important; margin-bottom: 40px !important; padding-bottom: 40px !important;">
-              <div class="col-md-8">
-                <label class="form-label" style="color: #6A6A6A; font-size: 14px;">合約單號 *</label>
-                <div class="input-group">
-                  <input
-                    v-model="formData.合約單號"
-                    type="text"
-                    :class="['form-control', { 'is-invalid': validationErrors.合約單號 }]"
-                    required
-                    placeholder="自動產生合約單號"
-                    @blur="checkContractNumberUnique"
-                    @input="onContractNumberInput"
-                    @focus="clearValidationError('合約單號')"
-                  />
-                  <button
-                    type="button"
-                    @click="generateNewContractNumber"
-                    class="btn btn-outline-secondary"
-                    title="重新產生合約單號"
-                  >
-                    <i class="bi bi-arrow-clockwise"></i>
-                  </button>
+            <div class="mb-4">
+              <h5 class="card-title mb-3">合約單號</h5>
+              <div class="row p-3">
+                <div class="mb-2">
+                  <span class="small text-muted">合約單號 * : </span>
+                  <div class="d-inline-flex ms-2" style="width: 300px;">
+                    <input
+                      v-model="formData.合約單號"
+                      type="text"
+                      :class="['form-control form-control-sm', { 'is-invalid': validationErrors.合約單號 }]"
+                      required
+                      placeholder="自動產生合約單號"
+                      @blur="checkContractNumberUnique"
+                      @input="onContractNumberInput"
+                      @focus="clearValidationError('合約單號')"
+                    />
+                    <button
+                      type="button"
+                      @click="generateNewContractNumber"
+                      class="btn btn-outline-secondary btn-sm ms-1"
+                      title="重新產生合約單號"
+                    >
+                      <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                  </div>
                 </div>
-                <div v-if="contractNumberStatus" :class="['small', 'mt-1', contractNumberStatus.type === 'error' ? 'text-danger' : 'text-success']">
-                  <i :class="contractNumberStatus.type === 'error' ? 'bi bi-exclamation-triangle' : 'bi bi-check-circle'" class="me-1"></i>
-                  {{ contractNumberStatus.message }}
-                  <span v-if="contractNumberStatus.type === 'success'" class="text-muted ms-2">
-                    格式：V + 年份後兩位 + 月日 + 序號
-                  </span>
+                <div v-if="contractNumberStatus" class="ms-2">
+                  <small :class="contractNumberStatus.type === 'error' ? 'text-danger' : 'text-success'">
+                    <i :class="contractNumberStatus.type === 'error' ? 'bi bi-exclamation-triangle' : 'bi bi-check-circle'" class="me-1"></i>
+                    {{ contractNumberStatus.message }}
+                    <span v-if="contractNumberStatus.type === 'success'" class="text-muted ms-2">
+                      格式：V + 年份後兩位 + 月日 + 序號
+                    </span>
+                  </small>
                 </div>
               </div>
             </div>
 
-            <!-- 禮服清單 -->
-            <div class="border-bottom" style="border-color: #E0E0E0 !important; margin-bottom: 40px !important; padding-bottom: 40px !important;">
+            <!-- 分隔線 -->
+            <hr class="my-4" style="border-color: #E0E0E0;">
+
+            <!-- 合約禮服 -->
+            <div class="mb-4">
               <div
                 class="d-flex justify-content-between align-items-center mb-3"
               >
-      
-                <label class="form-label" :class="{ 'text-danger': validationErrors.禮服清單 }" style="color: #6A6A6A; font-size: 14px;">禮服清單
-                </label>
+                <h5 class="card-title mb-0" :class="{ 'text-danger': validationErrors.禮服清單 }">合約禮服</h5>
                 <div class="d-flex gap-2">
                   <button
                     v-if="hasCartItems"
@@ -238,45 +244,44 @@
 
             </div>
 
+            <!-- 分隔線 -->
+            <hr class="my-4" style="border-color: #E0E0E0;">
+
             <!-- 租用時間 -->
-            <div class="border-bottom" style="border-color: #E0E0E0 !important; margin-bottom: 40px !important; padding-bottom: 40px !important;">
-              <div class="row g-4">
-                <!-- 租用開始時間 -->
-                <div class="col-md-4">
-                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">租用開始時間 *
-                  </label>
+            <div class="mb-4">
+              <h5 class="card-title mb-3">租用時間</h5>
+              <div class="row p-3">
+                <div class="mb-2">
+                  <span class="small text-muted">租用開始時間 * : </span>
                   <input
                     v-model="formData.租用開始時間"
                     type="datetime-local"
-                    :class="['form-control', { 'is-invalid': validationErrors.租用開始時間 }]"
+                    :class="['form-control form-control-sm d-inline-block ms-2', { 'is-invalid': validationErrors.租用開始時間 }]"
+                    style="width: 200px;"
                     required
                     @change="onStartTimeChange"
                     @focus="clearValidationError('租用開始時間')"
                   />
                 </div>
-
-                <!-- 租用結束時間 -->
-                <div class="col-md-4">
-                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">租用結束時間 *
-                  </label>
+                <div class="mb-2">
+                  <span class="small text-muted">租用結束時間 * : </span>
                   <input
                     v-model="formData.租用結束時間"
                     type="datetime-local"
-                    :class="['form-control', { 'is-invalid': validationErrors.租用結束時間 }]"
+                    :class="['form-control form-control-sm d-inline-block ms-2', { 'is-invalid': validationErrors.租用結束時間 }]"
+                    style="width: 200px;"
                     required
                     @change="onEndTimeChange"
                     @focus="clearValidationError('租用結束時間')"
                   />
                 </div>
-
-                <!-- 下次可用時間 -->
-                <div class="col-md-4">
-                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">下次可用時間 *
-                  </label>
+                <div class="mb-2">
+                  <span class="small text-muted">下次可用時間 * : </span>
                   <input
                     v-model="formData.下次可用時間"
                     type="datetime-local"
-                    :class="['form-control', { 'is-invalid': validationErrors.下次可用時間 }]"
+                    :class="['form-control form-control-sm d-inline-block ms-2', { 'is-invalid': validationErrors.下次可用時間 }]"
+                    style="width: 200px;"
                     required
                     @change="onTimeOrDressChange"
                     @focus="clearValidationError('下次可用時間')"
@@ -379,91 +384,82 @@
               </div>
             </div>
 
-            <!-- 基本資訊 -->
-            <div class="border-bottom" style="border-color: #E0E0E0 !important; margin-bottom: 40px !important; padding-bottom: 40px !important;">
-              <div class="row g-4">
-                <!-- 客戶姓名 -->
-                <div class="col-md-6">
-                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">客戶姓名 *
-                  </label>
+            <!-- 分隔線 -->
+            <hr class="my-4" style="border-color: #E0E0E0;">
+
+            <!-- 客戶資訊 -->
+            <div class="mb-4">
+              <h5 class="card-title mb-3">客戶資訊</h5>
+              <div class="row p-3">
+                <div class="mb-2">
+                  <span class="small text-muted">客戶姓名 * : </span>
                   <input
                     v-model="formData.客戶姓名"
                     type="text"
-                    :class="['form-control', { 'is-invalid': validationErrors.客戶姓名 }]"
+                    :class="['form-control form-control-sm d-inline-block ms-2', { 'is-invalid': validationErrors.客戶姓名 }]"
+                    style="width: 200px;"
                     required
                     placeholder="例: 張小姐"
                     @focus="clearValidationError('客戶姓名')"
                   />
                 </div>
-
-                <!-- 電話 -->
-                <div class="col-md-6">
-                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">電話 *
-                  </label>
+                <div class="mb-2">
+                  <span class="small text-muted">電話 * : </span>
                   <input
                     v-model="formData.電話"
                     type="tel"
-                    :class="['form-control', { 'is-invalid': validationErrors.電話 }]"
+                    :class="['form-control form-control-sm d-inline-block ms-2', { 'is-invalid': validationErrors.電話 }]"
+                    style="width: 200px;"
                     required
                     placeholder="例: 0912-345-678"
                     @focus="clearValidationError('電話')"
                   />
                 </div>
-
-                <!-- Email -->
-                <div class="col-md-6">
-                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">Email
-                  </label>
+                <div class="mb-2">
+                  <span class="small text-muted">Email : </span>
                   <input
                     v-model="formData.email"
                     type="email"
-                    class="form-control"
+                    class="form-control form-control-sm d-inline-block ms-2"
+                    style="width: 250px;"
                     placeholder="例: customer@example.com"
                   />
                 </div>
-
-                <!-- 三圍 -->
-                <div class="col-md-6">
-                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">三圍
-                  </label>
-                  <input
-                    v-model="formData.三圍"
-                    type="text"
-                    class="form-control"
-                    placeholder="例: 32B-24-35"
-                  />
-                </div>
-
-                <!-- 身分證號 -->
-                <div class="col-md-6">
-                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">身分證號
-                  </label>
+                <div class="mb-2">
+                  <span class="small text-muted">身分證號 : </span>
                   <input
                     v-model="formData.身分證號"
                     type="text"
-                    class="form-control"
+                    class="form-control form-control-sm d-inline-block ms-2"
+                    style="width: 200px;"
                     placeholder="請輸入身分證號"
                   />
                 </div>
-
-                <!-- 地址 -->
-                <div class="col-md-12">
-                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">地址
-                  </label>
+                <div class="mb-2">
+                  <span class="small text-muted">三圍 : </span>
+                  <input
+                    v-model="formData.三圍"
+                    type="text"
+                    class="form-control form-control-sm d-inline-block ms-2"
+                    style="width: 150px;"
+                    placeholder="例: 32B-24-35"
+                  />
+                </div>
+                <div class="mb-2">
+                  <span class="small text-muted">地址 : </span>
                   <input
                     v-model="formData.地址"
                     type="text"
-                    class="form-control"
+                    class="form-control form-control-sm d-inline-block ms-2"
+                    style="width: 300px;"
                     placeholder="請輸入地址"
                   />
                 </div>
 
-                <!-- 客戶簽名圖片上傳 -->
-                <div class="col-md-12">
-                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">客戶簽名圖片
-                  </label>
-                  <div class="signature-upload-area">
-                    <div v-if="formData.客戶簽名" class="signature-preview mb-2">
+                <div class="mb-2" v-if="formData.客戶簽名">
+                  <span class="small text-muted">客戶簽名 : </span>
+                  <div class="d-inline-block ms-2">
+                    <div class="signature-preview mb-2">
                       <img :src="formData.客戶簽名" alt="客戶簽名" class="signature-image" />
                       <button 
                         type="button" 
@@ -473,30 +469,35 @@
                         移除簽名
                       </button>
                     </div>
-                    <input
-                      type="file"
-                      @change="handleSignatureUpload"
-                      accept="image/*"
-                      class="form-control"
-                      :class="{ 'd-none': formData.客戶簽名 }"
-                    />
-                    <small class="text-muted">支援格式：JPG、PNG、GIF，建議尺寸：300x100px</small>
                   </div>
                 </div>
+                <div class="mb-2">
+                  <span class="small text-muted">客戶簽名 : </span>
+                  <input
+                    type="file"
+                    @change="handleSignatureUpload"
+                    accept="image/*"
+                    class="form-control form-control-sm d-inline-block ms-2"
+                    style="width: 250px;"
+                    :class="{ 'd-none': formData.客戶簽名 }"
+                  />
+            </div>
+              </div>
+            </div>
 
-                <!-- 接待人員與押金 -->
-                <!-- 分隔線 -->
-                <div class="col-12">
-                  <div style="border-bottom: 1px solid #E0E0E0; margin: 20px 0;"></div>
-                </div>
+            <!-- 分隔線 -->
+            <hr class="my-4" style="border-color: #E0E0E0;">
 
-                <!-- 接待人員 -->
-                <div class="col-md-6">
-                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">接待人員 *
-                  </label>
+            <!-- 承辦人 -->
+            <div class="mb-4">
+              <h5 class="card-title mb-3">承辦人</h5>
+              <div class="row p-3">
+                <div class="mb-2">
+                  <span class="small text-muted">接待人員 * : </span>
                   <select
                     v-model="formData.承辦人"
-                    :class="['form-select', { 'is-invalid': validationErrors.承辦人 }]"
+                    :class="['form-select form-select-sm d-inline-block ms-2', { 'is-invalid': validationErrors.承辦人 }]"
+                    style="width: 200px;"
                     required
                     @focus="clearValidationError('承辦人')"
                   >
@@ -510,31 +511,16 @@
                     </option>
                   </select>
                 </div>
-
-                <!-- 押金金額 -->
-                <div class="col-md-6">
-                  <label class="form-label" style="color: #6A6A6A; font-size: 14px;">押金金額
-                  </label>
-                  <div class="input-group">
-                    <span class="input-group-text">NT$</span>
-                    <input
-                      v-model.number="formData.押金"
-                      type="number"
-                      class="form-control"
-                      placeholder="0"
-                      min="0"
-                    />
-                  </div>
-                </div>
-
               </div>
             </div>
 
+            <!-- 分隔線 -->
+            <hr class="my-4" style="border-color: #E0E0E0;">
 
-            <!-- 付款記錄表格 -->
-            <div class="border-bottom" style="border-color: #E0E0E0 !important; margin-bottom: 40px !important; padding-bottom: 40px !important;">
+            <!-- 付款記錄 -->
+            <div class="mb-4">
               <div class="d-flex justify-content-between align-items-center mb-3">
-                <label class="form-label" style="color: #6A6A6A; font-size: 14px;">付款記錄表格</label>
+                <h5 class="card-title mb-0">付款記錄</h5>
                 <button
                   type="button"
                   @click="addPaymentRow"
@@ -599,8 +585,7 @@
                         </td>
                         <td>
                           <div class="staff-display text-center">
-                            <span class="badge bg-info">{{ payment.接待人員 || formData.承辦人 || '-' }}</span>
-                            <div class="text-muted small mt-1">承辦人</div>
+                            <span class="text-dark fw-semibold">{{ payment.接待人員 || formData.承辦人 || '-' }}</span>
                           </div>
                         </td>
                         <td>
@@ -609,7 +594,7 @@
                               <img :src="formData.客戶簽名" alt="客戶簽名" class="payment-signature-image" />
                             </div>
                             <div v-else class="text-muted small">
-                              <i class="bi bi-pen me-1"></i>請先上傳客戶簽名
+                              <i class="bi bi-pen me-1"></i>客戶簽名
                             </div>
                           </div>
                         </td>
@@ -642,29 +627,35 @@
               </div>
             </div>
 
-            <!-- 備註 -->
-            <div class="mb-3" style="margin-bottom: 40px !important;">
-              <label class="form-label" style="color: #6A6A6A; font-size: 14px;">備註
-              </label>
-              <textarea
-                v-model="formData.備注"
-                class="form-control"
-                rows="3"
-                placeholder="合約相關備註或特殊說明..."
-              ></textarea>
+            <!-- 分隔線 -->
+            <hr class="my-4" style="border-color: #E0E0E0;">
+
+            <!-- 備註詳情 -->
+            <div class="mb-4">
+              <h5 class="card-title ">備註詳情</h5>
+              <div class="row p-3">
+                <div class="">
+                  <textarea
+                    v-model="formData.備注"
+                    class="form-control form-control-sm mt-2"
+                    rows="4"
+                    placeholder="合約相關備註或特殊說明..."
+                    style="width: 100%;"
+                  ></textarea>
+                </div>
+              </div>
             </div>
 
-            <!-- 新增時間戳 (顯示用，不可編輯) -->
-            <div class="mb-3" v-if="formData.創建時間">
-              <label class="form-label" style="color: #6A6A6A; font-size: 14px;">建立時間
-              </label>
-              <input
-                :value="formatTimestamp(formData.創建時間)"
-                type="text"
-                class="form-control"
-                readonly
-                disabled
-              />
+             <!-- 分隔線 -->
+             <hr class="my-4" style="border-color: #E0E0E0;">
+
+
+            <!-- 建立時間 -->
+            <div class="mb-4" v-if="formData.創建時間">
+              <h5 class="card-title mb-3">建立時間</h5>
+              <div class="row p-3">
+                <p class="small text-muted">建立時間 : {{ formatTimestamp(formData.創建時間) }}</p>
+              </div>
             </div>
           </form>
               </div>
@@ -707,7 +698,7 @@
                               :key="pkg.value" 
                               :value="pkg.value"
                             >
-                              {{ pkg.label }}｜NT$ {{ pkg.price?.toLocaleString() }}
+                              {{ pkg.label }}
                             </option>
                           </optgroup>
                         </select>
@@ -784,31 +775,25 @@
                           <span>NT$ {{ calculateDressTotal().toLocaleString() }}</span>
                         </div>
                         
-                        <!-- 加價金額 (只在選擇方案時顯示) -->
+                        <!-- 方案折扣 (只折扣方案價格) -->
+                        <div v-if="formData.選擇方案 && formData.折扣比例 < 1" class="d-flex justify-content-between text-success">
+                          <span>方案折扣 ({{ Math.round((1 - (formData.折扣比例 || 1)) * 100) }}%)</span>
+                          <span>- NT$ {{ getPlanDiscountAmount().toLocaleString() }}</span>
+                        </div>
+                        
+                        <!-- 禮服折扣 (沒有方案時) -->
+                        <div v-if="!formData.選擇方案 && formData.折扣比例 < 1" class="d-flex justify-content-between text-success">
+                          <span>禮服折扣 ({{ Math.round((1 - (formData.折扣比例 || 1)) * 100) }}%)</span>
+                          <span>- NT$ {{ getDressDiscountAmount().toLocaleString() }}</span>
+                        </div>
+                        
+                        <!-- 加價金額 (不折扣) -->
                         <div v-if="formData.選擇方案 && getExtraAmount() > 0" class="d-flex justify-content-between text-warning">
                           <span>加價金額</span>
                           <span>+ NT$ {{ getExtraAmount().toLocaleString() }}</span>
                         </div>
                         
-                        <!-- 小計 -->
-                        <div class="d-flex justify-content-between">
-                          <span>小計</span>
-                          <span>NT$ {{ calculateTotal().toLocaleString() }}</span>
-                        </div>
-                        
-                        <!-- 優惠折扣 -->
-                        <div class="d-flex justify-content-between text-success">
-                          <span>折扣 ({{ Math.round((1 - (formData.折扣比例 || 1)) * 100) }}%)</span>
-                          <span>- NT$ {{ getDiscountAmount().toLocaleString() }}</span>
-                        </div>
-                        
-                        <!-- 折扣後小計 -->
-                        <div class="d-flex justify-content-between border-top pt-2 mt-2">
-                          <span>折扣後小計</span>
-                          <span>NT$ {{ (calculateTotal() * (formData.折扣比例 || 1)).toLocaleString() }}</span>
-                        </div>
-                        
-                        <!-- 配件金額 (折扣後加入) -->
+                        <!-- 配件金額 (不折扣) -->
                         <div v-if="getAccessoryAmount() > 0" class="d-flex justify-content-between text-info">
                           <span>配件金額</span>
                           <span>+ NT$ {{ getAccessoryAmount().toLocaleString() }}</span>
@@ -818,6 +803,25 @@
                         <div class="d-flex justify-content-between fw-bold text-primary border-top pt-2 mt-2">
                           <span>合約總金額</span>
                           <span>NT$ {{ getFinalAmount().toLocaleString() }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 押金設定 -->
+                  <div class="mb-4">
+                    <h6 class="fw-semibold mb-3">押金設定</h6>
+                    <div class="bg-white rounded p-3 shadow-sm">
+                      <div class="mb-0">
+                        <div class="input-group input-group-sm">
+                          <span class="input-group-text">NT$</span>
+                          <input
+                            v-model.number="formData.押金"
+                            type="number"
+                            class="form-control"
+                            placeholder="0"
+                            min="0"
+                          />
                         </div>
                       </div>
                     </div>
@@ -1380,7 +1384,7 @@ export default {
             折扣比例: newContract.折扣比例 || 1,
             禮服清單: newContract.禮服清單
               ? [...newContract.禮服清單]
-              : [{ 禮服ID: "", 數量: 1, 單價: 0, 小計: 0 }],
+              : [{ 禮服ID: "", 數量: 1, 單價: 0, 加價金額: 0, 小計: 0 }],
             付款記錄: newContract.付款記錄 ? [...newContract.付款記錄] : [],
             合約總金額: newContract.合約總金額 || 0,
             備注: newContract.備注 || "",
@@ -1466,6 +1470,7 @@ export default {
             禮服ID: "",
             數量: 1,
             單價: 0,
+            加價金額: 0,
             小計: 0,
           },
         ],
@@ -1481,6 +1486,7 @@ export default {
         禮服ID: "",
         數量: 1,
         單價: 0,
+        加價金額: 0, // 新增加價金額欄位
         小計: 0,
       });
 
@@ -1526,6 +1532,7 @@ export default {
           禮服ID: "",
           數量: 1,
           單價: 0,
+          加價金額: 0,
           小計: 0,
         });
         console.log("已添加空項目");
@@ -1552,13 +1559,14 @@ export default {
       });
     },
 
-    updateDressPrice(index) {
+    updateDressPriceByIndex(index) {
       const item = this.formData.禮服清單[index];
       const dress = this.availableDresses.find((d) => d.id === item.禮服ID);
       if (dress) {
         // 只使用基本租借金額，加價金額只在有方案時計算
         const baseAmount = dress.租借金額 || dress.價格 || 0;
         item.單價 = baseAmount;
+        item.加價金額 = dress.加價金額 || 0; // 同時更新加價金額
         this.calculateSubtotal(index);
       }
     },
@@ -1709,6 +1717,7 @@ export default {
               禮服ID: dress.id,
               數量: 1,
               單價: baseAmount, // 只使用基本租借金額
+              加價金額: dress.加價金額 || 0, // 儲存加價金額
               小計: baseAmount,
             });
           } else {
@@ -1760,6 +1769,7 @@ export default {
               禮服ID: "",
               數量: 1,
               單價: 0,
+              加價金額: 0,
               小計: 0,
             });
           }
@@ -1787,6 +1797,7 @@ export default {
             禮服ID: "",
             數量: 1,
             單價: 0,
+            加價金額: 0,
             小計: 0,
           },
         ];
@@ -2043,31 +2054,16 @@ export default {
     },
 
     calculateTotal() {
-      let total = 0;
-      
-      // 如果選擇了方案
+      // 如果選擇了方案，只計算方案價格
       if (this.formData.選擇方案) {
         const planPrice = this.planPrices[this.formData.選擇方案] || 0;
-        
-        // 計算所有禮服的加價金額總和
-        const totalExtraAmount = this.formData.禮服清單
-          .filter(item => item.禮服ID)
-          .reduce((total, item) => {
-            const dress = this.getDressById(item.禮服ID);
-            const extraAmount = dress?.加價金額 || 0;
-            return total + extraAmount;
-          }, 0);
-        
-        total = planPrice + totalExtraAmount;
+        return planPrice;
       } else {
         // 沒有選擇方案，依照禮服單價加總
-        total = this.formData.禮服清單.reduce((total, item) => {
+        return this.formData.禮服清單.reduce((total, item) => {
           return total + (item.小計 || 0);
         }, 0);
       }
-      
-      // 配件金額不在這裡加入，會在折扣後加入
-      return total;
     },
 
     updateTotalAmount() {
@@ -2142,36 +2138,85 @@ export default {
           formattedDate = `${date.getFullYear()}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date.getDate().toString().padStart(2, '0')}`;
         }
 
-        // 計算方案金額：總額扣除配件金額
-        const accessoryAmount = this.getAccessoryAmount();
-        const planAmountInNote = this.formData.合約總金額 - accessoryAmount;
+        // 計算備註中的方案金額：折扣後的方案價格 + 加價金額
+        const planPrice = selectedPackage.price || 0;
+        const discountRate = this.formData.折扣比例 || 1;
+        const discountedPlanPrice = Math.round(planPrice * discountRate);
+        
+        // 加價金額（不折扣）
+        const totalExtraAmount = this.formData.禮服清單
+          .filter(item => item.禮服ID)
+          .reduce((total, item) => {
+            const dress = this.getDressById(item.禮服ID);
+            const extraAmount = dress?.加價金額 || 0;
+            return total + extraAmount;
+          }, 0);
+        
+        const planAmountInNote = discountedPlanPrice + totalExtraAmount;
         
         // 組合備註內容
         const noteContent = `${selectedPackage.packageName || selectedPackage.label} $${planAmountInNote.toLocaleString()}
-${formattedDate}${selectedPackage.category}使用
+${formattedDate} ${selectedPackage.category}使用
 ${selectedPackage.content}`;
 
         this.formData.備注 = noteContent;
       }
     },
 
-    // 取得折扣金額
-    getDiscountAmount() {
-      const originalTotal = this.calculateTotal();
+    // 取得方案折扣金額
+    getPlanDiscountAmount() {
+      if (!this.formData.選擇方案) return 0;
+      const planPrice = this.planPrices[this.formData.選擇方案] || 0;
       const discountRate = this.formData.折扣比例 || 1;
-      return Math.round(originalTotal * (1 - discountRate));
+      return Math.round(planPrice * (1 - discountRate));
     },
 
-    // 取得最終金額（含折扣和配件）
-    getFinalAmount() {
-      const originalTotal = this.calculateTotal();
+    // 取得禮服折扣金額
+    getDressDiscountAmount() {
+      if (this.formData.選擇方案) return 0;
+      const dressTotal = this.calculateDressTotal();
       const discountRate = this.formData.折扣比例 || 1;
-      const discountedTotal = Math.round(originalTotal * discountRate);
+      return Math.round(dressTotal * (1 - discountRate));
+    },
+
+    // 取得折扣金額（向後兼容）
+    getDiscountAmount() {
+      return this.getPlanDiscountAmount() + this.getDressDiscountAmount();
+    },
+
+    // 取得最終金額（折扣只針對方案價格）
+    getFinalAmount() {
+      let total = 0;
       
-      // 折扣後加上配件金額
+      if (this.formData.選擇方案) {
+        // 方案價格進行折扣
+        const planPrice = this.planPrices[this.formData.選擇方案] || 0;
+        const discountRate = this.formData.折扣比例 || 1;
+        const discountedPlanPrice = Math.round(planPrice * discountRate);
+        
+        // 加價金額不折扣
+        const totalExtraAmount = this.formData.禮服清單
+          .filter(item => item.禮服ID)
+          .reduce((total, item) => {
+            const dress = this.getDressById(item.禮服ID);
+            const extraAmount = dress?.加價金額 || 0;
+            return total + extraAmount;
+          }, 0);
+        
+        total = discountedPlanPrice + totalExtraAmount;
+      } else {
+        // 沒有選擇方案，禮服金額進行折扣
+        const dressTotal = this.formData.禮服清單.reduce((total, item) => {
+          return total + (item.小計 || 0);
+        }, 0);
+        const discountRate = this.formData.折扣比例 || 1;
+        total = Math.round(dressTotal * discountRate);
+      }
+      
+      // 配件金額不折扣，直接加上
       const accessoryAmount = this.getAccessoryAmount();
       
-      return discountedTotal + accessoryAmount;
+      return total + accessoryAmount;
     },
 
     // 更新總金額（含折扣）
@@ -2469,6 +2514,14 @@ ${selectedPackage.content}`;
 
         // 準備提交的資料
         const submitData = { ...this.formData };
+
+        // 儲存方案價格和配件價格（防止未來價格變動影響合約）
+        if (submitData.選擇方案) {
+          submitData.方案價格 = this.planPrices[submitData.選擇方案] || 0;
+        }
+        if (submitData.選擇配件) {
+          submitData.配件價格 = this.getAccessoryAmount();
+        }
 
         // 設定預設處理狀態
         if (!this.contract || !this.contract.id) {

@@ -26,7 +26,18 @@
           <div class="card-body p-4">
             <!-- 1. 圖片 -->
             <div class="mb-4">
-              <h5 class="card-title mb-3">禮服圖片</h5>
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title mb-0">禮服圖片</h5>
+                <!-- 操作按鈕群組 -->
+                <div class="d-flex gap-3">
+                  <button @click="editDress" class="btn btn-primary">
+                    <i class="bi bi-pencil-square me-2"></i>編輯禮服
+                  </button>
+                  <button @click="deleteDress" class="btn btn-outline-danger">
+                    <i class="bi bi-trash me-2"></i>刪除禮服
+                  </button>
+                </div>
+              </div>
 
               <!-- 主圖片 -->
               <div class="mb-3">
@@ -128,23 +139,27 @@
             <div class="mb-4">
               <h5 class="card-title mb-3">金額資訊</h5>
               <div class="row g-3">
-                <div class="col-md-6">
+                <div class="col-md-4">
                   <div class="border rounded p-3">
                     <small class="text-muted d-block">租借金額</small>
-                    <h4 class="text-primary fw-bold mb-0">
-                      NT$
-                      {{ (dress.租借金額 || dress.價格 || 0).toLocaleString() }}
-                    </h4>
+                    <h5 class="text-primary fw-bold mb-0">
+                      NT$ {{ (dress.租借金額 || dress.價格 || 0).toLocaleString() }}
+                    </h5>
                   </div>
                 </div>
-                <div
-                  class="col-md-6"
-                  v-if="dress.加價金額 && dress.加價金額 > 0"
-                >
+                <div class="col-md-4">
                   <div class="border rounded p-3">
                     <small class="text-muted d-block">加價金額</small>
                     <h5 class="text-warning fw-bold mb-0">
-                      + NT$ {{ dress.加價金額.toLocaleString() }}
+                      NT$ {{ (dress.加價金額 || 0).toLocaleString() }}
+                    </h5>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="border rounded p-3">
+                    <small class="text-muted d-block">押金</small>
+                    <h5 class="text-info fw-bold mb-0">
+                      NT$ {{ (dress.押金 || 0).toLocaleString() }}
                     </h5>
                   </div>
                 </div>
@@ -361,38 +376,60 @@
               </div>
             </div>
 
-            <!-- 8. 新增＆編輯時間 -->
-            <div class="mb-4">
-              <h5 class="card-title mb-3">時間記錄</h5>
-              <div class="row g-3">
-                <div class="col-md-6">
-                  <div class="border rounded p-3">
-                    <small class="text-muted d-block">新增時間</small>
-                    <strong class="text-dark">{{
-                      formatDate(dress.新增時間戳 || dress.創建時間)
-                    }}</strong>
-                  </div>
-                </div>
-                <div class="col-md-6" v-if="dress.更新時間">
-                  <div class="border rounded p-3">
-                    <small class="text-muted d-block">最後編輯時間</small>
-                    <strong class="text-dark">{{
-                      formatDate(dress.更新時間)
-                    }}</strong>
-                  </div>
+            <!-- 8. 價格歷史記錄 -->
+            <div class="mb-4" v-if="dress.價格歷史記錄 && dress.價格歷史記錄.length > 0">
+              <h5 class="card-title mb-3">價格歷史記錄</h5>
+              <div class="border rounded p-3">
+                <div class="table-responsive">
+                  <table class="table table-sm mb-0" style="border-collapse: separate; border-spacing: 0">
+                    <thead>
+                      <tr>
+                        <th class="border-0 fw-normal text-muted small text-start py-3">修改時間</th>
+                        <th class="border-0 fw-normal text-muted small text-start py-3">修改前</th>
+                        <th class="border-0 fw-normal text-muted small text-start py-3">修改後</th>
+                        <th class="border-0 fw-normal text-muted small text-start py-3">修改原因</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="(record, index) in dress.價格歷史記錄" :key="index">
+                        <td class="border-0 small text-start py-4">
+                          <span class="text-dark">{{ formatDateTime(record.修改時間) }}</span>
+                        </td>
+                        <td class="border-0 small text-start py-4">
+                          <div class="text-muted" style="font-size: 11px;">租借金額</div>
+                          <span class="text-dark fw-medium">NT$ {{ record.修改前.租借金額.toLocaleString() }}</span>
+                          <div class="text-muted mt-1" style="font-size: 11px;">加價金額</div>
+                          <span class="text-dark fw-medium">NT$ {{ record.修改前.加價金額.toLocaleString() }}</span>
+                          <div v-if="record.修改前.押金" class="text-muted mt-1" style="font-size: 11px;">押金</div>
+                          <span v-if="record.修改前.押金" class="text-dark fw-medium">NT$ {{ record.修改前.押金.toLocaleString() }}</span>
+                        </td>
+                        <td class="border-0 small text-start py-4">
+                          <div class="text-muted" style="font-size: 11px;">租借金額</div>
+                          <span class="text-primary fw-medium">NT$ {{ record.修改後.租借金額.toLocaleString() }}</span>
+                          <div class="text-muted mt-1" style="font-size: 11px;">加價金額</div>
+                          <span class="text-primary fw-medium">NT$ {{ record.修改後.加價金額.toLocaleString() }}</span>
+                          <div v-if="record.修改後.押金" class="text-muted mt-1" style="font-size: 11px;">押金</div>
+                          <span v-if="record.修改後.押金" class="text-primary fw-medium">NT$ {{ record.修改後.押金.toLocaleString() }}</span>
+                        </td>
+                        <td class="border-0 small text-start py-4">
+                          <span class="text-dark">{{ record.修改原因 || '價格調整' }}</span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
 
-            <!-- 操作按鈕 -->
-            <div class="d-flex gap-3 justify-content-end mt-4 pt-3 border-top">
-              <button @click="editDress" class="btn btn-primary">
-                <i class="bi bi-pencil-square me-2"></i>編輯禮服
-              </button>
-              <button @click="deleteDress" class="btn btn-outline-danger">
-                <i class="bi bi-trash me-2"></i>刪除禮服
-              </button>
+            <!-- 9. 時間記錄 -->
+            <div class="mb-4">
+              <h5 class="card-title mb-3">時間記錄</h5>
+              <div class="row p-3">
+                <p class="small text-muted">建立時間 : {{ formatDateTime(dress.新增時間戳 || dress.創建時間) }}</p>
+                <p v-if="dress.更新時間" class="small text-muted">更新時間 : {{ formatDateTime(dress.更新時間) }}</p>
+              </div>
             </div>
+
           </div>
         </div>
       </div>
@@ -544,17 +581,14 @@ export default {
       });
     },
     formatDateTime(date) {
-      if (!date) return "未設定";
+      if (!date) return "";
 
       let dateObj;
       if (date.toDate && typeof date.toDate === "function") {
-        // Firebase Timestamp
         dateObj = date.toDate();
       } else if (date instanceof Date) {
-        // JavaScript Date
         dateObj = date;
       } else {
-        // String or other format
         dateObj = new Date(date);
       }
 
@@ -564,7 +598,6 @@ export default {
         day: "2-digit",
         hour: "2-digit",
         minute: "2-digit",
-        weekday: "short",
         hour12: false,
       });
     },

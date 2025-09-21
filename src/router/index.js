@@ -6,7 +6,6 @@ import ContractDetail from "../views/ContractDetail.vue";
 import ContractTemplate from "../views/ContractTemplate.vue";
 import CalendarView from "../views/CalendarView.vue";
 import StaffList from "../views/StaffList.vue";
-import StaffDetail from "../views/StaffDetail.vue";
 import OptionsManagement from "../views/OptionsManagement.vue";
 
 const routes = [
@@ -46,12 +45,6 @@ const routes = [
     path: "/staff",
     name: "StaffList",
     component: StaffList,
-  },
-  {
-    path: "/staff/:id",
-    name: "StaffDetail",
-    component: StaffDetail,
-    props: true,
   },
   {
     path: "/options",

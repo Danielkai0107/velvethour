@@ -23,15 +23,13 @@
     <div v-else class="bg-white rounded-4 shadow-sm border-0 overflow-hidden">
       <div class="p-0">
         <div class="table-responsive" style="overflow-x: auto;">
-          <table class="table mb-0" style="border-collapse: separate; border-spacing: 0; min-width: 900px;">
+          <table class="table mb-0" style="border-collapse: separate; border-spacing: 0; min-width: 600px;">
             <thead>
               <tr class="border-0" style="background-color: #f8f9fa;">
                 <th class="border-0 fw-normal text-muted py-4 px-4 align-middle" style="font-size: 14px; min-width: 180px; white-space: nowrap; vertical-align: middle;">姓名</th>
                 <th class="border-0 fw-normal text-muted py-4 px-4 align-middle" style="font-size: 14px; min-width: 120px; white-space: nowrap; vertical-align: middle;">職位</th>
-                <th class="border-0 fw-normal text-muted py-4 px-4 align-middle" style="font-size: 14px; min-width: 140px; white-space: nowrap; vertical-align: middle;">電話</th>
-                <th class="border-0 fw-normal text-muted py-4 px-4 align-middle" style="font-size: 14px; min-width: 200px; white-space: nowrap; vertical-align: middle;">Email</th>
-                <th class="border-0 fw-normal text-muted py-4 px-4 align-middle" style="font-size: 14px; min-width: 100px; white-space: nowrap; vertical-align: middle;">狀態</th>
                 <th class="border-0 fw-normal text-muted py-4 px-4 align-middle" style="font-size: 14px; min-width: 160px; white-space: nowrap; vertical-align: middle;">加入日期</th>
+                <th class="border-0 fw-normal text-muted py-4 px-4 align-middle text-center" style="font-size: 14px; min-width: 100px; white-space: nowrap; vertical-align: middle;">操作</th>
               </tr>
             </thead>
             <tbody>
@@ -39,8 +37,7 @@
                 v-for="staff in filteredStaff"
                 :key="staff.id"
                 class="border-0 table-row-hover"
-                style="cursor: pointer; border-bottom: 1px solid #f0f0f0 !important;"
-                @click="goToStaffDetail(staff.id)"
+                style="border-bottom: 1px solid #f0f0f0 !important;"
               >
                 <td class="py-4 px-4 border-0 align-middle" style="border-bottom: 1px solid #f0f0f0; white-space: nowrap; vertical-align: middle;">
                   <div class="fw-semibold text-dark" style="font-size: 14px;">{{ staff.姓名 }}</div>
@@ -49,18 +46,17 @@
                   <span v-if="staff.職位" class="text-dark" style="font-size: 14px;">{{ staff.職位 }}</span>
                 </td>
                 <td class="py-4 px-4 border-0 align-middle" style="border-bottom: 1px solid #f0f0f0; white-space: nowrap; vertical-align: middle;">
-                  <span v-if="staff.電話" class="text-dark" style="font-size: 14px;">{{ staff.電話 }}</span>
-                </td>
-                <td class="py-4 px-4 border-0 align-middle" style="border-bottom: 1px solid #f0f0f0; white-space: nowrap; vertical-align: middle;">
-                  <span v-if="staff.email" class="text-dark" style="font-size: 14px;">{{ staff.email }}</span>
-                </td>
-                <td class="py-4 px-4 border-0 align-middle" style="border-bottom: 1px solid #f0f0f0; white-space: nowrap; vertical-align: middle;">
-                  <span v-if="staff.狀態" :class="['badge', getStatusBadgeClass(staff.狀態)]" style="font-size: 12px; padding: 6px 12px;">
-                    {{ staff.狀態 }}
-                  </span>
-                </td>
-                <td class="py-4 px-4 border-0 align-middle" style="border-bottom: 1px solid #f0f0f0; white-space: nowrap; vertical-align: middle;">
                   <span v-if="staff.加入日期" class="text-dark" style="font-size: 14px;">{{ formatDate(staff.加入日期) }}</span>
+                </td>
+                <td class="py-4 px-4 border-0 align-middle text-center" style="border-bottom: 1px solid #f0f0f0; white-space: nowrap; vertical-align: middle;">
+                  <button
+                    @click="deleteStaff(staff)"
+                    class="btn btn-outline-danger btn-sm"
+                    title="刪除承辦人"
+                    :disabled="deleting"
+                  >
+                    <i class="bi bi-trash"></i>
+                  </button>
                 </td>
               </tr>
             </tbody>
@@ -104,6 +100,7 @@ export default {
       staff: [],
       loading: true,
       saving: false,
+      deleting: false,
       showAddModal: false,
     };
   },
@@ -136,9 +133,6 @@ export default {
         this.loading = false;
       }
     },
-    goToStaffDetail(staffId) {
-      this.$router.push(`/staff/${staffId}`);
-    },
     async saveStaff(staffData) {
       try {
         this.saving = true;
@@ -156,6 +150,23 @@ export default {
     },
     closeModal() {
       this.showAddModal = false;
+    },
+    async deleteStaff(staff) {
+      if (!confirm(`確定要刪除承辦人「${staff.姓名}」嗎？`)) {
+        return;
+      }
+
+      try {
+        this.deleting = true;
+        await staffService.delete(staff.id);
+        this.showToast("承辦人已刪除", "success");
+        await this.loadStaff();
+      } catch (error) {
+        console.error("刪除承辦人失敗:", error);
+        this.showToast("刪除承辦人失敗，請稍後再試", "error");
+      } finally {
+        this.deleting = false;
+      }
     },
     formatDate(date) {
       if (!date) return "未設定";

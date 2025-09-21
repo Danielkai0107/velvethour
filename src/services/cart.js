@@ -120,6 +120,7 @@ class CartService {
       禮服ID: item.id,
       數量: item.數量 || 1,
       單價: item.租借金額 || 0,
+      加價金額: item.加價金額 || 0, // 包含加價金額
       小計: (item.租借金額 || 0) * (item.數量 || 1)
     }));
   }

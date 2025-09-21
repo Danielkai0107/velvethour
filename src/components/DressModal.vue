@@ -152,6 +152,43 @@
                       />
                     </div>
 
+                    <!-- 加價金額 -->
+                    <div class="col-md-6">
+                      <label class="form-label" style="color: #6A6A6A; font-size: 14px;"> 加價金額 (NT$) </label>
+                      <input
+                        v-model.number="formData.加價金額"
+                        type="number"
+                        class="form-control"
+                        min="0"
+                        placeholder="例: 1000"
+                      />
+                    </div>
+
+                    <!-- 押金 -->
+                    <div class="col-md-6">
+                      <label class="form-label" style="color: #6A6A6A; font-size: 14px;"> 押金 (NT$) </label>
+                      <input
+                        v-model.number="formData.押金"
+                        type="number"
+                        class="form-control"
+                        min="0"
+                        placeholder="例: 5000"
+                      />
+                    </div>
+
+                    <!-- 庫存數量 -->
+                    <div class="col-md-6">
+                      <label class="form-label" style="color: #6A6A6A; font-size: 14px;"> 庫存數量 * </label>
+                      <input
+                        v-model.number="formData.庫存數量"
+                        type="number"
+                        class="form-control"
+                        required
+                        min="0"
+                        placeholder="例: 1"
+                      />
+                    </div>
+
                     <!-- 顏色 -->
                     <div class="col-md-6">
                       <label class="form-label" style="color: #6A6A6A; font-size: 14px;"> 顏色 * </label>
@@ -167,18 +204,6 @@
                     </select>
                     </div>
 
-                    <!-- 加價金額 -->
-                    <div class="col-md-6">
-                      <label class="form-label" style="color: #6A6A6A; font-size: 14px;"> 加價金額 (NT$) </label>
-                      <input
-                        v-model.number="formData.加價金額"
-                        type="number"
-                        class="form-control"
-                        min="0"
-                        placeholder="例: 1000"
-                      />
-                    </div>
-
                     <!-- 裙型 -->
                     <div class="col-md-6">
                       <label class="form-label" style="color: #6A6A6A; font-size: 14px;"> 裙型 * </label>
@@ -192,19 +217,6 @@
                         {{ skirt.label }}
                       </option>
                     </select>
-                    </div>
-
-                    <!-- 庫存數量 -->
-                    <div class="col-md-6">
-                      <label class="form-label" style="color: #6A6A6A; font-size: 14px;"> 庫存數量 * </label>
-                      <input
-                        v-model.number="formData.庫存數量"
-                        type="number"
-                        class="form-control"
-                        required
-                        min="0"
-                        placeholder="例: 1"
-                      />
                     </div>
 
                     <!-- 袖型 -->
@@ -235,6 +247,24 @@
                         {{ neck.label }}
                       </option>
                     </select>
+                    </div>
+
+                    <!-- 修改原因（當價格有變更時） -->
+                    <div class="col-12" v-if="dress && (
+                      formData.租借金額 !== dress.租借金額 || 
+                      formData.加價金額 !== dress.加價金額 ||
+                      formData.押金 !== dress.押金
+                    )">
+                      <label class="form-label" style="color: #6A6A6A; font-size: 14px;"> 
+                        價格修改原因 
+                        <small class="text-muted">(價格有變更時請填寫)</small>
+                      </label>
+                      <input
+                        v-model="formData.修改原因"
+                        type="text"
+                        class="form-control"
+                        placeholder="例: 成本調整、市場價格變動、特殊優惠等"
+                      />
                     </div>
 
                     <!-- 備註 -->
@@ -329,8 +359,10 @@ export default {
         領型: "",
         租借金額: 0,
         加價金額: 0,
+        押金: 0,
         庫存數量: 1,
         備註: "",
+        修改原因: "",
         新增時間戳: null,
       },
       colorOptions: [],
@@ -357,6 +389,7 @@ export default {
             加價金額: newDress.加價金額 || 0,
             庫存數量: newDress.庫存數量 || 1,
             備註: newDress.備註 || newDress.描述 || "",
+            修改原因: "",
             新增時間戳: newDress.新增時間戳 || newDress.創建時間 || null,
           };
         } else {
@@ -391,6 +424,7 @@ export default {
         加價金額: 0,
         庫存數量: 1,
         備註: "",
+        修改原因: "",
         新增時間戳: null,
       };
     },

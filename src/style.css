@@ -4,6 +4,10 @@
 :root {
   --bs-primary: #8E3E36;
   --bs-primary-rgb: 142, 62, 54;
+  --bs-warning: #c06226;
+  --bs-warning-rgb: 192, 98, 38;
+  --bs-info: #f69e09;
+  --bs-info-rgb: 246, 158, 9;
 }
 
 .btn-primary {
@@ -40,6 +44,94 @@
 
 .badge.bg-primary {
   background-color: #8E3E36 !important;
+}
+
+/* 自定義 Warning 顏色 */
+.btn-warning {
+  --bs-btn-bg: #c06226;
+  --bs-btn-border-color: #c06226;
+  --bs-btn-hover-bg: #a85521;
+  --bs-btn-hover-border-color: #a85521;
+  --bs-btn-focus-shadow-rgb: 192, 98, 38;
+  --bs-btn-active-bg: #90481c;
+  --bs-btn-active-border-color: #90481c;
+  --bs-btn-color: #fff;
+}
+
+.btn-outline-warning {
+  --bs-btn-color: #c06226;
+  --bs-btn-border-color: #c06226;
+  --bs-btn-hover-bg: #c06226;
+  --bs-btn-hover-border-color: #c06226;
+  --bs-btn-focus-shadow-rgb: 192, 98, 38;
+  --bs-btn-active-bg: #c06226;
+  --bs-btn-active-border-color: #c06226;
+}
+
+.text-warning {
+  color: #c06226 !important;
+}
+
+.bg-warning {
+  background-color: #c06226 !important;
+}
+
+.border-warning {
+  border-color: #c06226 !important;
+}
+
+.badge.bg-warning {
+  background-color: #c06226 !important;
+}
+
+.alert-warning {
+  --bs-alert-color: #c06226;
+  --bs-alert-bg: #fdf2e9;
+  --bs-alert-border-color: #f6d6c1;
+}
+
+/* 自定義 Info 顏色 */
+.btn-info {
+  --bs-btn-bg: #f69e09;
+  --bs-btn-border-color: #f69e09;
+  --bs-btn-hover-bg: #d88708;
+  --bs-btn-hover-border-color: #d88708;
+  --bs-btn-focus-shadow-rgb: 246, 158, 9;
+  --bs-btn-active-bg: #c07507;
+  --bs-btn-active-border-color: #c07507;
+  --bs-btn-color: #fff;
+}
+
+.btn-outline-info {
+  --bs-btn-color: #f69e09;
+  --bs-btn-border-color: #f69e09;
+  --bs-btn-hover-bg: #f69e09;
+  --bs-btn-hover-border-color: #f69e09;
+  --bs-btn-focus-shadow-rgb: 246, 158, 9;
+  --bs-btn-active-bg: #f69e09;
+  --bs-btn-active-border-color: #f69e09;
+}
+
+.text-info {
+  color: #f69e09 !important;
+}
+
+.bg-info {
+  background-color: #f69e09 !important;
+}
+
+.border-info {
+  border-color: #f69e09 !important;
+}
+
+.badge.bg-info {
+  background-color: #f69e09 !important;
+}
+
+.alert-info {
+  --bs-alert-color: #f69e09;
+  --bs-alert-bg: #fef8f0;
+  --bs-alert-border-color: #fdedc8;
 }
 
 body {
@@ -88,6 +180,7 @@ body {
 @media (max-width: 1199.98px) {
   .sidebar {
     width: 80px !important;
+    min-width: 80px !important;
   }
   
   .sidebar-logo {

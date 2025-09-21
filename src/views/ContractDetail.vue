@@ -23,7 +23,34 @@
       <div class="col-12">
         <div class="card shadow-sm border-0">
           <div class="card-body p-4">
-            <!-- 1. 合約禮服 -->
+            <!-- 1. 合約單號 -->
+            <div class="mb-4">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="card-title mb-0">合約單號</h5>
+                <!-- 操作按鈕群組 -->
+                <div class="d-flex gap-2">
+                  <button @click="showTemplatePreview" class="btn btn-sm btn-info" style="font-size: 12px;">
+                    <i class="bi bi-eye me-1"></i>預覽模板
+                  </button>
+                  <button @click="exportToPDFDirect" class="btn btn-sm btn-success" :disabled="exportingPDF" style="font-size: 12px;">
+                    <span v-if="exportingPDF" class="spinner-border spinner-border-sm me-1" role="status"></span>
+                    <i v-else class="bi bi-file-earmark-pdf me-1"></i>
+                    <span>{{ exportingPDF ? '匯出中...' : '匯出PDF' }}</span>
+                  </button>
+                  <button @click="editContract" class="btn btn-sm btn-primary" style="font-size: 12px;">
+                    <i class="bi bi-pencil-square me-1"></i>編輯合約
+                  </button>
+                  <button @click="deleteContract" class="btn btn-sm btn-outline-danger" :disabled="deleting" style="font-size: 12px;">
+                    <span v-if="deleting" class="spinner-border spinner-border-sm me-1" role="status"></span>
+                    <i v-else class="bi bi-trash me-1"></i>
+                    <span>{{ deleting ? '刪除中...' : '刪除合約' }}</span>
+                  </button>
+                </div>
+              </div>
+              <h4 class="text-primary fw-bold my-4">{{ contract.合約單號 }}</h4>
+            </div>
+
+            <!-- 2. 合約禮服 -->
             <div class="mb-4">
               <h5 class="card-title mb-3">合約禮服</h5>
 
@@ -102,152 +129,44 @@
               </div>
             </div>
 
-            <!-- 2. 合約單號 -->
-            <div class="mb-4">
-              <h5 class="card-title mb-2">合約單號</h5>
-              <h2 class="text-primary fw-bold">{{ contract.合約單號 }}</h2>
-            </div>
-
             <!-- 3. 租用時間 -->
             <div class="mb-4">
               <h5 class="card-title mb-3">租用時間</h5>
-              <div class="row g-3">
-                <div class="col-md-6">
-                  <div class="border rounded p-3">
-                    <small class="text-muted d-block">租用開始時間</small>
-                    <strong class="text-dark">{{
+              <div class="row p-3">
+                <p class="small text-muted">開始時間 : 
+                  <span class="text-decoration-underline">
+                  {{
                       formatDateTime(contract.租用開始時間)
-                    }}</strong>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="border rounded p-3">
-                    <small class="text-muted d-block">租用結束時間</small>
-                    <strong class="text-dark">{{
-                      formatDateTime(contract.租用結束時間)
-                    }}</strong>
-                  </div>
-                </div>
+                    }}
+
+</span>
+</p>
+                    <p class="small text-muted">結束時間 : 
+                      <span class="text-decoration-underline">
+
+                        {{
+                          formatDateTime(contract.租用結束時間)
+                        }}
+                        </span>
+                    
+                  </p>
+              
               </div>
             </div>
 
             <!-- 4. 客戶資訊 -->
             <div class="mb-4">
-              <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="card-title mb-0">客戶資訊</h5>
-                <button @click="toggleEditMode" class="btn btn-sm btn-outline-primary">
-                  <i :class="editMode ? 'bi bi-check-circle' : 'bi bi-pencil-square'" class="me-1"></i>
-                  {{ editMode ? '儲存' : '編輯' }}
-                </button>
-              </div>
-              <div class="row g-3">
-                <div class="col-md-3 col-sm-6">
-                  <div class="border rounded p-3 h-100">
-                    <small class="text-muted d-block">客戶姓名</small>
-                    <input 
-                      v-if="editMode" 
-                      v-model="editableContract.客戶姓名" 
-                      type="text" 
-                      class="form-control form-control-sm mt-1"
-                      placeholder="請輸入客戶姓名"
-                    />
-                    <strong v-else class="text-dark">{{ contract.客戶姓名 || '未設定' }}</strong>
-                  </div>
-                </div>
-                <div class="col-md-3 col-sm-6">
-                  <div class="border rounded p-3 h-100">
-                    <small class="text-muted d-block">電話</small>
-                    <input 
-                      v-if="editMode" 
-                      v-model="editableContract.電話" 
-                      type="tel" 
-                      class="form-control form-control-sm mt-1"
-                      placeholder="請輸入電話號碼"
-                    />
-                    <strong v-else class="text-dark">{{ contract.電話 || '未設定' }}</strong>
-                  </div>
-                </div>
-                <div class="col-md-3 col-sm-6">
-                  <div class="border rounded p-3 h-100">
-                    <small class="text-muted d-block">Email</small>
-                    <input 
-                      v-if="editMode" 
-                      v-model="editableContract.email" 
-                      type="email" 
-                      class="form-control form-control-sm mt-1"
-                      placeholder="請輸入Email"
-                    />
-                    <strong v-else class="text-dark">{{ contract.email || '未設定' }}</strong>
-                  </div>
-                </div>
-                <div class="col-md-3 col-sm-6">
-                  <div class="border rounded p-3 h-100">
-                    <small class="text-muted d-block">身分證號</small>
-                    <input 
-                      v-if="editMode" 
-                      v-model="editableContract.身分證號" 
-                      type="text" 
-                      class="form-control form-control-sm mt-1"
-                      placeholder="請輸入身分證號"
-                    />
-                    <strong v-else class="text-dark">{{ contract.身分證號 || '未設定' }}</strong>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="border rounded p-3 h-100">
-                    <small class="text-muted d-block">地址</small>
-                    <textarea 
-                      v-if="editMode" 
-                      v-model="editableContract.地址" 
-                      class="form-control form-control-sm mt-1"
-                      rows="2"
-                      placeholder="請輸入地址"
-                    ></textarea>
-                    <strong v-else class="text-dark">{{ contract.地址 || '未設定' }}</strong>
-                  </div>
-                </div>
-                <div class="col-md-3 col-sm-6">
-                  <div class="border rounded p-3 h-100">
-                    <small class="text-muted d-block">三圍</small>
-                    <input 
-                      v-if="editMode" 
-                      v-model="editableContract.三圍" 
-                      type="text" 
-                      class="form-control form-control-sm mt-1"
-                      placeholder="例：32B/25/35"
-                    />
-                    <strong v-else class="text-dark">{{ contract.三圍 || '未設定' }}</strong>
-                  </div>
-                </div>
-                
-                <!-- 客戶簽名 -->
-                <div class="col-md-3" v-if="contract.客戶簽名 || editMode">
-                  <div class="border rounded p-3 h-100">
-                    <small class="text-muted d-block">客戶簽名</small>
-                    <div v-if="editMode" class="mt-2">
-                      <div v-if="editableContract.客戶簽名" class="signature-preview mb-2">
-                        <img :src="editableContract.客戶簽名" alt="客戶簽名" class="signature-image" />
-                        <button 
-                          type="button" 
-                          @click="editableContract.客戶簽名 = ''" 
-                          class="btn btn-sm btn-outline-danger ms-2"
-                        >
-                          移除簽名
-                        </button>
-                      </div>
-                      <input
-                        type="file"
-                        @change="handleSignatureEdit"
-                        accept="image/*"
-                        class="form-control form-control-sm"
-                        :class="{ 'd-none': editableContract.客戶簽名 }"
-                      />
-                    </div>
-                    <div v-else-if="contract.客戶簽名" class="mt-2">
-                      <img :src="contract.客戶簽名" alt="客戶簽名" class="signature-image" />
-                    </div>
-                    <span v-else class="text-muted">未設定</span>
-                  </div>
+              <h5 class="card-title mb-3">客戶資訊</h5>
+              <div class="row p-3">
+                <p class="small text-muted">客戶姓名 : {{ contract.客戶姓名 || '' }}</p>
+                <p class="small text-muted">電話 : {{ contract.電話 || '' }}</p>
+                <p class="small text-muted">Email : {{ contract.email || '' }}</p>
+                <p class="small text-muted">身分證號 : {{ contract.身分證號 || '' }}</p>
+                <p class="small text-muted">地址 : {{ contract.地址 || '' }}</p>
+                <p class="small text-muted">三圍 : {{ contract.三圍 || '' }}</p>
+                <div v-if="contract.客戶簽名">
+                  <p class="small text-muted">客戶簽名 :</p>
+                  <img :src="contract.客戶簽名" alt="客戶簽名" class="signature-image ms-3" />
                 </div>
               </div>
             </div>
@@ -255,99 +174,71 @@
             <!-- 5. 承辦人＆押金 -->
             <div class="mb-4">
               <h5 class="card-title mb-3">承辦人＆押金</h5>
-              <div class="row g-3">
-                <div class="col-md-6">
-                  <div class="border rounded p-3 h-100">
-                    <small class="text-muted d-block">承辦人</small>
-                    <select 
-                      v-if="editMode" 
-                      v-model="editableContract.承辦人" 
-                      class="form-select form-select-sm mt-1"
-                    >
-                      <option value="">請選擇承辦人</option>
-                      <option value="Abby">Abby</option>
-                      <option value="Jenny">Jenny</option>
-                      <option value="Alice">Alice</option>
-                      <option value="Cindy">Cindy</option>
-                      <option value="Emma">Emma</option>
-                    </select>
-                    <strong v-else class="text-dark">{{ contract.承辦人 || '未設定' }}</strong>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="border rounded p-3 h-100">
-                    <small class="text-muted d-block">押金金額</small>
-                    <div v-if="editMode" class="input-group input-group-sm mt-1">
-                      <span class="input-group-text">NT$</span>
-                      <input 
-                        v-model.number="editableContract.押金" 
-                        type="number" 
-                        class="form-control"
-                        placeholder="0"
-                        min="0"
-                      />
-                  </div>
-                    <strong v-else class="text-dark">
+              <div class="row p-3">
+                <p class="small text-muted">承辦人 : {{ contract.承辦人 || '' }}</p>
+                <p class="small text-muted">押金金額 : 
                       <span v-if="contract.押金">NT$ {{ contract.押金.toLocaleString() }}</span>
-                      <span v-else class="text-muted">NT$ 0</span>
-                    </strong>
+                  <span v-else>NT$ 0</span>
+                </p>
                   </div>
                 </div>
+
+            <!-- 6. 租借方案 -->
+            <div class="mb-4">
+              <h5 class="card-title mb-3">租借方案</h5>
+              <div class="row p-3">
+                <p class="small text-muted">選擇方案 : {{ contract.選擇方案 || '' }}</p>
+                <p class="small text-muted">選擇配件 : {{ getContractAccessoryFullLabel() || '' }}</p>
+                <p class="small text-muted">折扣比例 : {{ contract.折扣比例 ? Math.round((1 - contract.折扣比例) * 100) + '% 折扣' : '無折扣' }}</p>
               </div>
             </div>
 
-            <!-- 6. 金額詳情 -->
+            <!-- 7. 金額詳情 -->
             <div class="mb-4">
               <h5 class="card-title mb-3">金額詳情</h5>
 
-              <div class="bg-white rounded p-3 shadow-sm">
-                <div class="small text-muted">
+              <div class="p-3">
+                <div class="small text-muted" style="line-height: 1.8;">
                   <!-- 方案價格 (如果有選擇方案) -->
-                  <div v-if="contract.選擇方案" class="d-flex justify-content-between">
+                  <div v-if="contract.選擇方案" class="d-flex justify-content-between mb-2">
                     <span>方案價格</span>
                     <span>NT$ {{ getContractPlanPrice().toLocaleString() }}</span>
                   </div>
                   
                   <!-- 禮服小計 -->
-                  <div v-if="!contract.選擇方案" class="d-flex justify-content-between">
+                  <div v-if="!contract.選擇方案" class="d-flex justify-content-between mb-2">
                     <span>禮服小計</span>
                     <span>NT$ {{ calculateContractDressTotal().toLocaleString() }}</span>
                   </div>
                   
-                        <!-- 加價金額 (只在選擇方案時顯示) -->
-                        <div v-if="contract.選擇方案 && getContractExtraAmount() > 0" class="d-flex justify-content-between text-warning">
-                          <span>加價金額</span>
-                          <span>+ NT$ {{ getContractExtraAmount().toLocaleString() }}</span>
+                  <!-- 方案折扣 (只折扣方案價格) -->
+                  <div v-if="contract.選擇方案 && contract.折扣比例 && contract.折扣比例 < 1" class="d-flex justify-content-between mb-2">
+                    <span>方案折扣 ({{ Math.round((1 - (contract.折扣比例 || 1)) * 100) }}%)</span>
+                    <span>- NT$ {{ getContractDiscountAmount().toLocaleString() }}</span>
                         </div>
                         
-                        <!-- 小計 -->
-                        <div class="d-flex justify-content-between">
-                          <span>小計</span>
-                          <span>NT$ {{ calculateContractTotal().toLocaleString() }}</span>
-                        </div>
-                  
-                  <!-- 優惠折扣 -->
-                  <div v-if="contract.折扣比例 && contract.折扣比例 < 1" class="d-flex justify-content-between text-success">
-                    <span>折扣 ({{ Math.round((1 - (contract.折扣比例 || 1)) * 100) }}%)</span>
+                  <!-- 禮服折扣 (沒有方案時) -->
+                  <div v-if="!contract.選擇方案 && contract.折扣比例 && contract.折扣比例 < 1" class="d-flex justify-content-between mb-2">
+                    <span>禮服折扣 ({{ Math.round((1 - (contract.折扣比例 || 1)) * 100) }}%)</span>
                     <span>- NT$ {{ getContractDiscountAmount().toLocaleString() }}</span>
                   </div>
                   
-                  <!-- 折扣後小計 -->
-                  <div v-if="contract.折扣比例 && contract.折扣比例 < 1" class="d-flex justify-content-between border-top pt-2 mt-2">
-                    <span>折扣後小計</span>
-                    <span>NT$ {{ Math.round(calculateContractTotal() * (contract.折扣比例 || 1)).toLocaleString() }}</span>
+                  <!-- 加價金額 (不折扣) -->
+                  <div v-if="contract.選擇方案 && getContractExtraAmount() > 0" class="d-flex justify-content-between mb-2">
+                    <span>加價金額 (不折扣)</span>
+                    <span>+ NT$ {{ getContractExtraAmount().toLocaleString() }}</span>
                   </div>
                   
-                  <!-- 配件金額 (折扣後加入) -->
-                  <div v-if="getContractAccessoryAmount() > 0" class="d-flex justify-content-between text-info">
-                    <span>配件金額</span>
+                  <!-- 配件金額 (不折扣) -->
+                  <div v-if="getContractAccessoryAmount() > 0" class="d-flex justify-content-between mb-2">
+                    <span>配件金額 (不折扣)</span>
                     <span>+ NT$ {{ getContractAccessoryAmount().toLocaleString() }}</span>
                   </div>
                   
                   <!-- 合約總金額 -->
-                  <div class="d-flex justify-content-between fw-bold text-primary border-top pt-2 mt-2">
+                  <div class="d-flex justify-content-between border-top pt-2 mt-2">
                     <span>合約總金額</span>
-                    <span>NT$ {{ contract.合約總金額?.toLocaleString() || 0 }}</span>
+                    <span>NT$ {{ (contract.合約總金額 || 0).toLocaleString() }}</span>
                   </div>
                 </div>
               </div>
@@ -376,12 +267,12 @@
                 <table class="table table-bordered">
                   <thead class="table-light">
                     <tr>
-                      <th>付款別</th>
-                      <th>金額</th>
-                      <th>接待人員</th>
-                      <th>客戶簽名</th>
-                      <th>付款日期</th>
-                      <th v-if="editMode" style="width: 80px;">操作</th>
+                      <th class="small text-muted">付款別</th>
+                      <th class="small text-muted">金額</th>
+                      <th class="small text-muted">接待人員</th>
+                      <th class="small text-muted">客戶簽名</th>
+                      <th class="small text-muted">付款日期</th>
+                      <th v-if="editMode" class="small text-muted" style="width: 80px;">操作</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -399,7 +290,7 @@
                           <option value="宴客尾款">宴客尾款</option>
                           <option value="其他">其他</option>
                         </select>
-                        <span v-else class="badge bg-primary">{{ payment.付款別 || '-' }}</span>
+                        <span v-else class="small text-muted">{{ payment.付款別 || '-' }}</span>
                       </td>
                       <td>
                         <div v-if="editMode" class="payment-amount-column">
@@ -426,26 +317,22 @@
                           </div>
                         </div>
                         <div v-else class="payment-amount-display">
-                          <div v-if="payment.金額百分比" class="text-primary small fw-bold mb-1">
-                            {{ payment.金額百分比 }}%
-                          </div>
-                          <div class="fw-bold text-success">
-                            <span v-if="payment.金額">NT$ {{ payment.金額.toLocaleString() }}</span>
-                            <span v-else class="text-muted">-</span>
+                          <div v-if="payment.金額百分比" >
+                            <span v-if="payment.金額" class="small text-muted ms-3">NT$ {{ payment.金額.toLocaleString() }}</span>
+                            <span class="small text-muted"> ({{ payment.金額百分比 }}%)</span>
                           </div>
                         </div>
                       </td>
                       <td>
                         <div class="staff-display text-center">
-                          <span class="badge bg-info">{{ payment.接待人員 || contract.承辦人 || '-' }}</span>
-                          <div class="text-muted small mt-1">承辦人</div>
+                          <span class="small text-muted">{{ payment.接待人員 || contract.承辦人 || '-' }}</span>
                         </div>
                       </td>
                       <td class="text-center">
                         <div v-if="contract.客戶簽名 || editableContract.客戶簽名" class="signature-display">
                           <img :src="contract.客戶簽名 || editableContract.客戶簽名" alt="客戶簽名" class="detail-signature-image" />
                         </div>
-                        <span v-else class="text-muted">-</span>
+                        <span v-else class="small text-muted">-</span>
                       </td>
                       <td>
                         <input
@@ -454,7 +341,7 @@
                           type="date"
                           class="form-control form-control-sm"
                         />
-                        <span v-else>{{ formatPaymentDate(payment.付款日期) || '-' }}</span>
+                        <span v-else class="small text-muted">{{ formatPaymentDate(payment.付款日期) || '-' }}</span>
                       </td>
                       <td v-if="editMode">
                         <button
@@ -468,8 +355,8 @@
                       </td>
                     </tr>
                     <tr v-if="(!contract.付款記錄 || contract.付款記錄.length === 0) && !editMode">
-                      <td colspan="5" class="text-center text-muted py-3">
-                        <i class="bi bi-credit-card me-2"></i>尚未新增付款記錄
+                      <td colspan="5" class="text-center py-3">
+                        <span class="small text-muted"><i class="bi bi-credit-card me-2"></i>尚未新增付款記錄</span>
                       </td>
                     </tr>
                   </tbody>
@@ -477,62 +364,24 @@
               </div>
             </div>
 
-            <!-- 8. 配件 -->
-            <div class="mb-4" v-if="contract.選擇配件">
-              <h5 class="card-title mb-3">配件</h5>
-              <div class="border rounded p-3">
-                <div class="d-flex justify-content-between align-items-center">
-                  <div>
-                    <strong class="text-dark">{{ getContractAccessoryFullLabel() }}</strong>
-                  </div>
-                  <i class="bi bi-gem text-primary" style="font-size: 1.5rem;"></i>
-                </div>
-              </div>
-            </div>
-
-            <!-- 9. 備註詳情 -->
-            <div class="mb-4" v-if="contract.備注">
-              <h5 class="card-title mb-3">備註詳情</h5>
-              <div class="border rounded p-3">
-                <p class="mb-0 text-dark" style="white-space: pre-wrap">
-                  {{ contract.備注 }}
-                </p>
-              </div>
-            </div>
-
-            <!-- 10. 時間記錄 -->
+            <!-- 8. 備註詳情 -->
             <div class="mb-4">
-              <div class="d-flex align-items-center mb-2">
-                <small class="text-muted">
-                  <i class="bi bi-clock me-1"></i>
-                  建立：{{ formatDateTime(contract.合約建立日期時間 || contract.創建時間) }}
-                  <span v-if="contract.更新時間" class="ms-3">
-                    <i class="bi bi-pencil me-1"></i>
-                    更新：{{ formatDateTime(contract.更新時間) }}
-                  </span>
-                </small>
+              <h5 class="card-title mb-3">備註詳情</h5>
+              <div class="row p-3">
+                <p v-if="contract.備注" class="small text-muted" style="white-space: pre-wrap"> {{ contract.備注 }}</p>
+                <p v-else class="small text-muted">備註 : </p>
               </div>
             </div>
 
-            <!-- 操作按鈕 -->
-            <div class="d-flex gap-3 justify-content-end mt-4 pt-3 border-top">
-              <button @click="showTemplatePreview" class="btn btn-info">
-                <i class="bi bi-eye me-2"></i>預覽模板
-              </button>
-              <button @click="exportToPDFDirect" class="btn btn-success" :disabled="exportingPDF">
-                <span v-if="exportingPDF" class="spinner-border spinner-border-sm me-2" role="status"></span>
-                <i v-else class="bi bi-file-earmark-pdf me-2"></i>
-                <span style="font-size: 14px;">{{ exportingPDF ? '匯出中...' : '匯出PDF' }}</span>
-              </button>
-              <button @click="editContract" class="btn btn-primary">
-                <i class="bi bi-pencil-square me-2"></i>編輯合約
-              </button>
-              <button @click="deleteContract" class="btn btn-outline-danger" :disabled="deleting">
-                <span v-if="deleting" class="spinner-border spinner-border-sm me-2" role="status"></span>
-                <i v-else class="bi bi-trash me-2"></i>
-                <span style="font-size: 14px;">{{ deleting ? '刪除中...' : '刪除合約' }}</span>
-              </button>
+            <!-- 9. 時間記錄 -->
+            <div class="mb-4">
+              <h5 class="card-title mb-3">時間記錄</h5>
+              <div class="row p-3">
+                <p class="small text-muted">建立時間 : {{ formatDateTime(contract.合約建立日期時間 || contract.創建時間) }}</p>
+                <p v-if="contract.更新時間" class="small text-muted">更新時間 : {{ formatDateTime(contract.更新時間) }}</p>
+              </div>
             </div>
+
           </div>
         </div>
       </div>
@@ -550,14 +399,6 @@
       </div>
     </div>
 
-    <!-- 編輯模態框 -->
-    <ContractModal
-      v-if="showEditModal"
-      :show="showEditModal"
-      :contract="contract"
-      @close="showEditModal = false"
-      @save="saveContract"
-    />
 
     <!-- 禮服詳情 Popup -->
     <DressDetailModal
@@ -587,20 +428,26 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" @click="closeTemplatePreview">關閉</button>
-            <button type="button" class="btn btn-success" @click="exportToPDFFromPreview" :disabled="exportingPDF">
-              <span v-if="exportingPDF" class="spinner-border spinner-border-sm me-2" role="status"></span>
-              <i v-else class="bi bi-file-earmark-pdf me-2"></i>
-              {{ exportingPDF ? '匯出中...' : '匯出PDF' }}
-            </button>
           </div>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- 編輯模態框 -->
+  <ContractModal
+    v-if="showEditModal"
+    :show="showEditModal"
+    :contract="contract"
+    @close="showEditModal = false"
+    @save="saveContract"
+  />
+
 </template>
 
 <script>
 import { contractService, dressService } from "../services/firestore.js";
+import { optionsService } from "../services/options.js";
 import ContractModal from "../components/ContractModal.vue";
 import DressDetailModal from "../components/DressDetailModal.vue";
 import ContractTemplate from "../components/Template.vue";
@@ -626,13 +473,16 @@ export default {
       deleting: false,
       saving: false,
       exportingPDF: false,
-      showEditModal: false,
       showDressDetailModal: false,
       showTemplateModal: false,
       selectedDress: null,
       availableDresses: [], // 用於顯示禮服資訊
-      editMode: false,
+      editMode: false, // 保留全域編輯模式（用於付款記錄）
       editableContract: {},
+      planPrices: {}, // 方案價格對照表
+      packagesByCategory: {}, // 分類方案資料
+      accessoriesByCategory: {}, // 分類配件資料
+      showEditModal: false, // 控制編輯模態框
     };
   },
   computed: {
@@ -649,9 +499,41 @@ export default {
   },
   async mounted() {
     await this.loadDresses();
+    this.loadPackageOptions(); // 載入方案和配件選項
     await this.loadContract();
   },
   methods: {
+    loadPackageOptions() {
+      try {
+        this.packagesByCategory = optionsService.getPackagesByCategory();
+        this.planPrices = optionsService.getPackagePrices();
+        this.loadAccessoryOptions();
+        console.log('載入方案選項:', {
+          packagesByCategory: this.packagesByCategory,
+          planPrices: this.planPrices,
+          accessoriesByCategory: this.accessoriesByCategory
+        });
+      } catch (error) {
+        console.error('載入方案選項失敗:', error);
+      }
+    },
+
+    loadAccessoryOptions() {
+      try {
+        const accessories = optionsService.getAccessoryOptions();
+        const categorized = {};
+        accessories.forEach(accessory => {
+          if (!categorized[accessory.category]) {
+            categorized[accessory.category] = [];
+          }
+          categorized[accessory.category].push(accessory);
+        });
+        this.accessoriesByCategory = categorized;
+      } catch (error) {
+        console.error('載入配件選項失敗:', error);
+      }
+    },
+
     async loadDresses() {
       try {
         this.availableDresses = await dressService.getAll();
@@ -664,6 +546,15 @@ export default {
       try {
         this.loading = true;
         this.contract = await contractService.getById(this.id);
+        console.log('合約數據載入完成:', {
+          合約ID: this.id,
+          合約數據: this.contract,
+          選擇方案: this.contract?.選擇方案,
+          折扣比例: this.contract?.折扣比例,
+          選擇配件: this.contract?.選擇配件,
+          禮服清單: this.contract?.禮服清單,
+          合約總金額: this.contract?.合約總金額
+        });
       } catch (error) {
         console.error("載入合約詳情失敗:", error);
         this.showToast("載入合約詳情失敗，請稍後再試", "error");
@@ -718,6 +609,18 @@ export default {
       this.showEditModal = true;
     },
 
+    async saveContract(contractData) {
+      try {
+        await contractService.update(this.contract.id, contractData);
+        this.showToast("合約已更新", "success");
+        await this.loadContract();
+        this.showEditModal = false;
+      } catch (error) {
+        console.error("更新合約失敗:", error);
+        this.showToast("更新合約失敗，請稍後再試", "error");
+      }
+    },
+
     async deleteContract() {
       if (
         !confirm(
@@ -744,20 +647,9 @@ export default {
       }
     },
 
-    async saveContract(contractData) {
-      try {
-        await contractService.update(this.contract.id, contractData);
-        this.showToast("合約已更新", "success");
-        await this.loadContract();
-        this.showEditModal = false;
-      } catch (error) {
-        console.error("更新合約失敗:", error);
-        this.showToast("更新合約失敗，請稍後再試", "error");
-      }
-    },
 
     formatDateTime(date) {
-      if (!date) return "未設定";
+      if (!date) return "";
 
       let dateObj;
       if (date.toDate && typeof date.toDate === "function") {
@@ -780,36 +672,38 @@ export default {
 
     // 計算合約方案價格
     getContractPlanPrice() {
-      if (!this.contract.選擇方案) return 0;
-      // 簡單的價格對照表，可以根據需要擴展
-      const planPrices = {
-        "攝影_一日一晚": 15000,
-        "攝影_一日二晚": 21000,
-        "攝影_二日一晚": 24000,
-        "攝影_二日四晚": 42000,
-        "攝影_二日": 18000,
-        "宴客_一日一晚": 25000,
-        "宴客_一日二晚": 35000,
-      };
-      return planPrices[this.contract.選擇方案] || 0;
+      if (!this.contract?.選擇方案) return 0;
+      // 如果合約中有儲存方案價格，使用合約中的價格
+      if (this.contract.方案價格) {
+        return this.contract.方案價格;
+      }
+      // 否則使用當前價格設定（向後兼容）
+      const price = this.planPrices[this.contract.選擇方案] || 0;
+      return price;
     },
 
     // 計算合約禮服小計
     calculateContractDressTotal() {
-      if (!this.contract.禮服清單) return 0;
-      return this.contract.禮服清單.reduce((total, item) => {
+      if (!this.contract?.禮服清單) return 0;
+      const total = this.contract.禮服清單.reduce((total, item) => {
         return total + (item.小計 || 0);
       }, 0);
+      console.log('合約禮服小計計算:', {
+        禮服清單: this.contract.禮服清單,
+        總計: total
+      });
+      return total;
     },
 
     // 計算合約加價金額
     getContractExtraAmount() {
-      if (!this.contract.選擇方案 || !this.contract.禮服清單) return 0;
-      return this.contract.禮服清單.reduce((total, item) => {
-        const dress = this.getDressById(item.禮服ID);
-        const extraAmount = dress?.加價金額 || 0;
+      if (!this.contract?.選擇方案 || !this.contract?.禮服清單) return 0;
+      const total = this.contract.禮服清單.reduce((total, item) => {
+        // 只使用合約中儲存的加價金額，不使用當前禮服資料庫的價格
+        const extraAmount = item.加價金額 || 0;
         return total + extraAmount;
       }, 0);
+      return total;
     },
 
     // 計算合約總計（未折扣，不含配件）
@@ -817,27 +711,42 @@ export default {
       let total = 0;
       
       if (this.contract.選擇方案) {
+        // 方案價格（會被折扣）
         const planPrice = this.getContractPlanPrice();
-        const extraAmount = this.getContractExtraAmount();
-        total = planPrice + extraAmount;
+        total = planPrice;
       } else {
+        // 禮服金額（會被折扣）
         total = this.calculateContractDressTotal();
       }
       
-      // 配件金額不在這裡加入，會在折扣後加入
       return total;
     },
 
     // 計算合約最終總額（含折扣和配件）
     getContractFinalAmount() {
-      const originalTotal = this.calculateContractTotal();
-      const discountRate = this.contract.折扣比例 || 1;
-      const discountedTotal = Math.round(originalTotal * discountRate);
+      let total = 0;
       
-      // 折扣後加上配件金額
+      if (this.contract.選擇方案) {
+        // 方案價格進行折扣
+        const planPrice = this.getContractPlanPrice();
+      const discountRate = this.contract.折扣比例 || 1;
+        const discountedPlanPrice = Math.round(planPrice * discountRate);
+        
+        // 加價金額不折扣
+        const extraAmount = this.getContractExtraAmount();
+        
+        total = discountedPlanPrice + extraAmount;
+      } else {
+        // 沒有選擇方案，禮服金額進行折扣
+        const dressTotal = this.calculateContractDressTotal();
+        const discountRate = this.contract.折扣比例 || 1;
+        total = Math.round(dressTotal * discountRate);
+      }
+      
+      // 配件金額不折扣，直接加上
       const accessoryAmount = this.getContractAccessoryAmount();
       
-      return discountedTotal + accessoryAmount;
+      return total + accessoryAmount;
     },
 
     // 獲取合約配件名稱
@@ -882,28 +791,41 @@ export default {
 
     // 計算合約配件金額
     getContractAccessoryAmount() {
-      if (!this.contract.選擇配件) return 0;
+      if (!this.contract?.選擇配件) return 0;
       
-      try {
-        const saved = localStorage.getItem('velvethour_options');
-        if (saved) {
-          const options = JSON.parse(saved);
-          const accessories = options.accessories || [];
-          const selectedAccessory = accessories.find(acc => acc.value === this.contract.選擇配件);
-          return selectedAccessory?.accessoryPrice || 0;
-        }
-      } catch (error) {
-        console.error('載入配件選項失敗:', error);
+      // 如果合約中有儲存配件價格，使用合約中的價格
+      if (this.contract.配件價格 !== undefined) {
+        return this.contract.配件價格;
       }
-      return 0;
+      
+      // 否則從預載入的配件資料中查找（向後兼容）
+      const allAccessories = Object.values(this.accessoriesByCategory).flat();
+      const selectedAccessory = allAccessories.find(acc => acc.value === this.contract.選擇配件);
+      const price = selectedAccessory?.accessoryPrice || 0;
+      
+      return price;
     },
 
     // 計算合約折扣金額
     getContractDiscountAmount() {
-      const originalTotal = this.calculateContractTotal();
+      if (!this.contract) return 0;
+      
+      let discountAmount = 0;
       const discountRate = 1 - (this.contract.折扣比例 || 1);
-      return Math.round(originalTotal * discountRate);
+      
+      if (this.contract.選擇方案) {
+        // 方案折扣
+        const planPrice = this.getContractPlanPrice();
+        discountAmount = Math.round(planPrice * discountRate);
+      } else {
+        // 禮服折扣
+        const dressTotal = this.calculateContractDressTotal();
+        discountAmount = Math.round(dressTotal * discountRate);
+      }
+      
+      return discountAmount;
     },
+
 
     async exportToPDF() {
       try {
@@ -1114,7 +1036,8 @@ export default {
       }
     },
 
-    // 切換編輯模式
+
+    // 切換編輯模式（保留給付款記錄使用）
     async toggleEditMode() {
       if (this.editMode) {
         // 儲存模式
@@ -1160,6 +1083,8 @@ export default {
       this.editMode = false;
       this.editableContract = {};
     },
+
+
 
     // 處理簽名編輯
     handleSignatureEdit(event) {
@@ -1234,7 +1159,7 @@ export default {
       
       // 格式化日期的輔助函數
       const formatDate = (date) => {
-        if (!date) return '未設定';
+        if (!date) return '';
         let dateObj;
         if (date.toDate && typeof date.toDate === "function") {
           dateObj = date.toDate();

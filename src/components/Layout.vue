@@ -91,8 +91,8 @@ export default {
       navigation: [
         { name: "禮服清單", href: "/", icon: "bi bi-gem" },
         { name: "合約清單", href: "/contracts", icon: "bi bi-file-text" },
-        { name: "合約模板", href: "/contract-template", icon: "bi bi-file-earmark-text" },
         { name: "檔期日曆", href: "/calendar", icon: "bi bi-calendar3" },
+        { name: "合約模板", href: "/contract-template", icon: "bi bi-file-earmark-text" },
         { name: "承辦人清單", href: "/staff", icon: "bi bi-people" },
         { name: "選項管理", href: "/options", icon: "bi bi-sliders" },
       ],
@@ -131,9 +131,6 @@ export default {
       }
       if (this.$route.path.startsWith("/contracts/")) {
         return "合約詳情";
-      }
-      if (this.$route.path.startsWith("/staff/")) {
-        return "承辦人詳情";
       }
 
       return routeMap[this.$route.path] || "系統管理";

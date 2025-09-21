@@ -98,7 +98,7 @@
                       alt="客戶簽名" 
                       class="template-signature-image"
                     />
-                    <span v-else>{{ payment.signature }}</span>
+                    <!-- 沒有簽名時顯示留白 -->
                   </td>
                   <td class="variable">{{ payment.date }}</td>
                 </tr>
@@ -189,7 +189,7 @@
                 <div class="signature-upload">
                   <img v-if="contractData.客戶簽名" :src="contractData.客戶簽名" alt="承租人簽章" class="signature-image">
                   <div v-else class="signature-placeholder">
-                    <span class="text-muted">客戶簽名</span>
+                    <!-- 沒有簽名時顯示留白 -->
                   </div>
                 </div>
               </div>
@@ -744,8 +744,6 @@ ${defaultDetails}`;
   .signature-placeholder {
     width: 250px;
     height: 120px;
-    border: 2px dashed #ccc;
-    border-radius: 4px;
     display: flex;
     align-items: center;
     justify-content: center;

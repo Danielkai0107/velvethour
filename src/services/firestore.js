@@ -105,11 +105,51 @@ export const dressService = {
 
   // 更新禮服
   async update(id, dressData) {
-    const docRef = doc(db, "dresses", id);
-    await updateDoc(docRef, {
-      ...dressData,
-      更新時間: serverTimestamp(),
-    });
+    try {
+      // 先獲取現有禮服資料，用於記錄價格歷史
+      const currentDress = await this.getById(id);
+      
+      const docRef = doc(db, "dresses", id);
+      const updateData = {
+        ...dressData,
+        更新時間: serverTimestamp(),
+      };
+      
+      // 檢查價格是否有變更，如果有則記錄歷史
+      if (currentDress && (
+        dressData.租借金額 !== undefined && dressData.租借金額 !== currentDress.租借金額 ||
+        dressData.加價金額 !== undefined && dressData.加價金額 !== currentDress.加價金額
+      )) {
+        // 初始化價格歷史記錄（如果不存在）
+        if (!currentDress.價格歷史記錄) {
+          updateData.價格歷史記錄 = [];
+        } else {
+          updateData.價格歷史記錄 = [...currentDress.價格歷史記錄];
+        }
+        
+        // 添加新的價格歷史記錄
+        const priceHistoryEntry = {
+          修改時間: new Date(),
+          修改前: {
+            租借金額: currentDress.租借金額 || 0,
+            加價金額: currentDress.加價金額 || 0
+          },
+          修改後: {
+            租借金額: dressData.租借金額 !== undefined ? dressData.租借金額 : currentDress.租借金額 || 0,
+            加價金額: dressData.加價金額 !== undefined ? dressData.加價金額 : currentDress.加價金額 || 0
+          },
+          修改原因: dressData.修改原因 || "價格調整"
+        };
+        
+        updateData.價格歷史記錄.push(priceHistoryEntry);
+        console.log('記錄價格歷史:', priceHistoryEntry);
+      }
+      
+      await updateDoc(docRef, updateData);
+    } catch (error) {
+      console.error('更新禮服失敗:', error);
+      throw error;
+    }
   },
 
   // 刪除禮服
