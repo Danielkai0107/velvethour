@@ -812,7 +812,37 @@
                   <div class="mb-4">
                     <h6 class="fw-semibold mb-3">押金設定</h6>
                     <div class="bg-white rounded p-3 shadow-sm">
+                      <!-- 押金快速設定按鈕 -->
+                      <div class="mb-3">
+                        <div class="small text-muted mb-2">快速設定（依禮服總額）：</div>
+                        <div class="d-flex gap-2 flex-wrap">
+                          <button
+                            type="button"
+                            @click="setDepositByPercentage(1)"
+                            class="btn btn-outline-primary btn-sm"
+                          >
+                            100% (NT$ {{ getDressDepositAmount(1).toLocaleString() }})
+                          </button>
+                          <button
+                            type="button"
+                            @click="setDepositByPercentage(0.5)"
+                            class="btn btn-outline-primary btn-sm"
+                          >
+                            50% (NT$ {{ getDressDepositAmount(0.5).toLocaleString() }})
+                          </button>
+                          <button
+                            type="button"
+                            @click="setDepositByPercentage(0.3)"
+                            class="btn btn-outline-primary btn-sm"
+                          >
+                            30% (NT$ {{ getDressDepositAmount(0.3).toLocaleString() }})
+                          </button>
+                        </div>
+                      </div>
+                      
+                      <!-- 手動輸入押金 -->
                       <div class="mb-0">
+                        <div class="small text-muted mb-2">或手動輸入押金金額：</div>
                         <div class="input-group input-group-sm">
                           <span class="input-group-text">NT$</span>
                           <input
@@ -2757,6 +2787,32 @@ ${selectedPackage.content}`;
     removePaymentRow(index) {
       this.formData.付款記錄.splice(index, 1);
       this.showToast("已移除付款記錄", "info");
+    },
+
+    // 計算禮服押金金額（根據比例）
+    getDressDepositAmount(percentage = 1) {
+      let dressTotal = 0;
+      
+      if (this.formData.選擇方案) {
+        // 如果有選擇方案，使用方案價格（不含折扣）+ 加價金額
+        const planPrice = this.planPrices[this.formData.選擇方案] || 0;
+        const extraAmount = this.getExtraAmount();
+        dressTotal = planPrice + extraAmount;
+      } else {
+        // 沒有方案，使用禮服清單總額
+        dressTotal = this.calculateDressTotal();
+      }
+      
+      return Math.round(dressTotal * percentage);
+    },
+
+    // 設定押金（根據禮服總額比例）
+    setDepositByPercentage(percentage) {
+      const depositAmount = this.getDressDepositAmount(percentage);
+      this.formData.押金 = depositAmount;
+      
+      const percentText = percentage === 1 ? '100%' : percentage === 0.5 ? '50%' : '30%';
+      this.showToast(`已設定押金為禮服總額的 ${percentText}：NT$ ${depositAmount.toLocaleString()}`, "success");
     },
 
     // 產生新的合約單號

@@ -793,7 +793,7 @@ export default {
 /* 事件樣式 */
 :deep(.fc-event) {
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   margin: 1px 2px;
   font-size: 12px;
   cursor: pointer;
@@ -807,12 +807,12 @@ export default {
 
 :deep(.fc-event-title) {
   font-weight: 500;
-  padding: 2px 6px;
+  padding: 0;
 }
 
 /* 事件內容 */
 .contract-event-content {
-  padding: 4px 6px;
+  padding: 4px;
   line-height: 1.2;
 }
 

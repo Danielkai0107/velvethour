@@ -20,8 +20,8 @@
       <!-- 左側：模板預覽 -->
       <div class="col-lg-8">
         <div class="card shadow-sm border-0">
-          <div class="card-header bg-primary text-white">
-            <h5 class="mb-0">
+          <div class="card-header bg-white text-white">
+            <h5 class="mb-0 text-dark">
               <i class="bi bi-file-earmark-text me-2"></i>模板預覽
             </h5>
           </div>
@@ -42,8 +42,8 @@
       <!-- 右側：設定面板 -->
       <div class="col-lg-4">
         <div class="card shadow-sm border-0 mb-4">
-          <div class="card-header bg-info text-white">
-            <h5 class="mb-0">
+          <div class="card-header bg-white text-white">
+            <h5 class="mb-0 text-dark">
               <i class="bi bi-gear me-2"></i>模板設定
             </h5>
           </div>

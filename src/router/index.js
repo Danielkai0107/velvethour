@@ -7,6 +7,7 @@ import ContractTemplate from "../views/ContractTemplate.vue";
 import CalendarView from "../views/CalendarView.vue";
 import StaffList from "../views/StaffList.vue";
 import OptionsManagement from "../views/OptionsManagement.vue";
+import TimeQuery from "../views/TimeQuery.vue";
 
 const routes = [
   {
@@ -50,6 +51,11 @@ const routes = [
     path: "/options",
     name: "OptionsManagement",
     component: OptionsManagement,
+  },
+  {
+    path: "/time-query",
+    name: "TimeQuery",
+    component: TimeQuery,
   },
 ];
 

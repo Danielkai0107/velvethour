@@ -60,7 +60,7 @@
           <p>總計共新台幣$<span class="variable">{{ calculateDeposit().toLocaleString() }}</span>元整，以匯款支付。</p>
           <ul>
             <li>乙方確認契約內容無誤並承諾租賃後，須支付定金以預留檔期。甲方收到定金始保留乙方預定檔期，並開始進行客製尺寸修改（如需）。</li>
-            <li>定金金額為訂單總金額20%，支付後逾30日，如乙方需取消，則訂金不予退還。</li>
+            <li>定金金額依付款記錄約定，如未約定則為訂單總金額<span class="highlight-percentage">{{ getDepositPercentage() }}%</span>，支付後逾30日，如乙方需取消，則訂金不予退還。</li>
             <li>下訂後乙方有更換承租之款式、品項、檔期之權利，第三次以上試穿則每次酌收新台幣3000元之試穿服務費。</li>
             <li>如因天災等不可抗力之因素致乙方須取消或變更檔期，經甲方確認後得取消或變更，定金可延後使用，不予退還，無須額外處理服務費用。</li>
           </ul>
@@ -93,7 +93,7 @@
                   <td class="variable">{{ payment.staff }}</td>
                   <td class="variable signature-cell">
                     <img 
-                      v-if="contractData.客戶簽名 && payment.signature" 
+                      v-if="contractData.客戶簽名" 
                       :src="contractData.客戶簽名" 
                       alt="客戶簽名" 
                       class="template-signature-image"
@@ -337,10 +337,47 @@ export default {
       return this.totalPeriods;
     },
     
-    // 計算定金（總金額的20%）
+    // 計算定金（優先使用付款記錄中的定金，否則使用總金額的20%）
     calculateDeposit() {
+      // 優先檢查付款記錄中是否有定金項目
+      if (this.contractData.付款記錄 && this.contractData.付款記錄.length > 0) {
+        // 尋找付款記錄中包含"定金"的項目
+        const depositPayments = this.contractData.付款記錄.filter(payment => 
+          payment.付款別 && payment.付款別.includes('定金') && payment.金額 > 0
+        );
+        
+        if (depositPayments.length > 0) {
+          // 如果找到定金項目，計算所有定金的總和
+          const totalDeposit = depositPayments.reduce((sum, payment) => sum + (payment.金額 || 0), 0);
+          return totalDeposit;
+        }
+      }
+      
+      // 如果付款記錄中沒有定金，則使用預設計算方式（總金額的20%）
       const totalAmount = this.contractData.合約總金額 || this.totalAmount;
       return Math.round(totalAmount * 0.2);
+    },
+
+    // 計算定金百分比（用於條款說明）
+    getDepositPercentage() {
+      // 如果付款記錄中有定金，計算實際百分比
+      if (this.contractData.付款記錄 && this.contractData.付款記錄.length > 0) {
+        const depositPayments = this.contractData.付款記錄.filter(payment => 
+          payment.付款別 && payment.付款別.includes('定金') && payment.金額 > 0
+        );
+        
+        if (depositPayments.length > 0) {
+          const totalDeposit = depositPayments.reduce((sum, payment) => sum + (payment.金額 || 0), 0);
+          const totalAmount = this.contractData.合約總金額 || this.totalAmount;
+          if (totalAmount > 0) {
+            const percentage = Math.round((totalDeposit / totalAmount) * 100);
+            return percentage;
+          }
+        }
+      }
+      
+      // 預設為20%
+      return 20;
     },
     
     // 獲取禮服款式
@@ -483,25 +520,8 @@ ${defaultDetails}`;
         }));
       }
       
-      // 如果沒有輸入付款記錄，使用預設值
-      const totalAmount = this.contractData.合約總金額 || this.totalAmount;
-      const deposit = this.calculateDeposit();
-      const staffName = this.contractData.承辦人 || 'Abby';
-      const customerName = this.contractData.客戶姓名 || '';
-      const contractDate = this.formatContractDate();
-      
-      return [
-        { 
-          type: '拍攝定金', 
-          amount: deposit.toLocaleString(), 
-          staff: staffName, 
-          signature: customerName, 
-          date: contractDate 
-        },
-        { type: '拍攝尾款', amount: '', staff: '', signature: '', date: '' },
-        { type: '宴客定金', amount: '', staff: '', signature: '', date: '' },
-        { type: '宴客尾款', amount: '', staff: '', signature: '', date: '' }
-      ];
+      // 如果沒有付款記錄，返回空陣列（表格為空）
+      return [];
     },
 
     // 格式化付款日期
@@ -840,6 +860,13 @@ ${defaultDetails}`;
     object-fit: contain;
   }
   
+  /* 紅字底線樣式 - 用於突出顯示動態百分比 */
+  .highlight-percentage {
+    color: #dc3545;
+    text-decoration: underline;
+    font-weight: bold;
+  }
+
   @media print {
     .signature-input {
       display: none;
@@ -853,6 +880,15 @@ ${defaultDetails}`;
     .image-grid {
       grid-template-columns: repeat(6, 1fr);
       gap: 5px;
+    }
+    
+    /* 列印時保持紅字底線樣式 */
+    .highlight-percentage {
+      color: #dc3545 !important;
+      text-decoration: underline !important;
+      font-weight: bold !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }
   }
   </style>

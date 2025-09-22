@@ -1209,16 +1209,68 @@ export default {
         return '';
       };
 
-      // 獲取配件資訊
-      const getAccessoriesInfo = () => {
+      // 獲取配件完整資訊（與模板邏輯同步）
+      const getAccessoriesFullInfo = () => {
+        // 優先使用合約資料中選擇的配件
         if (contract.選擇配件) {
           return this.getContractAccessoryFullLabel();
         }
+        
+        // 其次使用合約資料中的配件資訊
+        if (contract.配件) {
+          return contract.配件;
+        }
+        
+        // 使用預設值
         return '可任選頭紗款式';
       };
 
-      // 獲取付款記錄
+      // 計算定金（與模板邏輯同步）
+      const calculateDeposit = () => {
+        // 優先檢查付款記錄中是否有定金項目
+        if (contract.付款記錄 && contract.付款記錄.length > 0) {
+          // 尋找付款記錄中包含"定金"的項目
+          const depositPayments = contract.付款記錄.filter(payment => 
+            payment.付款別 && payment.付款別.includes('定金') && payment.金額 > 0
+          );
+          
+          if (depositPayments.length > 0) {
+            // 如果找到定金項目，計算所有定金的總和
+            const totalDeposit = depositPayments.reduce((sum, payment) => sum + (payment.金額 || 0), 0);
+            return totalDeposit;
+          }
+        }
+        
+        // 如果付款記錄中沒有定金，則使用預設計算方式（總金額的20%）
+        const totalAmount = contract.合約總金額 || 0;
+        return Math.round(totalAmount * 0.2);
+      };
+
+      // 計算定金百分比（與模板邏輯同步）
+      const getDepositPercentage = () => {
+        // 如果付款記錄中有定金，計算實際百分比
+        if (contract.付款記錄 && contract.付款記錄.length > 0) {
+          const depositPayments = contract.付款記錄.filter(payment => 
+            payment.付款別 && payment.付款別.includes('定金') && payment.金額 > 0
+          );
+          
+          if (depositPayments.length > 0) {
+            const totalDeposit = depositPayments.reduce((sum, payment) => sum + (payment.金額 || 0), 0);
+            const totalAmount = contract.合約總金額 || 0;
+            if (totalAmount > 0) {
+              const percentage = Math.round((totalDeposit / totalAmount) * 100);
+              return percentage;
+            }
+          }
+        }
+        
+        // 預設為20%
+        return 20;
+      };
+
+      // 獲取付款記錄（與模板邏輯同步）
       const getPaymentRecords = () => {
+        // 如果有輸入的付款記錄，優先使用
         if (contract.付款記錄 && contract.付款記錄.length > 0) {
           return contract.付款記錄.map(payment => ({
             type: payment.付款別,
@@ -1229,15 +1281,8 @@ export default {
           }));
         }
         
-        // 預設付款記錄
-        const totalAmount = contract.合約總金額 || 0;
-        const deposit = Math.round(totalAmount * 0.2);
-        return [
-          { type: '拍攝定金', amount: deposit.toLocaleString(), staff: contract.承辦人 || 'Abby', signature: contract.客戶姓名 || '', date: formatShootingDate() },
-          { type: '拍攝尾款', amount: '', staff: '', signature: '', date: '' },
-          { type: '宴客定金', amount: '', staff: '', signature: '', date: '' },
-          { type: '宴客尾款', amount: '', staff: '', signature: '', date: '' }
-        ];
+        // 如果沒有付款記錄，返回空陣列（表格為空）
+        return [];
       };
 
       return `<!DOCTYPE html>
@@ -1331,7 +1376,7 @@ export default {
     }
     
     .payment-table {
-      margin: 15px 0;
+      margin: 20px 0;
       page-break-inside: avoid;
     }
     
@@ -1345,7 +1390,7 @@ export default {
     .payment-table th,
     .payment-table td {
       border: 1px solid #ddd;
-      padding: 6px;
+      padding: 8px;
       text-align: left;
       font-size: 14px;
     }
@@ -1355,14 +1400,14 @@ export default {
     }
     
     .signature-section {
-      margin-top: 30px;
+      margin-top: 40px;
       page-break-inside: avoid;
     }
     
     .signature-container {
       display: flex;
       justify-content: space-between;
-      margin: 20px 0;
+      margin: 30px 0;
     }
     
     .lessor-info,
@@ -1371,36 +1416,66 @@ export default {
     }
     
     .signature-area {
-      margin-top: 15px;
+      margin-top: 20px;
+    }
+    
+    .signature-upload {
+      margin-top: 10px;
     }
     
     .signature-image {
-      max-width: 200px;
-      max-height: 80px;
+      width: 250px;
+      height: 120px;
+      margin-bottom: 10px;
       object-fit: contain;
-      margin-bottom: 8px;
     }
     
     .signature-placeholder {
-      width: 200px;
-      height: 80px;
-      border: 2px dashed #ccc;
-      border-radius: 4px;
+      width: 250px;
+      height: 120px;
       display: flex;
       align-items: center;
       justify-content: center;
     }
+
+    .address-field {
+      height: 2.8em; /* 固定為兩行字高 (1.4 * 2) */
+      line-height: 1.4;
+      margin: 12px 0;
+      display: flex;
+      align-items: flex-start;
+      font-size: 14px;
+      overflow: hidden; /* 防止內容溢出 */
+    }
+
+    .address-field strong {
+      white-space: nowrap;
+      margin-right: 5px;
+    }
+
+    .address-field .variable {
+      flex: 1;
+      word-wrap: break-word;
+      line-height: 1.4;
+    }
+
+    .lessor-info p,
+    .lessee-info p {
+      margin: 12px 0;
+      font-size: 14px;
+    }
     
     .contract-date {
       text-align: center;
-      margin-top: 25px;
+      margin-top: 30px;
       font-size: 14px;
+      font-weight: bold;
     }
     
     .date-spacing {
       display: flex;
       justify-content: space-between;
-      max-width: 300px;
+      max-width: 400px;
       margin: 0 auto;
     }
     
@@ -1462,7 +1537,15 @@ export default {
     
     .signature-title {
       font-size: 14px;
+      font-weight: bold;
       margin-bottom: 12px;
+    }
+    
+    .signature-section-title {
+      text-align: left;
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 20px;
     }
     
     @media print {
@@ -1517,7 +1600,7 @@ export default {
           <p><span class="variable">${getDressStyles()}</span></p>
           
           <h3>配件:</h3>
-          <p><span class="variable">${getAccessoriesInfo()}</span></p>
+          <p><span class="variable">${getAccessoriesFullInfo()}</span></p>
           
           <h3>圖片：</h3>
           <div class="dress-images">
@@ -1548,10 +1631,10 @@ export default {
         <p>總計共新台幣$<span class="variable">${(contract.合約總金額 || 0).toLocaleString()}</span>元整（含稅），甲方需開立統一發票。乙方應於取件時扣除已付之定金金額後支付。</p>
         
         <h3>● 定金</h3>
-        <p>總計共新台幣$<span class="variable">${Math.round((contract.合約總金額 || 0) * 0.2).toLocaleString()}</span>元整，以匯款支付。</p>
+        <p>總計共新台幣$<span class="variable">${calculateDeposit().toLocaleString()}</span>元整，以匯款支付。</p>
         <ul>
           <li>乙方確認契約內容無誤並承諾租賃後，須支付定金以預留檔期。甲方收到定金始保留乙方預定檔期，並開始進行客製尺寸修改（如需）。</li>
-          <li>定金金額為訂單總金額20%，支付後逾30日，如乙方需取消，則訂金不予退還。</li>
+          <li>定金金額依付款記錄約定，如未約定則為訂單總金額<span class="variable" style="color: #dc3545; text-decoration: underline; font-weight: bold;">${getDepositPercentage()}%</span>，支付後逾30日，如乙方需取消，則訂金不予退還。</li>
           <li>下訂後乙方有更換承租之款式、品項、檔期之權利，第三次以上試穿則每次酌收新台幣3000元之試穿服務費。</li>
           <li>如因天災等不可抗力之因素致乙方須取消或變更檔期，經甲方確認後得取消或變更，定金可延後使用，不予退還，無須額外處理服務費用。</li>
         </ul>
@@ -1583,7 +1666,7 @@ export default {
                   <td>${payment.type}</td>
                   <td class="variable">$${payment.amount}</td>
                   <td class="variable">${payment.staff}</td>
-                  <td class="variable">${contract.客戶簽名 ? '<img src="' + contract.客戶簽名 + '" alt="客戶簽名" style="max-width: 80px; max-height: 25px; object-fit: contain;" />' : payment.signature}</td>
+                  <td class="variable">${contract.客戶簽名 ? '<img src="' + contract.客戶簽名 + '" alt="客戶簽名" style="max-width: 80px; max-height: 25px; object-fit: contain;" />' : ''}</td>
                   <td class="variable">${payment.date}</td>
                 </tr>
               `).join('')}
@@ -1674,7 +1757,7 @@ export default {
               <div class="signature-upload">
                 ${contract.客戶簽名 ? 
                   '<img src="' + contract.客戶簽名 + '" alt="承租人簽章" class="signature-image">' : 
-                  '<div class="signature-placeholder"><span style="color: #999;">客戶簽名</span></div>'
+                  '<div class="signature-placeholder"><!-- 沒有簽名時顯示留白 --></div>'
                 }
               </div>
             </div>
